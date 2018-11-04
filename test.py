@@ -8,6 +8,7 @@ import utils.util as util
 from utils.visualizer import Visualizer
 from utils import html
 from torch.autograd import Variable
+import time
 
 opt = TestOptions().parse(save=False)
 opt.nThreads = 1   
@@ -20,7 +21,7 @@ model = create_model(opt,data_loader.dataset)
 visualizer = Visualizer(opt)
 # create website
 web_dir = os.path.join(opt.results_dir, opt.name, '%s_%s' % (opt.phase, opt.which_epoch))
-webpage = html.HTML(web_dir, '%s: %s' % (opt.name, pt.which_epoch))
+webpage = html.HTML(web_dir, '%s: %s' % (opt.name, opt.which_epoch))
 # test
 
 
@@ -34,7 +35,7 @@ for i, data in enumerate(dataset):
     if i >= opt.how_many and opt.how_many!=0:
         break
     seggt, segpred = model.forward(data,False)
-    print time.time() - tic
+    print(time.time() - tic)
     tic = time.time()
 
     seggt = seggt.data.cpu().numpy()

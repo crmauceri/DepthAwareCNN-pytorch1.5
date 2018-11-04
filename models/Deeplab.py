@@ -11,7 +11,7 @@ from torch.autograd import Variable
 from collections import OrderedDict
 from tensorboardX import SummaryWriter
 import os
-import VGG_Deeplab as VGG_Deeplab
+from . import VGG_Deeplab as VGG_Deeplab
 
 
 class Deeplab_VGG(nn.Module):
@@ -172,10 +172,10 @@ class Deeplab_Solver(BaseModel):
 
         self.writer.add_scalar(self.opt.name+'/Learning_Rate/', lr, step)
 
-	self.optimizer.param_groups[0]['lr'] = lr
-	self.optimizer.param_groups[1]['lr'] = lr
-	self.optimizer.param_groups[2]['lr'] = lr
-	self.optimizer.param_groups[3]['lr'] = lr
+        self.optimizer.param_groups[0]['lr'] = lr
+        self.optimizer.param_groups[1]['lr'] = lr
+        self.optimizer.param_groups[2]['lr'] = lr
+        self.optimizer.param_groups[3]['lr'] = lr
 	# self.optimizer.param_groups[0]['lr'] = lr
 	# self.optimizer.param_groups[1]['lr'] = lr*10
 	# self.optimizer.param_groups[2]['lr'] = lr*2 #* 100
@@ -189,5 +189,3 @@ class Deeplab_Solver(BaseModel):
         if self.opt.verbose:
             print('     update learning rate: %f -> %f' % (self.old_lr, lr))
         self.old_lr = lr
-
-
