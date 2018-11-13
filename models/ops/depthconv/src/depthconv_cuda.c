@@ -9,10 +9,10 @@ void shape_check(THCState *state, THCudaTensor *input, THCudaTensor *input_depth
                  int dH, int dW, int padH, int padW, int dilationH,
                  int dilationW) {
 
-  THArgCheck(weight->nDimension == 4, 5,
+  THArgCheck(THCudaTensor_nDimension(state, weight) == 4, 5,
              "4D weight tensor (nOutputPlane,nInputPlane,kH,kW) expected, "
              "but got: %s",
-             weight->nDimension);
+             THCudaTensor_nDimension(state, weight));
 
   THArgCheck(THCudaTensor_isContiguous(state, weight), 5,
              "weight tensor has to be contiguous");
@@ -21,9 +21,9 @@ void shape_check(THCState *state, THCudaTensor *input, THCudaTensor *input_depth
              "kernel size should be greater than zero, but got kH: %d kW: %d",
              kH, kW);
 
-  THArgCheck((weight->size[2] == kH && weight->size[3] == kW), 9,
+  THArgCheck((THCudaTensor_size(state, weight, 2) == kH && THCudaTensor_size(state, weight, 3) == kW), 9,
              "kernel size should be consistent with weight, but got kH: %d kW: %d weight.size(2): %d, weight.size(3): %d", kH,
-             kW, weight->size[2], weight->size[3]);
+             kW, THCudaTensor_size(state, weight, 2), THCudaTensor_size(state, weight, 3));
 
   THArgCheck(dW > 0 && dH > 0, 11,
              "stride should be greater than zero, but got dH: %d dW: %d", dH,
@@ -41,14 +41,14 @@ void shape_check(THCState *state, THCudaTensor *input, THCudaTensor *input_depth
 
   if (bias != NULL) {
 //    THCUNN_check_dim_size(state, bias, 1, 0, weight->size[0]);
-    THArgCheck(bias->nDimension==1, 6,
-             "Need bias of dimension %d but got %d", 1, bias->nDimension);
-    THArgCheck(bias->size[0]==weight->size[0], 6,
-             "Need bias of size %d but got %d", weight->size[0], bias->size[0]);
+    THArgCheck(THCudaTensor_nDimension(state, bias) == 1, 6,
+             "Need bias of dimension %d but got %d", 1, THCudaTensor_nDimension(state, bias));
+    THArgCheck(THCudaTensor_size(state, bias, 0) == THCudaTensor_size(state, weight, 0), 6,
+             "Need bias of size %d but got %d", THCudaTensor_size(state, weight, 0), THCudaTensor_size(state, bias, 0));
   }
 //////////////////////////////////////////
 
-  int ndim = input->nDimension;
+  int ndim = THCudaTensor_nDimension(state, input);
   int dimf = 0;
   int dimh = 1;
   int dimw = 2;
@@ -62,10 +62,11 @@ void shape_check(THCState *state, THCudaTensor *input, THCudaTensor *input_depth
   THArgCheck(ndim == 3 || ndim == 4, 2,
              "3D or 4D input tensor expected but got: %s", ndim);
 
-  long nInputPlane = weight->size[1];
-  long inputHeight = input->size[dimh];
-  long inputWidth = input->size[dimw];
-  long nOutputPlane = weight->size[0];
+  long nInputPlane = THCudaTensor_size(state, weight, 1);
+  long inputHeight = THCudaTensor_size(state, input, dimh);
+  long inputWidth = THCudaTensor_size(state, input, dimw);
+  long nOutputPlane = THCudaTensor_size(state, weight, 0);
+
   long outputHeight =
       (inputHeight + 2 * padH - (dilationH * (kH - 1) + 1)) / dH + 1;
   long outputWidth =
@@ -83,7 +84,7 @@ void shape_check(THCState *state, THCudaTensor *input, THCudaTensor *input_depth
 
 /////////check depth map shape /////////
 
-  int ndim_depth = input_depth->nDimension;
+  int ndim_depth = THCudaTensor_nDimension(state, input);
   int dimf_depth = 0;
   int dimh_depth = 1;
   int dimw_depth = 2;
@@ -97,26 +98,27 @@ void shape_check(THCState *state, THCudaTensor *input, THCudaTensor *input_depth
   THArgCheck(ndim_depth == 3 || ndim_depth == 4, 3,
              "3D input depth tensor expected but got: %s", ndim);
 
-  long inputHeight_depth = input_depth->size[dimh_depth];
-  long inputWidth_depth = input_depth->size[dimw_depth];
+  //long inputHeight_depth = input_depth->size[dimh_depth];
+  //long inputWidth_depth = input_depth->size[dimw_depth];
+  long inputHeight_depth = THCudaTensor_size(state, input_depth, dimh_depth);
+  long inputWidth_depth = THCudaTensor_size(state, input_depth, dimw_depth);
 
-  THArgCheck(input_depth->size[1] == 1, 3,
+  THArgCheck(THCudaTensor_size(state, input_depth, 1) == 1, 3,
              "input depth should have only 1 channel",
-             nInputPlane, input->size[1]);
+             nInputPlane, THCudaTensor_size(state, input, 1));
 
   THArgCheck((inputHeight == inputHeight_depth && inputWidth == inputWidth_depth), 3,
              "input image and input depth should be the same size");
 //////////////////////////////////////////
 
   if (gradOutput != NULL) {
-    THArgCheck(gradOutput->size[dimf] == nOutputPlane, 4,
+    THArgCheck(THCudaTensor_size(state, gradOutput, dimf) == nOutputPlane, 4,
                "invalid number of gradOutput planes, expected: %d, but got: %d",
-               nOutputPlane, gradOutput->size[dimf]);
-
-    THArgCheck((gradOutput->size[dimh] == outputHeight &&
-                gradOutput->size[dimw] == outputWidth),
+               nOutputPlane, THCudaTensor_size(state, gradOutput, dimf));
+    THArgCheck((THCudaTensor_size(state, gradOutput, dimh) == outputHeight &&
+                THCudaTensor_size(state, gradOutput, dimw) == outputWidth),
                4, "invalid size of gradOutput, expected height: %d width: %d , but got height: %d width: %d", outputHeight, outputWidth,
-               gradOutput->size[dimh], gradOutput->size[dimw]);
+               THCudaTensor_size(state, gradOutput, dimh), THCudaTensor_size(state, gradOutput, dimw));
   }
 }
 
@@ -135,21 +137,21 @@ int depthconv_forward_cuda(THCudaTensor *input, THCudaTensor *input_depth, THCud
   weight = THCudaTensor_newContiguous(state, weight);
 
   int batch = 1;
-  if (input->nDimension == 3) {
+  if (THCudaTensor_nDimension(state, input) == 3) {
     // Force batch
     batch = 0;
-    THCudaTensor_resize4d(state, input, 1, input->size[0], input->size[1],
-                          input->size[2]);
-    THCudaTensor_resize4d(state, input_depth, 1, input_depth->size[0], input_depth->size[1],
-                          input_depth->size[2]);
+    THCudaTensor_resize4d(state, input, 1, THCudaTensor_size(state, input, 0), THCudaTensor_size(state, input, 1),
+                          THCudaTensor_size(state, input, 2));
+    THCudaTensor_resize4d(state, input_depth, 1, THCudaTensor_size(state, input_depth, 0), THCudaTensor_size(state, input_depth, 1),
+                          THCudaTensor_size(state, input_depth, 2));
   }
 
-  long batchSize = input->size[0];
-  long nInputPlane = input->size[1];
-  long inputHeight = input->size[2];
-  long inputWidth = input->size[3];
+  long batchSize = THCudaTensor_size(state, input, 0);
+  long nInputPlane = THCudaTensor_size(state, input, 1);
+  long inputHeight = THCudaTensor_size(state, input, 2);
+  long inputWidth = THCudaTensor_size(state, input, 3);
 
-  long nOutputPlane = weight->size[0];
+  long nOutputPlane = THCudaTensor_size(state, weight, 0);
 
   long outputWidth =
       (inputWidth + 2 * padW - (dilationW * (kW - 1) + 1)) / dW + 1;
@@ -163,8 +165,8 @@ int depthconv_forward_cuda(THCudaTensor *input, THCudaTensor *input_depth, THCud
   THCudaTensor_resize2d(state, columns, nInputPlane * kW * kH,
                         outputHeight * outputWidth);
 
-  if (ones->nDimension != 2 ||
-      ones->size[0] * ones->size[1] < outputHeight * outputWidth) {
+  if (THCudaTensor_nDimension(state, ones) != 2 ||
+      THCudaTensor_size(state, ones, 0) * THCudaTensor_size(state, ones, 1) < outputHeight * outputWidth) {
     THCudaTensor_resize2d(state, ones, outputHeight, outputWidth);
     THCudaTensor_fill(state, ones, 1);
   }
@@ -199,7 +201,7 @@ int depthconv_forward_cuda(THCudaTensor *input, THCudaTensor *input_depth, THCud
         inputWidth, kH, kW, padH, padW, dH, dW, dilationH, dilationW, THCudaTensor_data(state, columns));
 
     long m = nOutputPlane;
-    long n = columns->size[1];
+    long n = THCudaTensor_size(state, columns, 1);
     long k = nInputPlane * kH * kW;
 
     THCudaBlas_Sgemm(state, 'n', 'n', n, m, k, 1.0f,
@@ -244,28 +246,28 @@ int depthconv_backward_input_cuda(
   weight = THCudaTensor_newContiguous(state, weight);
 
   int batch = 1;
-  if (input->nDimension == 3) {
+  if (THCudaTensor_nDimension(state, input) == 3) {
     // Force batch
     batch = 0;
-    THCudaTensor_resize4d(state, input, 1, input->size[0], input->size[1],
-                          input->size[2]);
-    THCudaTensor_resize4d(state, gradOutput, 1, gradOutput->size[0],
-                          gradOutput->size[1], gradOutput->size[2]);
+    THCudaTensor_resize4d(state, input, 1, THCudaTensor_size(state, input, 0), THCudaTensor_size(state, input, 1),
+                          THCudaTensor_size(state, input, 2));
+    THCudaTensor_resize4d(state, gradOutput, 1, THCudaTensor_size(state, gradOutput, 0),
+                          THCudaTensor_size(state, gradOutput, 1), THCudaTensor_size(state, gradOutput, 2));
   }
 
-  long batchSize = input->size[0];
-  long nInputPlane = input->size[1];
-  long inputHeight = input->size[2];
-  long inputWidth = input->size[3];
+  long batchSize = THCudaTensor_size(state, input, 0);
+  long nInputPlane = THCudaTensor_size(state, input, 1);
+  long inputHeight = THCudaTensor_size(state, input, 2);
+  long inputWidth = THCudaTensor_size(state, input, 3);
 
-  long nOutputPlane = weight->size[0];
+  long nOutputPlane = THCudaTensor_size(state, weight, 0);
 
   long outputWidth =
       (inputWidth + 2 * padW - (dilationW * (kW - 1) + 1)) / dW + 1;
   long outputHeight =
       (inputHeight + 2 * padH - (dilationH * (kH - 1) + 1)) / dH + 1;
 
-  THArgCheck((input_depth->size[0] == batchSize), 3, "invalid batch size of input depth");
+  THArgCheck((THCudaTensor_size(state, input_depth, 0) == batchSize), 3, "invalid batch size of input depth");
 
   THCudaTensor_resize4d(state, gradInput, batchSize, nInputPlane, inputHeight,
                         inputWidth);
@@ -285,7 +287,7 @@ int depthconv_backward_input_cuda(
     THCudaTensor_select(state, gradOutput_n, gradOutput, 0, elt);
 
     long m = nInputPlane * kW * kH;
-    long n = columns->size[1];
+    long n = THCudaTensor_size(state, columns, 1);
     long k = nOutputPlane;
 
     THCudaBlas_Sgemm(state, 'n', 't', n, m, k, 1.0f,
@@ -338,21 +340,21 @@ int depthconv_backward_parameters_cuda(
   gradOutput = THCudaTensor_newContiguous(state, gradOutput);
 
   int batch = 1;
-  if (input->nDimension == 3) {
+  if (THCudaTensor_nDimension(state, input) == 3) {
     // Force batch
     batch = 0;
-    THCudaTensor_resize4d(state, input, 1, input->size[0], input->size[1],
-                          input->size[2]);
-    THCudaTensor_resize4d(state, gradOutput, 1, gradOutput->size[0],
-                          gradOutput->size[1], gradOutput->size[2]);
+    THCudaTensor_resize4d(state, input, 1, THCudaTensor_size(state, input, 0), THCudaTensor_size(state, input, 1),
+                          THCudaTensor_size(state, input, 2));
+    THCudaTensor_resize4d(state, gradOutput, 1, THCudaTensor_size(state, gradOutput, 0),
+                          THCudaTensor_size(state, gradOutput, 1), THCudaTensor_size(state, gradOutput, 2));
   }
 
-  long batchSize = input->size[0];
-  long nInputPlane = input->size[1];
-  long inputHeight = input->size[2];
-  long inputWidth = input->size[3];
+  long batchSize = THCudaTensor_size(state, input, 0);
+  long nInputPlane = THCudaTensor_size(state, input, 1);
+  long inputHeight = THCudaTensor_size(state, input, 2);
+  long inputWidth = THCudaTensor_size(state, input, 3);
 
-  long nOutputPlane = gradWeight->size[0];
+  long nOutputPlane = THCudaTensor_size(state, gradWeight, 0);
 
   long outputWidth =
       (inputWidth + 2 * padW - (dilationW * (kW - 1) + 1)) / dW + 1;
@@ -361,8 +363,8 @@ int depthconv_backward_parameters_cuda(
 
 
   // Define a buffer of ones, for bias accumulation
-  if (ones->nDimension != 2 ||
-      ones->size[0] * ones->size[1] < outputHeight * outputWidth) {
+  if (THCudaTensor_nDimension(state, ones) != 2 ||
+      THCudaTensor_size(state, ones, 0) * THCudaTensor_size(state, ones, 1) < outputHeight * outputWidth) {
     THCudaTensor_resize2d(state, ones, outputHeight, outputWidth);
     THCudaTensor_fill(state, ones, 1);
   }
@@ -386,7 +388,7 @@ int depthconv_backward_parameters_cuda(
 
     long m = nOutputPlane;
     long n = nInputPlane * kW * kH;
-    long k = columns->size[1];
+    long k = THCudaTensor_size(state, columns, 1);
 
     THCudaBlas_Sgemm(state, 't', 'n', n, m, k, scale,
                      THCudaTensor_data(state, columns), k,

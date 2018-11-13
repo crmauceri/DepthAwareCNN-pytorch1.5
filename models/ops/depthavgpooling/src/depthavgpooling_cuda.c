@@ -14,7 +14,7 @@ void shape_check(THCState *state,
   THArgCheck(dW > 0 && dH > 0, 8,
              "stride should be greater than zero, but got dH: %d dW: %d", dH, dW);
 
-  int ndim = input->nDimension;
+  int ndim = THCudaTensor_nDimension(state, input);
   int dimf = 0;
   int dimh = 1;
   int dimw = 2;
@@ -36,16 +36,16 @@ void shape_check(THCState *state,
 //             "padW = %d, padH = %d, kW = %d, kH = %d",
 //             padW, padH, kW, kH);
 
-  long nInputPlane = input->size[dimh-1];
-  long nInputRows = input->size[dimh];
-  long nInputCols = input->size[dimw];
+  long nInputPlane = THCudaTensor_size(state, input, dimh-1);
+  long nInputRows = THCudaTensor_size(state, input, dimh);
+  long nInputCols = THCudaTensor_size(state, input, dimw);
   long nOutputRows, nOutputCols;
   long nOutputPlane = nInputPlane;
 
 
 /////////check depth map shape /////////
 
-  int ndim_depth = input_depth->nDimension;
+  int ndim_depth = THCudaTensor_nDimension(state, input_depth);
   int dimf_depth = 0;
   int dimh_depth = 1;
   int dimw_depth = 2;
@@ -59,25 +59,25 @@ void shape_check(THCState *state,
   THArgCheck(ndim_depth == 3 || ndim_depth == 4, 3,
              "3D input depth tensor expected but got: %s", ndim);
 
-  long inputHeight_depth = input_depth->size[dimh_depth];
-  long inputWidth_depth = input_depth->size[dimw_depth];
+  long inputHeight_depth = THCudaTensor_size(state, input_depth, dimh_depth);
+  long inputWidth_depth = THCudaTensor_size(state, input_depth, dimw_depth);
 
-  THArgCheck(input_depth->size[1] == 1, 3,
+  THArgCheck(THCudaTensor_size(state, input_depth, 1) == 1, 3,
              "input depth should have only 1 channel",
-             nInputPlane, input->size[1]);
+             nInputPlane, THCudaTensor_size(state, input, 1));
 
   THArgCheck((nInputRows == inputHeight_depth && nInputCols == inputWidth_depth), 3,
              "input image and input depth should be the same size, but got: weightcount(%d,%d), depth(%d,%d)",
              nInputRows, inputHeight_depth, nInputCols, inputWidth_depth);
 
   if (depthweightcount!=NULL){
-      THArgCheck(depthweightcount->size[1] == 1, 3,
+      THArgCheck(THCudaTensor_size(state, depthweightcount, 1) == 1, 3,
                  "input depth should have only 1 channel",
-                 nInputPlane, input->size[1]);
+                 nInputPlane, THCudaTensor_size(state, input, 1));
 
-      THArgCheck((inputHeight_depth == depthweightcount->size[2] && inputWidth_depth == depthweightcount->size[3]), 3,
+      THArgCheck((inputHeight_depth == THCudaTensor_size(state, depthweightcount, 2) && inputWidth_depth == THCudaTensor_size(state, depthweightcount, 3)), 3,
                  "input depth and input depthweightcount should be the same size, but got: weightcount(%d,%d), depth(%d,%d)",
-                 depthweightcount->size[dimh_depth], depthweightcount->size[dimw_depth], inputHeight_depth, inputWidth_depth);
+                 THCudaTensor_size(state, depthweightcount, dimh_depth), THCudaTensor_size(state, depthweightcount, dimw_depth), inputHeight_depth, inputWidth_depth);
   }
 //////////////////////////////////////////
 
@@ -103,14 +103,14 @@ void shape_check(THCState *state,
 //    THCUNN_check_dim_size(state, gradOutput, ndim, dimh, nOutputRows);
 //    THCUNN_check_dim_size(state, gradOutput, ndim, dimw, nOutputCols);
 
-    THArgCheck(gradOutput->size[dimf] == nOutputPlane, 4,
+    THArgCheck(THCudaTensor_size(state, gradOutput, dimf) == nOutputPlane, 4,
                "invalid number of gradOutput planes, expected: %d, but got: %d",
-               nOutputPlane, gradOutput->size[dimf]);
+               nOutputPlane, THCudaTensor_size(state, gradOutput, dimf));
 
-    THArgCheck((gradOutput->size[dimh] == nOutputRows &&
-                gradOutput->size[dimw] == nOutputCols),
+    THArgCheck((THCudaTensor_size(state, gradOutput, dimh) == nOutputRows &&
+                THCudaTensor_size(state, gradOutput, dimw) == nOutputCols),
                4, "invalid size of gradOutput, expected height: %d width: %d , but got height: %d width: %d", nOutputRows, nOutputCols,
-               gradOutput->size[dimh], gradOutput->size[dimw]);
+               THCudaTensor_size(state, gradOutput, dimh), THCudaTensor_size(state, gradOutput, dimw));
   }
   }
 
@@ -133,21 +133,21 @@ int depthavgpooling_forward_cuda(THCudaTensor *input,
   long nInputCols, nInputRows, nInputPlane, batchSize;
   long nOutputCols, nOutputRows;
 
-  if (input->nDimension == 3) {
-    nInputCols = input->size[2];
-    nInputRows = input->size[1];
-    nInputPlane = input->size[0];
+  if (THCudaTensor_nDimension(state, input) == 3) {
+    nInputCols = THCudaTensor_size(state, input, 2);
+    nInputRows = THCudaTensor_size(state, input, 1);
+    nInputPlane = THCudaTensor_size(state, input, 0);
     batchSize = 1;
     batch = 0;
-    THCudaTensor_resize4d(state, input, 1, input->size[0], input->size[1], input->size[2]);
-    THCudaTensor_resize4d(state, input_depth, 1, input_depth->size[0], input_depth->size[1], input_depth->size[2]);
+    THCudaTensor_resize4d(state, input, 1, THCudaTensor_size(state, input, 0), THCudaTensor_size(state, input, 1), THCudaTensor_size(state, input, 2));
+    THCudaTensor_resize4d(state, input_depth, 1, THCudaTensor_size(state, input_depth, 0), THCudaTensor_size(state, input_depth, 1), THCudaTensor_size(state, input_depth, 2));
   }
   else
   {
-    nInputCols = input->size[3];
-    nInputRows = input->size[2];
-    nInputPlane = input->size[1];
-    batchSize = input->size[0];
+    nInputCols = THCudaTensor_size(state, input, 3);
+    nInputRows = THCudaTensor_size(state, input, 2);
+    nInputPlane = THCudaTensor_size(state, input, 1);
+    batchSize = THCudaTensor_size(state, input, 0);
   }
 
   nOutputCols = floor(float(nInputCols - kW + 2*padW) / float(dW)) + 1;
@@ -237,22 +237,22 @@ int depthavgpooling_backward_input_cuda(
   int dimRow = 1;
 
   int batch = 1;
-  if (input->nDimension == 3) {
-    nInputPlane = input->size[0];
+  if (THCudaTensor_nDimension(state, input) == 3) {
+    nInputPlane = THCudaTensor_size(state, input, 0);
     batchSize = 1;
     batch = 0;
-    THCudaTensor_resize4d(state, input, 1, input->size[0], input->size[1],input->size[2]);
-    THCudaTensor_resize4d(state, gradOutput, 1, gradOutput->size[0], gradOutput->size[1], gradOutput->size[2]);
+    THCudaTensor_resize4d(state, input, 1, THCudaTensor_size(state, input, 0), THCudaTensor_size(state, input, 1),THCudaTensor_size(state, input, 2));
+    THCudaTensor_resize4d(state, gradOutput, 1, THCudaTensor_size(state, gradOutput, 0), THCudaTensor_size(state, gradOutput, 1), THCudaTensor_size(state, gradOutput, 2));
   }
   else
   {
     dimCol = 3;
     dimRow = 2;
-    nInputPlane = input->size[1];
-    batchSize = input->size[0];
+    nInputPlane = THCudaTensor_size(state, input, 1);
+    batchSize = THCudaTensor_size(state, input, 0);
   }
-  nInputCols = input->size[dimCol];
-  nInputRows = input->size[dimRow];
+  nInputCols = THCudaTensor_size(state, input, dimCol);
+  nInputRows = THCudaTensor_size(state, input, dimRow);
 
   nOutputCols = floor(float(nInputCols - kW + 2*padW) / float(dW)) + 1;
   nOutputRows = floor(float(nInputRows - kH + 2*padH) / float(dH)) + 1;
@@ -269,7 +269,7 @@ int depthavgpooling_backward_input_cuda(
 //  THCUNN_check_dim_size(state, gradOutput, input->nDimension, dimRow, nOutputRows);
 //  THCUNN_check_dim_size(state, gradOutput, input->nDimension, dimCol, nOutputCols);
 
-  THArgCheck((input_depth->size[0] == batchSize), 3, "invalid batch size of input depth");
+  THArgCheck((THCudaTensor_size(state, input_depth, 0) == batchSize), 3, "invalid batch size of input depth");
   THCudaTensor_resizeAs(state, gradInput, input);
 
 //  float* input_depth_data = THCudaTensor_data(state, input_depth);
