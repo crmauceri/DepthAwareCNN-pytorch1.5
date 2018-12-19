@@ -182,11 +182,6 @@ class Deeplab_Solver(BaseModel):
         self.optimizer.param_groups[1]['lr'] = lr
         self.optimizer.param_groups[2]['lr'] = lr
         self.optimizer.param_groups[3]['lr'] = lr
-        # self.optimizer.param_groups[0]['lr'] = lr
-        # self.optimizer.param_groups[1]['lr'] = lr*10
-        # self.optimizer.param_groups[2]['lr'] = lr*2 #* 100
-        # self.optimizer.param_groups[3]['lr'] = lr*20
-        # self.optimizer.param_groups[4]['lr'] = lr*100
 
 
         # torch.nn.utils.clip_grad_norm(self.model.Scale.get_1x_lr_params_NOscale(), 1.)
@@ -195,5 +190,3 @@ class Deeplab_Solver(BaseModel):
         if self.opt.verbose:
             print('     update learning rate: %f -> %f' % (self.old_lr, lr))
         self.old_lr = lr
-
-

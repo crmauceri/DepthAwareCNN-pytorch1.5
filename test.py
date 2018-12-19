@@ -8,6 +8,7 @@ import utils.util as util
 from utils.visualizer import Visualizer
 from utils import html
 from torch.autograd import Variable
+import time
 
 opt = TestOptions().parse(save=False)
 opt.nThreads = 1   
