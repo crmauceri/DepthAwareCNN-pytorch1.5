@@ -2,8 +2,9 @@ import torch
 from torch.autograd import Function
 from torch.nn.modules.utils import _pair
 import cffi
-from .._ext import depthavgpooling
 
+if torch.cuda.is_available():
+    from .._ext import depthavgpooling
 
 def depth_avgpooling( input,
                       depth,

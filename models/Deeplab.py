@@ -11,7 +11,7 @@ from torch.autograd import Variable
 from collections import OrderedDict
 from tensorboardX import SummaryWriter
 import os
-import VGG_Deeplab as VGG_Deeplab
+from . import VGG_Deeplab as VGG_Deeplab
 
 
 class Deeplab_VGG(nn.Module):
@@ -26,16 +26,19 @@ class Deeplab_VGG(nn.Module):
 #------------------------------------------------------#
 
 class Deeplab_Solver(BaseModel):
-    def __init__(self, opt, dataset=None, encoder='VGG'):
+    def __init__(self, opt, dataset=None, encoder='VGG', useCuda = torch.cuda.is_available()):
         BaseModel.initialize(self, opt)
+
+        self.useCuda = useCuda
         self.encoder = encoder
         if encoder == 'VGG':
             self.model = Deeplab_VGG(self.opt.label_nc, self.opt.depthconv)
 
         if self.opt.isTrain:
-            self.criterionSeg = torch.nn.CrossEntropyLoss(ignore_index=255).cuda()
-            # self.criterionSeg = torch.nn.CrossEntropyLoss(ignore_index=255).cuda()
-            # self.criterionSeg = nn.NLLLoss2d(ignore_index=255)#.cuda()
+            if self.useCuda:
+                self.criterionSeg = torch.nn.CrossEntropyLoss(ignore_index=255).cuda()
+            else:
+                self.criterionSeg = torch.nn.CrossEntropyLoss(ignore_index=255)
 
             if encoder == 'VGG':
                 self.optimizer = torch.optim.SGD([{'params': self.model.Scale.get_1x_lr_params_NOscale(), 'lr': self.opt.lr},
@@ -44,8 +47,6 @@ class Deeplab_Solver(BaseModel):
                                                  {'params': self.model.Scale.get_20x_lr_params(), 'lr': self.opt.lr, 'weight_decay': 0.}
                                                   ],
                                                  lr=self.opt.lr, momentum=self.opt.momentum, weight_decay=self.opt.wd)
-
-            # self.optimizer = torch.optim.SGD(self.model.parameters(), lr=self.opt.lr, momentum=self.opt.momentum, weight_decay=self.opt.wd)
 
             self.old_lr = self.opt.lr
             self.averageloss = []
@@ -71,7 +72,8 @@ class Deeplab_Solver(BaseModel):
                 self.load()
                 print("Successfully loaded model, continue training....!")
 
-        self.model.cuda()
+        if self.useCuda:
+            self.model.cuda()
         self.normweightgrad=0.
         # if len(opt.gpu_ids):#opt.isTrain and
         #     self.model = torch.nn.DataParallel(self.model, device_ids=opt.gpu_ids)
@@ -79,21 +81,25 @@ class Deeplab_Solver(BaseModel):
     def forward(self, data, isTrain=True):
         self.model.zero_grad()
 
-        self.image = Variable(data['image'], volatile=not isTrain).cuda()
+        self.image = Variable(data['image'], requires_grad=not isTrain)
         if 'depth' in data.keys():
-            self.depth = Variable(data['depth'], volatile=not isTrain).cuda()
+            self.depth = Variable(data['depth'], requires_grad=not isTrain)
         else:
             self.depth = None
         if data['seg'] is not None:
-            self.seggt = Variable(data['seg'], volatile=not isTrain).cuda()
+            self.seggt = Variable(data['seg'])
         else:
             self.seggt = None
+
+        if self.useCuda:
+            self.depth = self.depth.cuda()
+            self.image = self.image.cuda()
+            self.seggt = self.seggt.cuda()
 
         input_size = self.image.size()
 
         self.segpred = self.model(self.image,self.depth)
-        self.segpred = nn.functional.upsample(self.segpred, size=(input_size[2], input_size[3]), mode='bilinear')
-        # self.segpred = nn.functional.log_softmax(nn.functional.upsample(self.segpred, size=(input_size[2], input_size[3]), mode='bilinear'))
+        self.segpred = nn.functional.interpolate(self.segpred, size=(input_size[2], input_size[3]), mode='bilinear', align_corners=True)
 
         if self.opt.isTrain:
             self.loss = self.criterionSeg(self.segpred, torch.squeeze(self.seggt,1).long())
@@ -172,15 +178,15 @@ class Deeplab_Solver(BaseModel):
 
         self.writer.add_scalar(self.opt.name+'/Learning_Rate/', lr, step)
 
-	self.optimizer.param_groups[0]['lr'] = lr
-	self.optimizer.param_groups[1]['lr'] = lr
-	self.optimizer.param_groups[2]['lr'] = lr
-	self.optimizer.param_groups[3]['lr'] = lr
-	# self.optimizer.param_groups[0]['lr'] = lr
-	# self.optimizer.param_groups[1]['lr'] = lr*10
-	# self.optimizer.param_groups[2]['lr'] = lr*2 #* 100
-	# self.optimizer.param_groups[3]['lr'] = lr*20
-	# self.optimizer.param_groups[4]['lr'] = lr*100
+        self.optimizer.param_groups[0]['lr'] = lr
+        self.optimizer.param_groups[1]['lr'] = lr
+        self.optimizer.param_groups[2]['lr'] = lr
+        self.optimizer.param_groups[3]['lr'] = lr
+        # self.optimizer.param_groups[0]['lr'] = lr
+        # self.optimizer.param_groups[1]['lr'] = lr*10
+        # self.optimizer.param_groups[2]['lr'] = lr*2 #* 100
+        # self.optimizer.param_groups[3]['lr'] = lr*20
+        # self.optimizer.param_groups[4]['lr'] = lr*100
 
 
         # torch.nn.utils.clip_grad_norm(self.model.Scale.get_1x_lr_params_NOscale(), 1.)

@@ -1,4 +1,4 @@
-import math
+import math, warnings
 
 import torch
 import torch.nn as nn
@@ -24,15 +24,20 @@ class DepthConv(Module):
         self.padding = _pair(padding)
         self.dilation = _pair(dilation)
 
-        self.weight = nn.Parameter(
-            torch.Tensor(out_channels, in_channels, *self.kernel_size))
-
-        if bias:
-            self.bias = nn.Parameter(torch.Tensor(out_channels))
+        if not torch.cuda.is_available():
+            warnings.warn("Warning: Not using depth")
+            self.conv = nn.Conv2d(self.in_channels, self.out_channels, self.kernel_size, stride=self.stride,
+                                  padding=self.padding, dilation=self.dilation, bias=bias)
         else:
-            self.register_parameter('bias', None)
+            self.weight = nn.Parameter(
+                torch.Tensor(out_channels, in_channels, *self.kernel_size))
 
-        self.reset_parameters()
+            if bias:
+                self.bias = nn.Parameter(torch.Tensor(out_channels))
+            else:
+                self.register_parameter('bias', None)
+
+            self.reset_parameters()
 
     def reset_parameters(self):
         n = self.in_channels
@@ -44,5 +49,8 @@ class DepthConv(Module):
             self.bias.data.uniform_(-stdv, stdv)
 
     def forward(self, input, depth):
-        return depth_conv(input, depth, self.weight, self.bias, self.stride,
+        if not torch.cuda.is_available():
+            return self.conv(input)
+        else:
+            return depth_conv(input, depth, self.weight, self.bias, self.stride,
                              self.padding, self.dilation)

@@ -9,7 +9,7 @@ from PIL import Image
 import math, random
 import time
 
-def make_dataset_fromlst(listfilename):
+def make_dataset_fromlst(dataroot, listfilename):
     """
     NYUlist format:
     imagepath seglabelpath depthpath HHApath
@@ -22,17 +22,17 @@ def make_dataset_fromlst(listfilename):
         content = f.readlines()
         for x in content:
             imgname, segname, depthname, HHAname = x.strip().split(' ')
-            images += [imgname]
-            segs += [segname]
-            depths += [depthname]
-            HHAs += [HHAname]
+            images += [os.path.join(dataroot, imgname)]
+            segs += [os.path.join(dataroot, segname)]
+            depths += [os.path.join(dataroot, depthname)]
+            HHAs += [os.path.join(dataroot, HHAname)]
     return {'images':images, 'segs':segs, 'HHAs':HHAs, 'depths':depths}
 
 class SUNRGBDDataset(BaseDataset):
     def initialize(self, opt):
         self.opt = opt
         np.random.seed(int(time.time()))
-        self.paths_dict = make_dataset_fromlst(opt.list)
+        self.paths_dict = make_dataset_fromlst(opt.dataroot, opt.list)
         self.len = len(self.paths_dict['images'])
         # self.label_weight = torch.Tensor(label_weight)
         self.datafile = 'sunrgbd_dataset.py'

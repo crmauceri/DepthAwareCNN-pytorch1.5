@@ -1,9 +1,12 @@
 import torch
+import torch.nn.functional as F
 from torch.autograd import Function
 from torch.nn.modules.utils import _pair
 import cffi
-from .._ext import depthconv
+import warnings
 
+if torch.cuda.is_available():
+    from .._ext import depthconv
 
 def depth_conv(input,
                   depth,
@@ -53,9 +56,11 @@ class DepthconvFunction(Function):
                                   output_size[0] * output_size[1]).zero_()
         self.ones = input.new(output_size[0] * output_size[1]).zero_()
 
-
         if not input.is_cuda:
-            raise NotImplementedError
+            if not isinstance(input, torch.cuda.FloatTensor):
+                raise NotImplementedError
+            warnings.warn("Warning: Not using depth")
+            return F.conv2d(input, weight, bias=bias, stride=self.stride, padding=self.padding, dilation=self.dilation)
         else:
             if not isinstance(input, torch.cuda.FloatTensor):
                 raise NotImplementedError
@@ -73,7 +78,14 @@ class DepthconvFunction(Function):
         grad_input = grad_weight = grad_bias = None
 
         if not grad_output.is_cuda:
-            raise NotImplementedError
+            if not isinstance(input, torch.cuda.FloatTensor):
+                raise NotImplementedError
+            warnings.warn("Warning: Not using depth")
+
+            if self.needs_input_grad[0]:
+                grad_input = torch.nn.grad.conv2d_input(input.shape, weight, grad_output)
+            if self.needs_input_grad[2]:
+                grad_weight = torch.nn.grad.conv2d_weight(input, weight.shape, grad_output)
         else:
             if not isinstance(grad_output, torch.cuda.FloatTensor):
                 raise NotImplementedError

@@ -1,4 +1,4 @@
-import math
+import math, warnings
 
 import torch
 import torch.nn as nn
@@ -17,5 +17,12 @@ class Depthavgpooling(Module):
         self.stride = _pair(stride)
         self.padding = _pair(padding)
 
+        if not torch.cuda.is_available():
+            warnings.warn("Warning: Not using depth")
+            self.pool = torch.nn.AvgPool2d(self.kernel_size, stride=self.stride, padding=self.padding)
+
     def forward(self, input, depth):
-        return depth_avgpooling(input, depth, self.kernel_size, self.stride, self.padding)
+        if not torch.cuda.is_available():
+            return self.pool(input)
+        else:
+            return depth_avgpooling(input, depth, self.kernel_size, self.stride, self.padding)
