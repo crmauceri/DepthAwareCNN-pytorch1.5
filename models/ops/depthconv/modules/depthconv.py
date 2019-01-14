@@ -28,6 +28,8 @@ class DepthConv(Module):
             warnings.warn("Warning: Not using depth")
             self.conv = nn.Conv2d(self.in_channels, self.out_channels, self.kernel_size, stride=self.stride,
                                   padding=self.padding, dilation=self.dilation, bias=bias)
+            self.weight = self.conv.weight
+            self.bias = self.conv.bias
         else:
             self.weight = nn.Parameter(
                 torch.Tensor(out_channels, in_channels, *self.kernel_size))
