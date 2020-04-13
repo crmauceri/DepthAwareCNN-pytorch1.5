@@ -1,8 +1,8 @@
 from depthaware.options.train_options import TrainOptions
 from depthaware.data.data_loader import CreateDataLoader
-from depthaware.models import create_model
+from depthaware.models.models import create_model
 from depthaware import utils as util
-from depthaware.utils import Visualizer
+from depthaware.utils.visualizer import Visualizer
 import os
 import numpy as np
 import time
