@@ -1,10 +1,8 @@
 import torch
-import torch.nn as nn
-from torch.nn.modules.utils import _single, _pair, _triple
+from torch.nn.modules.utils import _pair
 from torch.autograd import Variable
 
-from utils.gradcheck import gradcheck
-from models.ops.depthconv.functions.depthconv import DepthconvFunction
+from depthaware.models.ops.depthconv.functions.depthconv import DepthconvFunction
 
 
 N, inC, inH, inW = 4, 2, 8, 8
@@ -66,10 +64,8 @@ print (bias.grad-bias2.grad).sum()
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import numpy as np
-from models.ops.depthavgpooling.functions.depthavgpooling import DepthavgpoolingFunction
-from models.ops.depthavgpooling.modules import Depthavgpooling
+from depthaware.models.ops.depthavgpooling.modules import Depthavgpooling
 from torch.autograd import Variable
 
 depth = [[[1,0,1,10000],

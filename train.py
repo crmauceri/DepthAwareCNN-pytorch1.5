@@ -1,15 +1,10 @@
-import time
-from tensorboardX import SummaryWriter
-from collections import OrderedDict
-from options.train_options import TrainOptions
-from data.data_loader import CreateDataLoader
-from models.models import create_model
-import utils.util as util
-from utils.visualizer import Visualizer
+from depthaware.options.train_options import TrainOptions
+from depthaware.data.data_loader import CreateDataLoader
+from depthaware.models import create_model
+from depthaware import utils as util
+from depthaware.utils import Visualizer
 import os
 import numpy as np
-import torch
-from torch.autograd import Variable
 import time
 
 opt = TrainOptions().parse()

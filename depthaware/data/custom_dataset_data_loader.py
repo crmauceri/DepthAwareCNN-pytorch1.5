@@ -1,19 +1,19 @@
 import torch.utils.data
-from .base_data_loader import BaseDataLoader
+from depthaware.data.base_data_loader import BaseDataLoader
 
 
 def CreateDataset(opt):
     dataset = None
     if opt.dataset_mode == 'nyuv2':
         # from data.nyuv2_dataset import NYUDataset
-        from data.nyuv2_dataset_crop import NYUDataset,NYUDataset_val
+        from depthaware.data.nyuv2_dataset_crop import NYUDataset,NYUDataset_val
         dataset = NYUDataset()
         if opt.vallist!='':
             dataset_val = NYUDataset_val()
         else:
             dataset_val = None
     elif opt.dataset_mode == 'voc':
-        from data.VOC_dataset import VOCDataset,VOCDataset_val
+        from depthaware.data.VOC_dataset import VOCDataset,VOCDataset_val
         dataset = VOCDataset()
         if opt.vallist!='':
             dataset_val = VOCDataset_val()
@@ -21,7 +21,7 @@ def CreateDataset(opt):
             dataset_val = None
 
     elif opt.dataset_mode == 'sunrgbd':
-        from data.sunrgbd_dataset import SUNRGBDDataset,SUNRGBDDataset_val
+        from depthaware.data.sunrgbd_dataset import SUNRGBDDataset,SUNRGBDDataset_val
         dataset = SUNRGBDDataset()
         if opt.vallist!='':
             dataset_val = SUNRGBDDataset_val()
@@ -29,7 +29,7 @@ def CreateDataset(opt):
             dataset_val = None
 
     elif opt.dataset_mode == 'stanfordindoor':
-        from data.stanfordindoor_dataset import StanfordIndoorDataset, StanfordIndoorDataset_val
+        from depthaware.data.stanfordindoor_dataset import StanfordIndoorDataset, StanfordIndoorDataset_val
         dataset = StanfordIndoorDataset()
         if opt.vallist!='':
             dataset_val = StanfordIndoorDataset_val()
@@ -37,7 +37,7 @@ def CreateDataset(opt):
             dataset_val = None
 
     elif opt.dataset_mode == 'cityscapes':
-        from data.cityscapes_dataset import CityscapesDataset, CityscapesDataset_val
+        from depthaware.data.cityscapes_dataset import CityscapesDataset, CityscapesDataset_val
         dataset = CityscapesDataset()
         if opt.vallist!='':
             dataset_val = CityscapesDataset_val()

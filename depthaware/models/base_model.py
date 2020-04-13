@@ -1,6 +1,5 @@
 import os
-import numpy as np
-from utils import util
+from depthaware.utils import util
 import torch
 
 def load_pretrained_model(net, state_dict, strict=True):
