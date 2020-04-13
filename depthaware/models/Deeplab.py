@@ -2,7 +2,6 @@ import torch.nn as nn
 import torch
 from depthaware.models.base_model import BaseModel
 import numpy as np
-import shutil
 from torch.autograd import Variable
 from collections import OrderedDict
 from tensorboardX import SummaryWriter
@@ -45,16 +44,6 @@ class Deeplab_Solver(BaseModel):
 
             self.old_lr = self.opt.lr
             self.averageloss = []
-            # copy scripts
-            self.model_path = './models' #os.path.dirname(os.path.realpath(__file__))
-            self.data_path = './data' #os.path.dirname(os.path.realpath(__file__))
-            shutil.copyfile(os.path.join(self.model_path, 'Deeplab.py'), os.path.join(self.model_dir, 'Deeplab.py'))
-
-            if encoder == 'VGG':
-                shutil.copyfile(os.path.join(self.model_path, 'VGG_Deeplab.py'), os.path.join(self.model_dir, 'VGG_Deeplab.py'))
-            shutil.copyfile(os.path.join(self.model_path, 'model_utils.py'), os.path.join(self.model_dir, 'model_utils.py'))
-            shutil.copyfile(os.path.join(self.data_path, dataset.datafile), os.path.join(self.model_dir, dataset.datafile))
-            shutil.copyfile(os.path.join(self.data_path, 'base_dataset.py'), os.path.join(self.model_dir, 'base_dataset.py'))
 
             self.writer = SummaryWriter(self.tensorborad_dir)
             self.counter = 0
