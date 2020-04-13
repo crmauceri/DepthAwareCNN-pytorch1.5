@@ -36,6 +36,14 @@ def CreateDataset(opt):
         else:
             dataset_val = None
 
+    elif opt.dataset_mode == 'cityscapes':
+        from data.cityscapes_dataset import CityscapesDataset, CityscapesDataset_val
+        dataset = CityscapesDataset()
+        if opt.vallist!='':
+            dataset_val = CityscapesDataset_val()
+        else:
+            dataset_val = None
+
     print("dataset [%s] was created" % (dataset.name()))
     dataset.initialize(opt)
     if dataset_val != None:
