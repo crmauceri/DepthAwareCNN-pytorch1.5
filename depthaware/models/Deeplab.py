@@ -82,7 +82,7 @@ class Deeplab_Solver(BaseModel):
 
         if self.opt.isTrain:
             self.loss = self.criterionSeg(self.segpred, torch.squeeze(self.seggt,1).long())
-            self.averageloss += [self.loss.data[0]]
+            self.averageloss += [self.loss.item()]
 
         segpred = self.segpred.max(1, keepdim=True)[1]
         return self.seggt, segpred
