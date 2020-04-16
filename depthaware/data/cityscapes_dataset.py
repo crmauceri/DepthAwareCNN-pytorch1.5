@@ -21,7 +21,7 @@ def make_dataset_frombasedir(basedir):
     HHAs = []
     for x in images:
         img_dir, img_path = os.path.split(x)
-        segs.append(os.path.join(img_dir.replace('leftImg8bit', 'gtCoarse'), img_path.replace('leftImg8bit', 'labelIds')))
+        segs.append(os.path.join(img_dir.replace('leftImg8bit', 'gtCoarse'), img_path.replace('leftImg8bit', 'gtCoarse_labelIds')))
         depths.append(x.replace('leftImg8bit', 'disparity'))
         HHAs.append(x.replace('leftImg8bit', 'HHA'))
 
