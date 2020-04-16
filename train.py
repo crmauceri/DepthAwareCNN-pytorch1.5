@@ -3,6 +3,8 @@ from depthaware.data.data_loader import CreateDataLoader
 from depthaware.models.models import create_model
 from depthaware import utils as util
 from depthaware.utils.visualizer import Visualizer
+from tqdm import tqdm
+
 import os
 import numpy as np
 import time
@@ -40,7 +42,7 @@ for epoch in range(start_epoch, opt.nepochs):
         epoch_iter = epoch_iter % dataset_size
 
     model.model.train()
-    for i, data in enumerate(dataset, start=epoch_iter):
+    for i, data in tqdm(enumerate(dataset, start=epoch_iter)):
         iter_start_time = time.time()
         total_steps += opt.batchSize
         epoch_iter += opt.batchSize
