@@ -7,48 +7,46 @@ def CreateDataset(opt):
     if opt.dataset_mode == 'nyuv2':
         # from data.nyuv2_dataset import NYUDataset
         from depthaware.data.nyuv2_dataset_crop import NYUDataset,NYUDataset_val
-        dataset = NYUDataset()
+        dataset = NYUDataset(opt)
         if opt.vallist!='':
-            dataset_val = NYUDataset_val()
+            dataset_val = NYUDataset_val(opt)
         else:
             dataset_val = None
     elif opt.dataset_mode == 'voc':
         from depthaware.data.VOC_dataset import VOCDataset,VOCDataset_val
-        dataset = VOCDataset()
+        dataset = VOCDataset(opt)
         if opt.vallist!='':
-            dataset_val = VOCDataset_val()
+            dataset_val = VOCDataset_val(opt)
         else:
             dataset_val = None
 
     elif opt.dataset_mode == 'sunrgbd':
         from depthaware.data.sunrgbd_dataset import SUNRGBDDataset,SUNRGBDDataset_val
-        dataset = SUNRGBDDataset()
+        dataset = SUNRGBDDataset(opt)
         if opt.vallist!='':
-            dataset_val = SUNRGBDDataset_val()
+            dataset_val = SUNRGBDDataset_val(opt)
         else:
             dataset_val = None
 
     elif opt.dataset_mode == 'stanfordindoor':
         from depthaware.data.stanfordindoor_dataset import StanfordIndoorDataset, StanfordIndoorDataset_val
-        dataset = StanfordIndoorDataset()
+        dataset = StanfordIndoorDataset(opt)
         if opt.vallist!='':
-            dataset_val = StanfordIndoorDataset_val()
+            dataset_val = StanfordIndoorDataset_val(opt)
         else:
             dataset_val = None
 
     elif opt.dataset_mode == 'cityscapes':
         from depthaware.data.cityscapes_dataset import CityscapesDataset, CityscapesDataset_val
-        dataset = CityscapesDataset()
+        dataset = CityscapesDataset(opt)
         if opt.vallist!='':
-            dataset_val = CityscapesDataset_val()
+            dataset_val = CityscapesDataset_val(opt)
         else:
             dataset_val = None
 
     print("dataset [%s] was created" % (dataset.name()))
-    dataset.initialize(opt)
-    if dataset_val != None:
-        dataset_val.initialize(opt)
-    return dataset,dataset_val
+
+    return dataset, dataset_val
 
 class CustomDatasetDataLoader(BaseDataLoader):
     def name(self):

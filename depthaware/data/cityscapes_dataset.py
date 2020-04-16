@@ -14,6 +14,8 @@ def make_dataset_frombasedir(basedir):
 
     # 'troisdorf_000000_000073' is corrupted
     images = [x for x in recursive_glob(rootdir=basedir, suffix='.png') if 'troisdorf_000000_000073' not in x]
+    if len(images)==0:
+        raise ValueError('{} does not contain images'.format(basedir))
     segs = []
     depths = []
     HHAs = []
@@ -35,7 +37,7 @@ def recursive_glob(rootdir='.', suffix=''):
             for filename in filenames if filename.endswith(suffix)]
 
 class CityscapesDataset(BaseDataset):
-    def initialize(self, opt):
+    def __init__(self, opt):
         self.opt = opt
         np.random.seed(int(time.time()))
         self.paths_dict = make_dataset_frombasedir(opt.list)
@@ -73,7 +75,7 @@ class CityscapesDataset(BaseDataset):
         return 'CityscapesDataset'
 
 class CityscapesDataset_val(BaseDataset):
-    def initialize(self, opt):
+    def __init__(self, opt):
         self.opt = opt
         np.random.seed(8964)
         self.paths_dict = make_dataset_frombasedir(opt.vallist)

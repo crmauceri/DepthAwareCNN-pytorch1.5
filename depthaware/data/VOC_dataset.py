@@ -20,7 +20,7 @@ def make_dataset_fromlst(listfilename):
     return {'images':images, 'segs':segs}
 
 class VOCDataset(BaseDataset):
-    def initialize(self, opt):
+    def __init__(self, opt):
         self.opt = opt
         np.random.seed(8964)
         self.paths_dict = make_dataset_fromlst(opt.list)
@@ -51,7 +51,7 @@ class VOCDataset(BaseDataset):
         return 'VOCDataset'
 
 class VOCDataset_val(BaseDataset):
-    def initialize(self, opt):
+    def __init__(self, opt):
         self.opt = opt
         self.paths_dict = make_dataset_fromlst(opt.vallist)
         self.len = len(self.paths_dict['images'])

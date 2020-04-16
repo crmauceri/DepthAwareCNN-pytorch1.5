@@ -23,7 +23,7 @@ def make_dataset_fromlst(dataroot, listfilename):
     return {'images':images, 'segs':segs, 'HHAs':HHAs, 'depths':depths}
 
 class SUNRGBDDataset(BaseDataset):
-    def initialize(self, opt):
+    def __init__(self, opt):
         self.opt = opt
         np.random.seed(int(time.time()))
         self.paths_dict = make_dataset_fromlst(opt.dataroot, opt.list)
@@ -75,7 +75,7 @@ class SUNRGBDDataset(BaseDataset):
         return 'sunrgbd_dataset'
 
 class SUNRGBDDataset_val(BaseDataset):
-    def initialize(self, opt):
+    def __init__(self, opt):
         self.opt = opt
         np.random.seed(8964)
         self.paths_dict = make_dataset_fromlst(opt.vallist)

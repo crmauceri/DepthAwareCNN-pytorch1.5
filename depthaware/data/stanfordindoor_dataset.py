@@ -20,7 +20,7 @@ def make_dataset_fromlst(listfilename):
     return {'images':images, 'segs':segs, 'depths':depths}
 
 class StanfordIndoorDataset(BaseDataset):
-    def initialize(self, opt):
+    def __init__(self, opt):
         self.opt = opt
         np.random.seed(int(time.time()))
         self.paths_dict = make_dataset_fromlst(opt.list)
@@ -54,7 +54,7 @@ class StanfordIndoorDataset(BaseDataset):
         return 'stanfordindoor_dataset'
 
 class StanfordIndoorDataset_val(BaseDataset):
-    def initialize(self, opt):
+    def __init__(self, opt):
         self.opt = opt
         np.random.seed(8964)
         self.paths_dict = make_dataset_fromlst(opt.vallist)
