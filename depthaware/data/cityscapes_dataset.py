@@ -112,4 +112,5 @@ class CityscapesDataset_val(BaseDataset):
 
 
 if __name__ == '__main__':
-    make_dataset_frombasedir('datasets/cityscapes/leftImg8bit/')
+    dataset = make_dataset_frombasedir('datasets/cityscapes/leftImg8bit/')
+    print("Images: {}".format(len(dataset['images'])))
