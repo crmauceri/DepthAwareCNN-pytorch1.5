@@ -13,17 +13,26 @@ def make_dataset_frombasedir(basedir):
     """
 
     # 'troisdorf_000000_000073' is corrupted
-    images = [x for x in recursive_glob(rootdir=basedir, suffix='.png') if 'troisdorf_000000_000073' not in x]
-    if len(images)==0:
+    candidate_images = [x for x in recursive_glob(rootdir=basedir, suffix='.png') if 'troisdorf_000000_000073' not in x]
+    if len(candidate_images)==0:
         raise ValueError('{} does not contain images'.format(basedir))
+
+    images = []
     segs = []
     depths = []
     HHAs = []
-    for x in images:
-        img_dir, img_path = os.path.split(x)
-        segs.append(os.path.join(img_dir.replace('leftImg8bit', 'gtCoarse'), img_path.replace('leftImg8bit', 'gtCoarse_labelIds')))
-        depths.append(x.replace('leftImg8bit', 'disparity'))
-        HHAs.append(x.replace('leftImg8bit', 'HHA'))
+
+    for img_path in candidate_images:
+        img_dir, img_file = os.path.split(img_path)
+        seg_path = os.path.join(img_dir.replace('leftImg8bit', 'gtCoarse'), img_file.replace('leftImg8bit', 'gtCoarse_labelIds'))
+        depth_path = img_path.replace('leftImg8bit', 'disparity')
+        HHA_path = img_path.replace('leftImg8bit', 'HHA')
+
+        if all([os.path.exists(path) for path in [img_path, seg_path, depth_path, HHA_path]]):
+            images.append(img_path)
+            segs.append(seg_path)
+            depths.append(depth_path)
+            HHAs.append(HHA_path)
 
     return {'images':images, 'segs':segs, 'HHAs':HHAs, 'depths':depths}
 
