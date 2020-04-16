@@ -40,7 +40,7 @@ class CityscapesDataset(BaseDataset):
     def __init__(self, opt):
         self.opt = opt
         np.random.seed(int(time.time()))
-        self.paths_dict = make_dataset_frombasedir(opt.list)
+        self.paths_dict = make_dataset_frombasedir(opt.dataroot)
         self.len = len(self.paths_dict['images'])
 
     def __getitem__(self, index):
