@@ -2,8 +2,7 @@ from depthaware.models.model_utils import *
 import torch.nn as nn
 import torch.utils.model_zoo as model_zoo
 import math
-from depthaware.models.ops.depthconv.modules import DepthConv
-from depthaware.models.ops.depthavgpooling.modules import Depthavgpooling
+from depthaware.models.ops.depth_layers import DepthAvgPooling, DepthConv
 import torch
 import torchvision
 
@@ -219,7 +218,7 @@ class VGG_layer(nn.Module):
         self.conv5_3 = ConvModule(512, 512, bn=batch_norm, dilation=2, padding=2,
                                   maxpool=True, pool_kernel=3, pool_stride=1, pool_pad=1)
         self.pool5a = nn.AvgPool2d(kernel_size=3, stride=1,padding=1)
-        self.pool5a_d = Depthavgpooling(kernel_size=3, stride=1,padding=1)
+        self.pool5a_d = DepthAvgPooling(kernel_size=3, stride=1,padding=1)
 
     def forward(self, x, depth=None):
         # print x.size()

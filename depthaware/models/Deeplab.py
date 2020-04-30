@@ -56,7 +56,8 @@ class Deeplab_Solver(BaseModel):
                 self.load()
                 print("Successfully loaded model, continue training....!")
 
-        self.model.cuda()
+        if torch.cuda.is_available():
+            self.model.cuda()
         self.normweightgrad=0.
         # if len(opt.gpu_ids):#opt.isTrain and
         #     self.model = torch.nn.DataParallel(self.model, device_ids=opt.gpu_ids)
@@ -64,15 +65,21 @@ class Deeplab_Solver(BaseModel):
     def forward(self, data, isTrain=True):
         self.model.zero_grad()
 
-        self.image = Variable(data['image'], volatile=not isTrain).cuda()
+        self.image = Variable(data['image'], volatile=not isTrain)
         if 'depth' in data.keys():
-            self.depth = Variable(data['depth'], volatile=not isTrain).cuda()
+            self.depth = Variable(data['depth'], volatile=not isTrain)
         else:
             self.depth = None
         if data['seg'] is not None:
-            self.seggt = Variable(data['seg'], volatile=not isTrain).cuda()
+            self.seggt = Variable(data['seg'], volatile=not isTrain)
         else:
             self.seggt = None
+
+        if torch.cuda.is_available():
+            self.image = self.image.cuda()
+            self.depth = self.depth.cuda()
+            if self.seggt is not None:
+                self.seggt = self.seggt.cuda()
 
         input_size = self.image.size()
 
