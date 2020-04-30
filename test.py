@@ -1,13 +1,12 @@
 import os, time
 import numpy as np
-from collections import OrderedDict
-from options.test_options import TestOptions
-from data.data_loader import CreateDataLoader
-from models.models import create_model
-import utils.util as util
-from utils.visualizer import Visualizer
-from utils import html
-from torch.autograd import Variable
+
+from depthaware.options.test_options import TestOptions
+from depthaware.data.data_loader import CreateDataLoader
+from depthaware.models import create_model
+from depthaware import utils as util
+from depthaware.utils.visualizer import Visualizer, html
+
 import time
 
 opt = TestOptions().parse(save=False)
