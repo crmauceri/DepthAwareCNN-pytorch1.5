@@ -1,4 +1,5 @@
-from model_utils import *
+
+from . import model_utils
 import torch.nn as nn
 import torch.utils.model_zoo as model_zoo
 import math
@@ -403,8 +404,7 @@ class Classifier_Module2(nn.Module):
         globalpool = self.globalpooling(out2)
         # globalpool = self.dropout(self.norm(globalpool))
         globalpool = self.dropout(globalpool)#self.norm(globalpool))
-        upsample = nn.Upsample((out2_size[2],out2_size[3]), mode='bilinear')#scale_factor=8)
-        globalpool = upsample(globalpool)
+        globalpool = nn.functional.interpolate(globalpool, size=(out2_size[2],out2_size[3]), mode='bilinear')#scale_factor=8)
 
         #global pooling with depth
         # globalpool = self.globalpooling(out2,depth)

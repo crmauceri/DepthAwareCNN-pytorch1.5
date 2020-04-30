@@ -2,18 +2,19 @@
 ### Licensed under the CC BY-NC-SA 4.0 license (https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode).
 import argparse
 import os
-from utils import util
+from ..utils import util
 import torch
 
 class BaseOptions():
-    def __init__(self):
+    def __init__(self, arguments=None):
         self.parser = argparse.ArgumentParser()
         self.initialized = False
 
     def initialize(self):
         # experiment specifics
-        self.parser.add_argument('--name', type=str, default='label2city', help='name of the experiment. It decides where to store samples and models')
-        self.parser.add_argument('--gpu_ids', type=str, default='0', help='gpu ids: e.g. 0  0,1,2, 0,2. use -1 for CPU')
+        self.parser.add_argument('--name', type=str, required=True, help='name of the experiment. It decides where to store samples and models')
+        self.parser.add_argument('--root', type=str, default='.', help='Location of DepthAwareCNN relative to working directory')
+        self.parser.add_argument('--gpu_ids', type=str, default='-1', help='gpu ids: e.g. 0  0,1,2, 0,2. use -1 for CPU')
         self.parser.add_argument('--checkpoints_dir', type=str, default='./checkpoints', help='models are saved here')
         self.parser.add_argument('--model', type=str, default='DeeplabVGG', help='model: DeeplabVGG, DeeplabVGG_HHA')
         self.parser.add_argument('--encoder', type=str, default='resnet50_dilated8', help='pretrained_model')
@@ -57,10 +58,14 @@ class BaseOptions():
         self.parser.add_argument('--verbose', action='store_true', help='if specified, print loss while training')
 
 
-    def parse(self, save=True):
+    def parse(self, arguments=None, save=True):
         if not self.initialized:
             self.initialize()
-        self.opt = self.parser.parse_args()
+        if arguments is None:
+            self.opt = self.parser.parse_args()
+        else:
+            self.opt = self.parser.parse_args(arguments)
+
         self.opt.isTrain = self.isTrain   # train or test
 
         str_ids = self.opt.gpu_ids.split(',')
