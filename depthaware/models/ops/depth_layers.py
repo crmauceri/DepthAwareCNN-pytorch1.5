@@ -16,11 +16,11 @@ class DepthConv(nn.Module):
         self.out_channels = out_channels
         self.kernel_size = kernel_size
 
-        self.weight = torch.randn((self.out_channels, self.in_channels, self.kernel_size, self.kernel_size))
+        self.weight = torch.nn.Parameter(torch.randn((self.out_channels, self.in_channels, self.kernel_size, self.kernel_size)))
         if bias:
-            self.bias = torch.randn((1, self.out_channels))
+            self.bias = torch.nn.Parameter(torch.randn((1, self.out_channels)))
         else:
-            self.bias = torch.zeros((1, self.out_channels))
+            self.bias = torch.nn.Parameter(torch.zeros((1, self.out_channels)))
         self.stride = stride
         self.padding = padding
         self.pad = nn.ZeroPad2d(padding)
