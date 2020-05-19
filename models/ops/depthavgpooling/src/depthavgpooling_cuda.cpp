@@ -20,9 +20,8 @@ std::string string_format( const std::string& format, Args ... args )
     return std::string( buf.get(), buf.get() + size - 1 ); // We don't want the '\0' inside
 }
 
-void shape_check(
+void shape_check_forward(
     torch::Tensor input, torch::Tensor input_depth,
-    torch::Tensor depthweightcount, torch::Tensor gradOutput,
     int kH, int kW, int dH, int dW, int padH, int padW) {
 
     if (kW <= 0 || kH <= 0 ) {
@@ -84,17 +83,53 @@ void shape_check(
                 nInputRows, inputHeight_depth, nInputCols, inputWidth_depth));
     }
 
-    if (depthweightcount!=NULL){
-        if(depthweightcount.size(1) != 1){
-            throw std::invalid_argument("input depth should have only 1 channel");
-        }
 
-        if(!(inputHeight_depth == depthweightcount.size(2) && inputWidth_depth == depthweightcount.size(3))){
-            throw std::invalid_argument(
-                string_format("input depth and input depthweightcount should be the same size, but got: weightcount(%d,%d), depth(%d,%d)",
-                    depthweightcount.size(dimh_depth), depthweightcount.size(dimw_depth), inputHeight_depth, inputWidth_depth));
-        }
+void shape_check(torch::Tensor input, torch::Tensor input_depth,
+    torch::Tensor depthweightcount, torch::Tensor gradOutput,
+    int kH, int kW, int dH, int dW, int padH, int padW) {
+
+    shape_check_forward(input, input_depth, kH, kW, dH, dW, padH, padW)
+
+    if(depthweightcount.size(1) != 1){
+        throw std::invalid_argument("input depth should have only 1 channel");
     }
+
+    long inputHeight_depth = input_depth.size(dimh_depth);
+    long inputWidth_depth = input_depth.size(dimw_depth);
+
+    int ndim = input.ndimension();
+    int dimf = 0;
+    int dimh = 1;
+    int dimw = 2;
+
+    if (ndim == 4) {
+    dimf++;
+    dimh++;
+    dimw++;
+    }
+
+    long nInputRows = input.size(dimh);
+    long nInputCols = input.size(dimw);
+
+    /////////check depth map shape /////////
+
+    int ndim_depth = input_depth.ndimension();
+    int dimf_depth = 0;
+    int dimh_depth = 1;
+    int dimw_depth = 2;
+
+    if (ndim_depth == 4) {
+        dimf_depth++;
+        dimh_depth++;
+        dimw_depth++;
+    }
+
+    if(!(inputHeight_depth == depthweightcount.size(2) && inputWidth_depth == depthweightcount.size(3))){
+        throw std::invalid_argument(
+            string_format("input depth and input depthweightcount should be the same size, but got: weightcount(%d,%d), depth(%d,%d)",
+                depthweightcount.size(dimh_depth), depthweightcount.size(dimw_depth), inputHeight_depth, inputWidth_depth));
+    }
+
 //////////////////////////////////////////
 
 	nOutputCols = floor(float(nInputCols - kW + 2*padW) / float(dW)) + 1;
@@ -115,22 +150,16 @@ void shape_check(
                 "Calculated output size: (%dx%dx%d). Output size is too small",
                 nInputPlane,nInputRows,nInputCols,nInputPlane,nOutputRows,nOutputCols));
 
-    if (gradOutput != NULL) {
-    //    THCUNN_check_dim_size(state, gradOutput, ndim, dimf, nOutputPlane);
-    //    THCUNN_check_dim_size(state, gradOutput, ndim, dimh, nOutputRows);
-    //    THCUNN_check_dim_size(state, gradOutput, ndim, dimw, nOutputCols);
+    if(gradOutput.size(dimf) != nOutputPlane) {
+        throw std::invalid_argument(
+            string_format("invalid number of gradOutput planes, expected: %d, but got: %d",
+                nOutputPlane, gradOutput.size(dimf)));
+    }
 
-        if(gradOutput.size(dimf) != nOutputPlane) {
-            throw std::invalid_argument(
-                string_format("invalid number of gradOutput planes, expected: %d, but got: %d",
-                    nOutputPlane, gradOutput.size(dimf)));
-        }
-
-        if(!(gradOutput.size(dimh) == nOutputRows && gradOutput.size(dimw) == nOutputCols)){
-            throw std::invalid_argument(
-                string_format("invalid size of gradOutput, expected height: %d width: %d , but got height: %d width: %d",
-                    nOutputRows, nOutputCols, gradOutput.size(dimh), gradOutput.size(dimw)));
-        }
+    if(!(gradOutput.size(dimh) == nOutputRows && gradOutput.size(dimw) == nOutputCols)){
+        throw std::invalid_argument(
+            string_format("invalid size of gradOutput, expected height: %d width: %d , but got height: %d width: %d",
+                nOutputRows, nOutputCols, gradOutput.size(dimh), gradOutput.size(dimw)));
     }
 }
 
@@ -147,7 +176,7 @@ torch::Tensor depthavgpooling_forward_cuda(
     CHECK_INPUT(input_depth);
     CHECK_INPUT(depthweightcount);
 
-    shape_check(state, input, input_depth, NULL, NULL, kH, kW, dH, dW,
+    shape_check(input, input_depth, kH, kW, dH, dW,
 		padH, padW);
 
     int batch = 1;
@@ -235,7 +264,7 @@ torch::Tensor depthavgpooling_backward_cuda(
     CHECK_INPUT(gradOutput);
     CHECK_INPUT(gradInput);
 
-    shape_check(state, input, input_depth, depthweightcount, gradOutput, kH, kW, dH, dW,
+    shape_check(input, input_depth, depthweightcount, gradOutput, kH, kW, dH, dW,
         padH, padW);
 
     long nInputCols, nInputRows, nInputPlane, batchSize;
