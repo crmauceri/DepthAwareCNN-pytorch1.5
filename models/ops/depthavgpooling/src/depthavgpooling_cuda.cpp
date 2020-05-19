@@ -260,7 +260,6 @@ torch::Tensor depthavgpooling_backward_cuda(
     CHECK_INPUT(input_depth);
     CHECK_INPUT(depthweightcount);
     CHECK_INPUT(gradOutput);
-    CHECK_INPUT(gradInput);
 
     shape_check(input, input_depth, depthweightcount, gradOutput, kH, kW, dH, dW,
         padH, padW);
@@ -304,15 +303,15 @@ torch::Tensor depthavgpooling_backward_cuda(
         throw std::invalid_argument("invalid batch size of input depth");
     }
 
-    torch::Tensor gradInput = torch::zeros_like(input)
+    torch::Tensor gradInput = torch::zeros_like(input);
 
     //  float* input_depth_data = THCudaTensor_data(state, input_depth);
     //  float* depthweightcount_data = THCudaTensor_data(state, depthweightcount);
 
-    THCudaTensor gradInput_n;
-    THCudaTensor depth_n;
-    THCudaTensor gradOutput_n;
-    THCudaTensor depthweightcount_n;
+    torch::Tensor gradInput_n;
+    torch::Tensor depth_n;
+    torch::Tensor gradOutput_n;
+    torch::Tensor depthweightcount_n;
 
     for (int elt = 0; elt < batchSize; elt++) {
         gradInput_n = gradInput.select(0, elt);
