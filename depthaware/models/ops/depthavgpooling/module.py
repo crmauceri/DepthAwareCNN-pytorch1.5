@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 from torch.nn.modules.module import Module
 from torch.nn.modules.utils import _pair
-from depthaware.models.ops.depthavgpooling.functional import depth_avgpooling
+from depthaware.models.ops.depthavgpooling.functional import DepthavgpoolingFunction
 
 class Depthavgpooling(Module):
     def __init__(self,
@@ -17,7 +17,7 @@ class Depthavgpooling(Module):
         self.padding = _pair(padding)
 
     def forward(self, input, depth):
-        return depth_avgpooling(input, depth, self.kernel_size, self.stride, self.padding)
+        return DepthavgpoolingFunction(input, depth, self.kernel_size, self.stride, self.padding)
 
 if __name__ == '__main__':
     import numpy as np
