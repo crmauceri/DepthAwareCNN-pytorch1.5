@@ -17,7 +17,7 @@ class Depthavgpooling(Module):
         self.padding = _pair(padding)
 
     def forward(self, input, depth):
-        return DepthavgpoolingFunction(input, depth, self.kernel_size, self.stride, self.padding)
+        return DepthavgpoolingFunction.apply(input, depth, self.kernel_size, self.stride, self.padding)
 
 if __name__ == '__main__':
     import numpy as np
