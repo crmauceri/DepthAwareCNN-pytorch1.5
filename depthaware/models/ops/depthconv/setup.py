@@ -5,7 +5,7 @@ setup(
     name='depthconv',
     ext_modules=[
         CUDAExtension('depthconv', [
-            'src/depthconv_cuda.c',
+            'src/depthconv_cuda.cpp',
             'src/depthconv_cuda_kernel.cu',
         ])
     ],

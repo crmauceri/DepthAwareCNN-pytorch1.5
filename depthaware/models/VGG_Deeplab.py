@@ -2,7 +2,7 @@ from depthaware.models.model_utils import *
 import torch.nn as nn
 import torch.utils.model_zoo as model_zoo
 import math
-from depthaware.models.ops.depthconv.modules import DepthConv
+from depthaware.models.ops.depthconv.module import DepthConv
 from depthaware.models.ops.depthavgpooling.module import Depthavgpooling
 import torch
 import torchvision

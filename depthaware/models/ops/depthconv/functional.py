@@ -33,8 +33,6 @@ class DepthconvFunction(Function):
         self.stride = stride
         self.padding = padding
         self.dilation = dilation
-        ffi_=cffi.FFI()
-        self.null = ffi_.NULL
         self.bias = bias
 
     def forward(self, input, depth, weight, bias = None):
@@ -42,7 +40,7 @@ class DepthconvFunction(Function):
         self.save_for_backward(input, depth, weight, bias)
         if (not self.bias) or (bias is None):
             # print bias, self.bias
-            bias = self.null
+            bias = None
 
         output_size = [int((input.size()[i + 2] + 2 * self.padding[i] - weight.size()[i + 2]) / self.stride[i] + 1)
                        for i in range(2)]

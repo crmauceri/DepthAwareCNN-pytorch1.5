@@ -7,7 +7,7 @@ import numpy as np
 from depthaware.models.ops.depthavgpooling.module import Depthavgpooling
 from torch.autograd import Variable
 
-from depthaware.models.ops.depthconv.functions.depthconv import DepthconvFunction
+from depthaware.models.ops.depthconv.functional import DepthconvFunction
 
 
 N, inC, inH, inW = 4, 2, 8, 8
