@@ -29,4 +29,4 @@ class DepthavgpoolingFunction(Function):
                 input, depth, ctx.depthweightcount, grad_output,
                 kernel_size[1], kernel_size[0], stride[1], stride[0],
                 padding[1], padding[0])
-        return grad_input, None
+        return grad_input, None, None, None, None
