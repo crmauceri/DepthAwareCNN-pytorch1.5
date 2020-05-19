@@ -37,7 +37,7 @@ if __name__ == '__main__':
 
     #Toy data
     input1 = torch.randn((batch_size, 3, w, h), requires_grad=True, device=device)
-    input2 = input1.clone().detach().requires_grad_(True) # Using True throws error on backward pass
+    input2 = input1.clone().detach().requires_grad_(True).to(device) # Using True throws error on backward pass
     depth = torch.ones((batch_size, 1, w, h), device=device)
     target = torch.randint(0, 10, (batch_size,), device=device)
     bias = True
