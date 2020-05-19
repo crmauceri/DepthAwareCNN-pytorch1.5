@@ -50,8 +50,6 @@ void shape_check_forward(
     long nInputPlane = input.size(dimh-1);
     long nInputRows = input.size(dimh);
     long nInputCols = input.size(dimw);
-    long nOutputRows, nOutputCols;
-    long nOutputPlane = nInputPlane;
 
     /////////check depth map shape /////////
 
@@ -82,7 +80,7 @@ void shape_check_forward(
             string_format("input image and input depth should be the same size, but got: weightcount(%d,%d), depth(%d,%d)",
                 nInputRows, inputHeight_depth, nInputCols, inputWidth_depth));
     }
-
+}
 
 void shape_check(torch::Tensor input, torch::Tensor input_depth,
     torch::Tensor depthweightcount, torch::Tensor gradOutput,
