@@ -77,7 +77,7 @@ void AvePoolForward(const int count,
                 channels, height, width, pooled_height, pooled_width,
                 kernel_h, kernel_w, stride_h, stride_w, pad_h, pad_w,
                 top_data.data<scalar_t>(), depth_weight_count.data<scalar_t>());
-            )});
+    }));
 }
 
 
