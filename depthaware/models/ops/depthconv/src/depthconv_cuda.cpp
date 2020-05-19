@@ -2,8 +2,6 @@
 #include <stdexcept>
 #include "depthconv_cuda_kernel.h"
 
-using namespace torch::indexing
-
 // C++ interface
 
 #define CHECK_CUDA(x) TORCH_CHECK(x.type().is_cuda(), #x " must be a CUDA tensor")

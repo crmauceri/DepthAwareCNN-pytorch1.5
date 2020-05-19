@@ -17,53 +17,6 @@ inline int GET_BLOCKS(const int N) {
     return (N + CUDA_NUM_THREADS - 1) / CUDA_NUM_THREADS;
 }
 
-/** template <typename DType>
-__device__ DType get_gradient_weight(DType argmax_h, DType argmax_w,
-    const int h, const int w, const int height,
-    const int width) {
-
-    if (argmax_h < 0 || argmax_h > height || argmax_w < 0 || argmax_w > width) {
-        // empty
-        return 0;
-    }
-
-    argmax_h = max(argmax_h, (DType)0.0f);
-    argmax_w = max(argmax_w, (DType)0.0f);
-
-    int argmax_h_low = (int)argmax_h;
-    int argmax_w_low = (int)argmax_w;
-    int argmax_h_high;
-    int argmax_w_high;
-
-    if (argmax_h_low >= height - 1) {
-        argmax_h_high = argmax_h_low = height - 1;
-        argmax_h = (DType)argmax_h_low;
-    } else {
-        argmax_h_high = argmax_h_low + 1;
-    }
-    if (argmax_w_low >= width - 1) {
-        argmax_w_high = argmax_w_low = width - 1;
-        argmax_w = (DType)argmax_w_low;
-    } else {
-        argmax_w_high = argmax_w_low + 1;
-    }
-    DType weight = 0;
-    if (h == argmax_h_low) {
-        if (w == argmax_w_low) {
-            weight = (h + 1 - argmax_h) * (w + 1 - argmax_w);
-        } else if (w == argmax_w_high) {
-            weight = (h + 1 - argmax_h) * (argmax_w + 1 - w);
-        }
-    } else if (h == argmax_h_high) {
-        if (w == argmax_w_low) {
-            weight = (argmax_h + 1 - h) * (w + 1 - argmax_w);
-        } else if (w == argmax_w_high) {
-            weight = (argmax_h + 1 - h) * (argmax_w + 1 - w);
-        }
-    }
-    return weight;
-} */
-
 template <typename scalar_t>
 __global__ void depthconv_im2col_gpu_kernel(
     const int n, const scalar_t* data_im, const scalar_t* data_depth,
@@ -151,18 +104,6 @@ torch::Tensor depthconv_im2col(
 
     return data_col
 }
-
-/*template void depthconv_im2col<float>(
-cudaStream_t stream, const float *data_im, const float *data_depth,
-const int channels, const int height, const int width, const int ksize_h,
-const int ksize_w, const int pad_h, const int pad_w, const int stride_h,
-const int stride_w, const int dilation_h, const int dilation_w, float *data_col);*/
-
-/*template void depthconv_im2col<double>(
-cudaStream_t stream, const double *data_im, const double *data_depth,
-const int channels, const int height, const int width, const int ksize_h,
-const int ksize_w, const int pad_h, const int pad_w, const int stride_h,
-const int stride_w, const int dilation_h, const int dilation_w, double *data_col);*/
 
 template <typename scalar_t>
 __global__ void depthconv_col2im_gpu_kernel(
@@ -260,15 +201,3 @@ torch::Tensor depthconv_col2im(
 
     return grad_im;
 }
-
-/*template void depthconv_col2im<float>(
-cudaStream_t stream, const float *data_col, const float *data_depth,
-const int channels, const int height, const int width, const int ksize_h,
-const int ksize_w, const int pad_h, const int pad_w, const int stride_h,
-const int stride_w, const int dilation_h, const int dilation_w, float *grad_im);*/
-
-/*template void depthconv_col2im<double>(
-cudaStream_t stream, const double *data_col, const double *data_depth,
-const int channels, const int height, const int width, const int ksize_h,
-const int ksize_w, const int pad_h, const int pad_w, const int stride_h,
-const int stride_w, const int dilation_h, const int dilation_w, double *grad_im);*/
