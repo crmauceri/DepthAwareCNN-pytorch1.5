@@ -214,7 +214,7 @@ torch::Tensor depthavgpooling_forward_cuda(
     //  float* input_data = THCudaTensor_data(state, input);
     //  float* input_depth_data = THCudaTensor_data(state, input_depth);
 
-    torch::Tensor output = torch::zeros({batchSize, nInputPlane, nOutputRows, nOutputCols});
+    torch::Tensor output = torch::zeros({batchSize, nInputPlane, nOutputRows, nOutputCols}, torch::kCUDA);
     depthweightcount = depthweightcount.reshape({batchSize, 1, nInputRows, nInputCols});
 
     //  float* output_data = THCudaTensor_data(state, output);
