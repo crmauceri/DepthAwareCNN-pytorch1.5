@@ -1,4 +1,3 @@
-#include <torch/extension.h>
 #include <stdexcept>
 #include "depthavgpooling_cuda_kernel.h"
 

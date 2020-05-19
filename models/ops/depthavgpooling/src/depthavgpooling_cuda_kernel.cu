@@ -1,5 +1,8 @@
-#include "depthavgpooling_cuda_kernel.h"
+#include <torch/extension.h>
+#include <cuda.h>
+#include <cuda_runtime.h>
 
+#include <vector>
 #include <cstdio>
 
 #define CUDA_KERNEL_LOOP(i, n)                                                 \
