@@ -36,7 +36,7 @@ class DepthavgpoolingFunction(Function):
         if not input.is_cuda:
             raise NotImplementedError
         else:
-            return depthavgpooling.depthavgpooling_forward_cuda(
+            return depthavgpooling.forward(
                     input, depth, self.depthweightcount,
                     self.kernel_size[1], self.kernel_size[0], self.stride[1], self.stride[0],
                     self.padding[1], self.padding[0])
@@ -50,7 +50,7 @@ class DepthavgpoolingFunction(Function):
             raise NotImplementedError
         else:
             if self.needs_input_grad[0]:
-                grad_input = depthavgpooling.depthavgpooling_backward_cuda(
+                grad_input = depthavgpooling.backward(
                     input, depth, self.depthweightcount, grad_output,
                     self.kernel_size[1], self.kernel_size[0], self.stride[1], self.stride[0],
                     self.padding[1], self.padding[0])
