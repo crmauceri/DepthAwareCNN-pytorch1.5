@@ -1,20 +1,18 @@
 
-int depthconv_forward_cuda(THCudaTensor *input,
-                             THCudaTensor *input_depth,
-                             THCudaTensor *weight, THCudaTensor * bias, THCudaTensor *output,
-                             THCudaTensor *columns, THCudaTensor *ones, int kW,
+torch::Tensor depthconv_forward_cuda(torch::Tensor input,
+                             torch::Tensor input_depth,
+                             torch::Tensor weight, torch::Tensor bias,
+                             torch::Tensor columns, torch::Tensor ones, int kW,
                              int kH, int dW, int dH, int padW, int padH,
                              int dilationH, int dilationW);
 
-int depthconv_backward_input_cuda(
-    THCudaTensor *input, THCudaTensor *input_depth, THCudaTensor *gradOutput,
-    THCudaTensor *gradInput, THCudaTensor *weight,
-    THCudaTensor *columns, int kW, int kH, int dW, int dH, int padW, int padH,
+torch::Tensor depthconv_backward_input_cuda(
+    torch::Tensor input, torch::Tensor input_depth, torch::Tensor gradOutput,
+    torch::Tensor weight, torch::Tensor columns, int kW, int kH, int dW, int dH, int padW, int padH,
     int dilationH, int dilationW);
 
-int depthconv_backward_parameters_cuda(
-    THCudaTensor *input, THCudaTensor *input_depth, THCudaTensor *gradOutput,
-    THCudaTensor *gradWeight, THCudaTensor *gradBias,
-    THCudaTensor *columns, THCudaTensor *ones, int kW, int kH, int dW, int dH,
+std::vector<torch::Tensor> depthconv_backward_parameters_cuda(
+    torch::Tensor input, torch::Tensor input_depth, torch::Tensor gradOutput,
+    torch::Tensor columns, torch::Tensor ones, int kW, int kH, int dW, int dH,
     int padW, int padH, int dilationH, int dilationW,
     float scale);

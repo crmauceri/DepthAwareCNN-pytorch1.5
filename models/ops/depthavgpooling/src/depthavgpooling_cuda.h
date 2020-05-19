@@ -1,18 +1,17 @@
 
-int depthavgpooling_forward_cuda(THCudaTensor *input,
-           THCudaTensor *input_depth,
-           THCudaTensor *output,
-           THCudaTensor *depthweightcount,
-           int kW, int kH,
-           int dW, int dH,
-           int padW, int padH) ;
+torch::Tensor depthavgpooling_forward_cuda(
+    torch::Tensor input,
+    torch::Tensor input_depth,
+    torch::Tensor depthweightcount,
+    int kW, int kH,
+    int dW, int dH,
+    int padW, int padH);
 
-int depthavgpooling_backward_input_cuda(
-           THCudaTensor *input,
-           THCudaTensor *input_depth,
-           THCudaTensor *depthweightcount,
-           THCudaTensor *gradOutput,
-           THCudaTensor *gradInput,
-           int kW, int kH,
-           int dW, int dH,
-           int padW, int padH) ;
+torch::Tensor depthavgpooling_backward_cuda(
+    torch::Tensor input,
+    torch::Tensor input_depth,
+    torch::Tensor depthweightcount,
+    torch::Tensor gradOutput,
+    int kW, int kH,
+    int dW, int dH,
+    int padW, int padH);

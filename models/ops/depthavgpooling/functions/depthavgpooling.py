@@ -1,8 +1,7 @@
 import torch
 from torch.autograd import Function
 from torch.nn.modules.utils import _pair
-import cffi
-from .._ext import depthavgpooling
+import depthavgpooling
 
 
 def depth_avgpooling( input,
@@ -31,21 +30,17 @@ class DepthavgpoolingFunction(Function):
     def forward(self, input, depth):
         self.save_for_backward(input, depth)
         self.depth = depth
-        output = input.new(*self._output_size(input))
 
         self.depthweightcount = input.new(*(depth.size())).zero_()
 
         if not input.is_cuda:
             raise NotImplementedError
         else:
-            if not isinstance(input, torch.cuda.FloatTensor):
-                raise NotImplementedError
-            depthavgpooling.depthavgpooling_forward_cuda(
-                    input, depth, output, self.depthweightcount,
+            return depthavgpooling.depthavgpooling_forward_cuda(
+                    input, depth, self.depthweightcount,
                     self.kernel_size[1], self.kernel_size[0], self.stride[1], self.stride[0],
                     self.padding[1], self.padding[0])
 
-        return output
 
     def backward(self, grad_output):
         input, depth, = self.saved_tensors
@@ -54,20 +49,14 @@ class DepthavgpoolingFunction(Function):
         if not grad_output.is_cuda:
             raise NotImplementedError
         else:
-            if not isinstance(grad_output, torch.cuda.FloatTensor):
-                raise NotImplementedError
             if self.needs_input_grad[0]:
-                grad_input = input.new(*input.size()).zero_()
-                depthavgpooling.depthavgpooling_backward_input_cuda(
-                    input, depth, self.depthweightcount,grad_output, grad_input,
+                grad_input = depthavgpooling.depthavgpooling_backward_cuda(
+                    input, depth, self.depthweightcount, grad_output,
                     self.kernel_size[1], self.kernel_size[0], self.stride[1], self.stride[0],
                     self.padding[1], self.padding[0])
-        # print 'grad_input',grad_input
-        # print 'depthweightcount',self.depthweightcount
         return grad_input, None
 
     def _output_size(self, input):
-
         output_size = (input.size(0), input.size(0))
         for d in range(input.dim() - 2):
             in_size = input.size(d + 2)

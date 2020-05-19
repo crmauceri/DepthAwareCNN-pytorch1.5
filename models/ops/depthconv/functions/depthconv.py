@@ -2,7 +2,7 @@ import torch
 from torch.autograd import Function
 from torch.nn.modules.utils import _pair
 import cffi
-from .._ext import depthconv
+import depthconv
 
 
 def depth_conv(input,
@@ -44,23 +44,18 @@ class DepthconvFunction(Function):
         if (not self.bias) or (bias is None):
             # print bias, self.bias
             bias = self.null
+
         output_size = [int((input.size()[i + 2] + 2 * self.padding[i] - weight.size()[i + 2]) / self.stride[i] + 1)
                        for i in range(2)]
-
-        output = input.new(*self._output_size(input, weight))
-
         self.columns = input.new(weight.size(1) * weight.size(2) * weight.size(3),
                                   output_size[0] * output_size[1]).zero_()
         self.ones = input.new(output_size[0] * output_size[1]).zero_()
 
-
         if not input.is_cuda:
             raise NotImplementedError
         else:
-            if not isinstance(input, torch.cuda.FloatTensor):
-                raise NotImplementedError
-            depthconv.depthconv_forward_cuda(
-                    input, depth, weight, bias,  output, self.columns,self.ones,
+            return depthconv.depthconv_forward_cuda(
+                    input, depth, weight, bias, self.columns,self.ones,
                     weight.size(3), weight.size(2), self.stride[1], self.stride[0],
                     self.padding[1], self.padding[0], self.dilation[1], self.dilation[0])
 
@@ -78,32 +73,16 @@ class DepthconvFunction(Function):
             if not isinstance(grad_output, torch.cuda.FloatTensor):
                 raise NotImplementedError
             if self.needs_input_grad[0]:
-                grad_input = input.new(*input.size()).zero_()
-                depthconv.depthconv_backward_input_cuda(
-                    input, depth, grad_output, grad_input,
-                    weight, self.columns,
-                    weight.size(3),
-                    weight.size(2), self.stride[1], self.stride[0],
-                    self.padding[1], self.padding[0], self.dilation[1],
-                    self.dilation[0])
+                grad_input = depthconv.depthconv_backward_input_cuda(
+                    input, depth, grad_output, weight, self.columns,
+                    weight.size(3), weight.size(2), self.stride[1], self.stride[0],
+                    self.padding[1], self.padding[0], self.dilation[1], self.dilation[0])
 
             if self.needs_input_grad[2]:
-                grad_weight = weight.new(*weight.size()).zero_()
-                if len(self.needs_input_grad) == 4:
-                    if self.needs_input_grad[3]:
-                        grad_bias = weight.new(*bias.size()).zero_()
-                    else:
-                        grad_bias = self.null
-                else:
-                    grad_bias = self.null
-
-                depthconv.depthconv_backward_parameters_cuda(
-                    input, depth, grad_output, grad_weight, grad_bias, self.columns,
-                    self.ones,
-                    weight.size(3),
-                    weight.size(2), self.stride[1], self.stride[0],
-                    self.padding[1], self.padding[0], self.dilation[1],
-                    self.dilation[0], 1)
+                grad_weight, grad_bias = depthconv.depthconv_backward_parameters_cuda(
+                    input, depth, grad_output, self.columns, self.ones,
+                    weight.size(3), weight.size(2), self.stride[1], self.stride[0],
+                    self.padding[1], self.padding[0], self.dilation[1], self.dilation[0], 1)
 
                 if len(self.needs_input_grad) == 4:
                     if not self.needs_input_grad[3]:
