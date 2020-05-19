@@ -19,7 +19,7 @@ class DepthavgpoolingFunction(Function):
 
     @staticmethod
     def backward(ctx, grad_output, kernel_size=[3,3], stride=[1,1], padding=[0,0]):
-        input, depth, depthweightcount = ctx.saved_tensors
+        input, depth = ctx.saved_tensors
         grad_input = None
 
         if not grad_output.is_cuda:
