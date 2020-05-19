@@ -5,7 +5,7 @@ setup(
     name='depthavgpooling',
     ext_modules=[
         CUDAExtension('depthavgpooling', [
-            'src/depthavgpooling_cuda.c',
+            'src/depthavgpooling_cuda.cpp',
             'src/depthavgpooling_cuda_kernel.cu',
         ])
     ],

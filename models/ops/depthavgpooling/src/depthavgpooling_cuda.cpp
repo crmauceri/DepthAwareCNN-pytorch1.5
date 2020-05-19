@@ -1,4 +1,7 @@
+#include <torch/extension.h>
 #include <stdexcept>
+#include <memory>
+#include <string>
 #include "depthavgpooling_cuda_kernel.h"
 
 // C++ interface
@@ -7,17 +10,27 @@
 #define CHECK_CONTIGUOUS(x) TORCH_CHECK(x.is_contiguous(), #x " must be contiguous")
 #define CHECK_INPUT(x) CHECK_CUDA(x); CHECK_CONTIGUOUS(x)
 
+template<typename ... Args>
+std::string string_format( const std::string& format, Args ... args )
+{
+    size_t size = snprintf( nullptr, 0, format.c_str(), args ... ) + 1; // Extra space for '\0'
+    if( size <= 0 ){ throw std::runtime_error( "Error during formatting." ); }
+    std::unique_ptr<char[]> buf( new char[ size ] );
+    snprintf( buf.get(), size, format.c_str(), args ... );
+    return std::string( buf.get(), buf.get() + size - 1 ); // We don't want the '\0' inside
+}
+
 void shape_check(
     torch::Tensor input, torch::Tensor input_depth,
     torch::Tensor depthweightcount, torch::Tensor gradOutput,
     int kH, int kW, int dH, int dW, int padH, int padW) {
 
     if (kW <= 0 || kH <= 0 ) {
-        throw std::invalid_argument("kernel size should be greater than zero, but got kH: %d kW: %d", kH, kW);
+        throw std::invalid_argument(string_format("kernel size should be greater than zero, but got kH: %d kW: %d", kH, kW));
     }
 
     if (dW <= 0 || dH <= 0) {
-        throw std::invalid_argument("stride should be greater than zero, but got dH: %d dW: %d", dH, dW);
+        throw std::invalid_argument(string_format("stride should be greater than zero, but got dH: %d dW: %d", dH, dW));
     }
 
     int ndim = input.ndimension();
@@ -32,7 +45,7 @@ void shape_check(
     }
 
     if (ndim != 3 && ndim != 4){
-        throw std::invalid_argument("3D or 4D input tensor expected but got: %d", ndim);
+        throw std::invalid_argument("3D or 4D input tensor expected but got: " + std::to_string(ndim));
     }
 
     long nInputPlane = input.size(dimh-1);
@@ -55,7 +68,7 @@ void shape_check(
     }
 
     if(ndim_depth != 3 && ndim_depth != 4) {
-         throw std::invalid_argument("3D input depth tensor expected but got: %s", ndim);
+         throw std::invalid_argument("3D input depth tensor expected but got: " + std::to_string(ndim));
     }
 
     long inputHeight_depth = input_depth.size(dimh_depth);
@@ -66,8 +79,9 @@ void shape_check(
     }
 
     if (!(nInputRows == inputHeight_depth && nInputCols == inputWidth_depth)){
-         throw std::invalid_argument("input image and input depth should be the same size, but got: weightcount(%d,%d), depth(%d,%d)",
-             nInputRows, inputHeight_depth, nInputCols, inputWidth_depth);
+        throw std::invalid_argument(
+            string_format("input image and input depth should be the same size, but got: weightcount(%d,%d), depth(%d,%d)",
+                nInputRows, inputHeight_depth, nInputCols, inputWidth_depth));
     }
 
     if (depthweightcount!=NULL){
@@ -76,8 +90,9 @@ void shape_check(
         }
 
         if(!(inputHeight_depth == depthweightcount.size(2) && inputWidth_depth == depthweightcount.size(3))){
-             throw std::invalid_argument("input depth and input depthweightcount should be the same size, but got: weightcount(%d,%d), depth(%d,%d)",
-                 depthweightcount.size(dimh_depth), depthweightcount.size(dimw_depth), inputHeight_depth, inputWidth_depth);
+            throw std::invalid_argument(
+                string_format("input depth and input depthweightcount should be the same size, but got: weightcount(%d,%d), depth(%d,%d)",
+                    depthweightcount.size(dimh_depth), depthweightcount.size(dimw_depth), inputHeight_depth, inputWidth_depth));
         }
     }
 //////////////////////////////////////////
@@ -95,9 +110,10 @@ void shape_check(
     }
 
     if (nOutputCols < 1 || nOutputRows < 1)
-        throw std::invalid_argument("Given input size: (%dx%dx%d). "
-            "Calculated output size: (%dx%dx%d). Output size is too small",
-            nInputPlane,nInputRows,nInputCols,nInputPlane,nOutputRows,nOutputCols);
+        throw std::invalid_argument(
+            string_format("Given input size: (%dx%dx%d). "
+                "Calculated output size: (%dx%dx%d). Output size is too small",
+                nInputPlane,nInputRows,nInputCols,nInputPlane,nOutputRows,nOutputCols));
 
     if (gradOutput != NULL) {
     //    THCUNN_check_dim_size(state, gradOutput, ndim, dimf, nOutputPlane);
@@ -105,13 +121,15 @@ void shape_check(
     //    THCUNN_check_dim_size(state, gradOutput, ndim, dimw, nOutputCols);
 
         if(gradOutput.size(dimf) != nOutputPlane) {
-            throw std::invalid_argument("invalid number of gradOutput planes, expected: %d, but got: %d",
-               nOutputPlane, gradOutput.size(dimf));
+            throw std::invalid_argument(
+                string_format("invalid number of gradOutput planes, expected: %d, but got: %d",
+                    nOutputPlane, gradOutput.size(dimf)));
         }
 
         if(!(gradOutput.size(dimh) == nOutputRows && gradOutput.size(dimw) == nOutputCols)){
-            throw std::invalid_argument("invalid size of gradOutput, expected height: %d width: %d , but got height: %d width: %d",
-               nOutputRows, nOutputCols, gradOutput.size(dimh), gradOutput.size(dimw));
+            throw std::invalid_argument(
+                string_format("invalid size of gradOutput, expected height: %d width: %d , but got height: %d width: %d",
+                    nOutputRows, nOutputCols, gradOutput.size(dimh), gradOutput.size(dimw)));
         }
     }
 }
