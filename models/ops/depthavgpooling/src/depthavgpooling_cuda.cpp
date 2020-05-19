@@ -47,7 +47,6 @@ void shape_check_forward(
         throw std::invalid_argument("3D or 4D input tensor expected but got: " + std::to_string(ndim));
     }
 
-    long nInputPlane = input.size(dimh-1);
     long nInputRows = input.size(dimh);
     long nInputCols = input.size(dimw);
 
@@ -86,14 +85,11 @@ void shape_check(torch::Tensor input, torch::Tensor input_depth,
     torch::Tensor depthweightcount, torch::Tensor gradOutput,
     int kH, int kW, int dH, int dW, int padH, int padW) {
 
-    shape_check_forward(input, input_depth, kH, kW, dH, dW, padH, padW)
+    shape_check_forward(input, input_depth, kH, kW, dH, dW, padH, padW);
 
     if(depthweightcount.size(1) != 1){
         throw std::invalid_argument("input depth should have only 1 channel");
     }
-
-    long inputHeight_depth = input_depth.size(dimh_depth);
-    long inputWidth_depth = input_depth.size(dimw_depth);
 
     int ndim = input.ndimension();
     int dimf = 0;
@@ -122,6 +118,9 @@ void shape_check(torch::Tensor input, torch::Tensor input_depth,
         dimw_depth++;
     }
 
+    long inputHeight_depth = input_depth.size(dimh_depth);
+    long inputWidth_depth = input_depth.size(dimw_depth);
+
     if(!(inputHeight_depth == depthweightcount.size(2) && inputWidth_depth == depthweightcount.size(3))){
         throw std::invalid_argument(
             string_format("input depth and input depthweightcount should be the same size, but got: weightcount(%d,%d), depth(%d,%d)",
@@ -130,8 +129,10 @@ void shape_check(torch::Tensor input, torch::Tensor input_depth,
 
 //////////////////////////////////////////
 
-	nOutputCols = floor(float(nInputCols - kW + 2*padW) / float(dW)) + 1;
-	nOutputRows = floor(float(nInputRows - kH + 2*padH) / float(dH)) + 1;
+	long nOutputCols = floor(float(nInputCols - kW + 2*padW) / float(dW)) + 1;
+	long nOutputRows = floor(float(nInputRows - kH + 2*padH) / float(dH)) + 1;
+	long nInputPlane = input.size(dimh-1);
+	long nOutputPlane = nInputPlane;
 
     if (padW || padH){
     // ensure that the last pooling starts inside the image
@@ -174,8 +175,7 @@ torch::Tensor depthavgpooling_forward_cuda(
     CHECK_INPUT(input_depth);
     CHECK_INPUT(depthweightcount);
 
-    shape_check(input, input_depth, kH, kW, dH, dW,
-		padH, padW);
+    shape_check_forward(input, input_depth, kH, kW, dH, dW, padH, padW);
 
     int batch = 1;
     long nInputCols, nInputRows, nInputPlane, batchSize;
