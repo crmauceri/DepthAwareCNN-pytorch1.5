@@ -1,15 +1,12 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.nn.modules.utils import _single, _pair, _triple
-from torch.autograd import Variable
+from torch.nn.modules.utils import _pair
 
 import numpy as np
-from depthaware.models.ops.depthavgpooling.functions.depthavgpooling import DepthavgpoolingFunction
-from depthaware.models.ops.depthavgpooling.modules import Depthavgpooling
+from depthaware.models.ops.depthavgpooling.module import Depthavgpooling
 from torch.autograd import Variable
 
-from depthaware.utils.gradcheck import gradcheck
 from depthaware.models.ops.depthconv.functions.depthconv import DepthconvFunction
 
 
