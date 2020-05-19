@@ -1,7 +1,6 @@
 import torch
 from torch.autograd import Function
 from torch.nn.modules.utils import _pair
-import cffi
 import depthconv
 
 

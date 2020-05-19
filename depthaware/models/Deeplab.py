@@ -6,12 +6,12 @@ from .base_model import BaseModel
 import numpy as np
 from . import losses
 import shutil
-from utils.util import *
+from depthaware.utils.util import *
 from torch.autograd import Variable
 from collections import OrderedDict
 from tensorboardX import SummaryWriter
 import os
-import VGG_Deeplab as VGG_Deeplab
+import depthaware.models.VGG_Deeplab as VGG_Deeplab
 
 
 class Deeplab_VGG(nn.Module):

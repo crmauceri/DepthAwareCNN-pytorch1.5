@@ -1,11 +1,11 @@
 import time
 from tensorboardX import SummaryWriter
 from collections import OrderedDict
-from options.train_options import TrainOptions
-from data.data_loader import CreateDataLoader
-from models.models import create_model
-import utils.util as util
-from utils.visualizer import Visualizer
+from depthaware.options.train_options import TrainOptions
+from depthaware.data.data_loader import CreateDataLoader
+from depthaware.models.models import create_model
+import depthaware.utils.util as util
+from depthaware.utils.visualizer import Visualizer
 import os
 import numpy as np
 import torch

@@ -4,8 +4,7 @@ import torch
 import torch.nn as nn
 from torch.nn.modules.module import Module
 from torch.nn.modules.utils import _pair
-from ..functions import depth_conv
-
+from depthaware.models.ops.depthconv.functions import depth_conv
 
 class DepthConv(Module):
     def __init__(self,

@@ -1,10 +1,16 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from torch.nn.modules.utils import _single, _pair, _triple
 from torch.autograd import Variable
 
-from utils.gradcheck import gradcheck
-from models.ops.depthconv.functions.depthconv import DepthconvFunction
+import numpy as np
+from depthaware.models.ops.depthavgpooling.functions.depthavgpooling import DepthavgpoolingFunction
+from depthaware.models.ops.depthavgpooling.modules import Depthavgpooling
+from torch.autograd import Variable
+
+from depthaware.utils.gradcheck import gradcheck
+from depthaware.models.ops.depthconv.functions.depthconv import DepthconvFunction
 
 
 N, inC, inH, inW = 4, 2, 8, 8
@@ -43,10 +49,10 @@ grad = Variable(
         torch.rand(N, outC, 6, 6).cuda(),
         requires_grad=True)
 
-print bias
+print(bias)
 out1 = conv_offset2d(input, offset, weight, bias)
 out2 = conv2d(input2, weight2, bias2)
-print (out1-out2).sum()
+print((out1-out2).sum())
 
 out1.backward(grad)
 out2.backward(grad)
@@ -64,14 +70,6 @@ print (bias.grad-bias2.grad).sum()
 # print("pass gradcheck: {}".format(gradcheck(conv_offset2d, (input, offset, weight, bias))))
 # print("pass gradcheck: {}".format(gradcheck(conv2d, (input, weight,None))))
 
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import numpy as np
-from models.ops.depthavgpooling.functions.depthavgpooling import DepthavgpoolingFunction
-from models.ops.depthavgpooling.modules import Depthavgpooling
-from torch.autograd import Variable
-
 depth = [[[1,0,1,10000],
          [0,1,10000,1],
          [1,0,1,0],
@@ -81,7 +79,7 @@ depth = np.zeros([40,40])
 inputarray = torch.Tensor(np.asarray(range(2*40*40)).reshape([1,2,40,40]))
 depth = torch.Tensor(np.asarray(depth).reshape([1,1,40,40]))
 
-print inputarray
+print(inputarray)
 N, inC, inH, inW = 4, 512, 50, 65
 input = Variable(
         inputarray,
@@ -102,4 +100,4 @@ grad = Variable(
         requires_grad=True)
 out1.backward(grad)
 
-print out1-out2
+print(out1-out2)

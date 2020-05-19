@@ -5,7 +5,7 @@ import torchvision.transforms as transforms
 import torch
 import h5py
 import time
-from data.base_dataset import *
+from depthaware.data.base_dataset import *
 from PIL import Image
 import math, random
 
