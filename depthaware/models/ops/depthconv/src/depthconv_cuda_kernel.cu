@@ -99,7 +99,9 @@ torch::Tensor depthconv_im2col(
     // Launch
     AT_DISPATCH_FLOATING_TYPES(data_im.type(), "depthconv_im2col_gpu_kernel", ([&] {
         depthconv_im2col_gpu_kernel<scalar_t><<<GET_BLOCKS(num_kernels), CUDA_NUM_THREADS>>>(
-            num_kernels, data_im.data<scalar_t>(), data_depth.data<scalar_t>(), height, width, ksize_h, ksize_w, pad_h, pad_w, stride_h, stride_w, dilation_h, dilation_w, height_col, width_col, data_col.data<scalar_t>());
+            num_kernels, data_im.data<scalar_t>(), data_depth.data<scalar_t>(),
+            height, width, ksize_h, ksize_w, pad_h, pad_w,
+            stride_h, stride_w, dilation_h, dilation_w, height_col, width_col, data_col.data<scalar_t>());
         }));
 
     return data_col
@@ -197,7 +199,7 @@ torch::Tensor depthconv_col2im(
             ksize_h, ksize_w, pad_h, pad_w, stride_h, stride_w, dilation_h, dilation_w,
             height_col, width_col,
             grad_im.data<scalar_t>());
-    }
+    }));
 
     return grad_im;
 }
