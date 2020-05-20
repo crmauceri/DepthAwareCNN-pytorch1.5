@@ -104,7 +104,7 @@ torch::Tensor depthconv_im2col(
             stride_h, stride_w, dilation_h, dilation_w, height_col, width_col, data_col.data<scalar_t>());
         }));
 
-    return data_col
+    return data_col;
 }
 
 template <typename scalar_t>
