@@ -8,33 +8,43 @@
 #define CHECK_CONTIGUOUS(x) TORCH_CHECK(x.is_contiguous(), #x " must be contiguous")
 #define CHECK_INPUT(x) CHECK_CUDA(x); CHECK_CONTIGUOUS(x)
 
+template<typename ... Args>
+std::string string_format( const std::string& format, Args ... args )
+{
+    size_t size = snprintf( nullptr, 0, format.c_str(), args ... ) + 1; // Extra space for '\0'
+    if( size <= 0 ){ throw std::runtime_error( "Error during formatting." ); }
+    std::unique_ptr<char[]> buf( new char[ size ] );
+    snprintf( buf.get(), size, format.c_str(), args ... );
+    return std::string( buf.get(), buf.get() + size - 1 ); // We don't want the '\0' inside
+}
+
 void shape_check(torch::Tensor input, torch::Tensor input_depth,
                  torch::Tensor gradOutput, torch::Tensor weight, torch::Tensor bias, int kH, int kW,
                  int dH, int dW, int padH, int padW, int dilationH,
                  int dilationW) {
 
     if(weight.ndimension() != 4){
-        throw std::invalid_argument("4D weight tensor (nOutputPlane,nInputPlane,kH,kW) expected, "
-            "but got: %s", weight.ndimension());
+        throw std::invalid_argument(string_format("4D weight tensor (nOutputPlane,nInputPlane,kH,kW) expected, "
+            "but got: %s", weight.ndimension()));
     }
 
     if(kW <= 0 || kH <= 0){
-        throw std::invalid_argument("kernel size should be greater than zero, but got kH: %d kW: %d",
-            kH, kW);
+        throw std::invalid_argument(string_format("kernel size should be greater than zero, but got kH: %d kW: %d",
+            kH, kW));
     }
 
     if(!(weight.size(2) == kH && weight.size(3) == kW)){
-        throw std::invalid_argument("kernel size should be consistent with weight, but got kH: %d kW: %d weight.size(2): %d, weight.size(3): %d", kH,
-            kW, weight.size(2), weight.size(3));
+        throw std::invalid_argument(string_format("kernel size should be consistent with weight, but got kH: %d kW: %d weight.size(2): %d, weight.size(3): %d", kH,
+            kW, weight.size(2), weight.size(3)));
     }
 
     if(dW <= 0 || dH <= 0){
-        throw std::invalid_argument("stride should be greater than zero, but got dH: %d dW: %d", dH, dW);
+        throw std::invalid_argument(string_format("stride should be greater than zero, but got dH: %d dW: %d", dH, dW));
     }
 
     if(dilationW <= 0 || dilationH <= 0){
-        throw std::invalid_argument("dilation should be greater than 0, but got dilationH: %d dilationW: %d",
-            dilationH, dilationW);
+        throw std::invalid_argument(string_format("dilation should be greater than 0, but got dilationH: %d dilationW: %d",
+            dilationH, dilationW));
     }
 
     //////////// check bias //////////////////
@@ -42,12 +52,12 @@ void shape_check(torch::Tensor input, torch::Tensor input_depth,
     if (bias != NULL) {
         //    THCUNN_check_dim_size(state, bias, 1, 0, weight->size[0]);
         if(bias.ndimension() != 1){
-            throw std::invalid_argument("Need bias of dimension %d but got %d", 1, bias.ndimension());
+            throw std::invalid_argument(string_format("Need bias of dimension %d but got %d", 1, bias.ndimension()));
         }
 
         if(bias.size(0) != weight.size(0)){
-            throw std::invalid_argument("Need bias of size %d but got %d",
-                weight.size(0), bias.size(0));
+            throw std::invalid_argument(string_format("Need bias of size %d but got %d",
+                weight.size(0), bias.size(0)));
         }
     }
 //////////////////////////////////////////
@@ -64,7 +74,7 @@ void shape_check(torch::Tensor input, torch::Tensor input_depth,
     }
 
     if(ndim != 3 && ndim != 4){
-        throw std::invalid_argument("3D or 4D input tensor expected but got: %s", ndim);
+        throw std::invalid_argument(string_format("3D or 4D input tensor expected but got: %s", ndim));
     }
 
     long nInputPlane = weight.size(1);
@@ -76,11 +86,11 @@ void shape_check(torch::Tensor input, torch::Tensor input_depth,
     long outputWidth = (inputWidth + 2 * padW - (dilationW * (kW - 1) + 1)) / dW + 1;
 
     if (outputWidth < 1 || outputHeight < 1){
-        throw std::invalid_argument(
+        throw std::invalid_argument(string_format(
             "Given input size: (%ld x %ld x %ld). "
             "Calculated output size: (%ld x %ld x %ld). Output size is too small",
             nInputPlane, inputHeight, inputWidth, nOutputPlane, outputHeight,
-            outputWidth);
+            outputWidth));
     }
 
     if(!(inputHeight >= kH && inputWidth >= kW)){
@@ -101,7 +111,7 @@ void shape_check(torch::Tensor input, torch::Tensor input_depth,
     }
 
     if(ndim_depth != 3 && ndim_depth != 4){
-        throw std::invalid_argument("3D input depth tensor expected but got: %s", ndim);
+        throw std::invalid_argument(string_format("3D input depth tensor expected but got: %s", ndim));
     }
 
     //long inputHeight_depth = input_depth->size[dimh_depth];
@@ -121,13 +131,13 @@ void shape_check(torch::Tensor input, torch::Tensor input_depth,
 
     if (gradOutput != NULL) {
         if(gradOutput.size(dimf) != nOutputPlane){
-            throw std::invalid_argument("invalid number of gradOutput planes, expected: %d, but got: %d",
-                nOutputPlane, gradOutput.size(dimf));
+            throw std::invalid_argument(string_format("invalid number of gradOutput planes, expected: %d, but got: %d",
+                nOutputPlane, gradOutput.size(dimf)));
         }
 
         if(!(gradOutput.size(dimh) == outputHeight && gradOutput.size(dimw) == outputWidth)){
-            throw std::invalid_argument("invalid size of gradOutput, expected height: %d width: %d , but got height: %d width: %d",
-                outputHeight, outputWidth, gradOutput.size(dimh), gradOutput.size(dimw));
+            throw std::invalid_argument(string_format("invalid size of gradOutput, expected height: %d width: %d , but got height: %d width: %d",
+                outputHeight, outputWidth, gradOutput.size(dimh), gradOutput.size(dimw)));
         }
     }
 }
