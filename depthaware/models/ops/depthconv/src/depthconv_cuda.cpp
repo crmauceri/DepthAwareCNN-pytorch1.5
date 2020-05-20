@@ -316,7 +316,7 @@ std::vector<torch::Tensor> depthconv_backward_parameters_cuda(
     torch::Tensor gradWeight = torch::zeros({gradOutput.size(0), input.size(0), kW, kH});
     torch::Tensor gradBias = torch::zeros({gradOutput.size(0), 1});
 
-    shape_check(input, input_depth, gradWeight, kH, kW, dH, dW,
+    shape_check_forward(input, input_depth, gradWeight, kH, kW, dH, dW,
               padH, padW, dilationH, dilationW);
     shape_check_gradOutput(input, weight, gradOutput, kH, kW, dH, dW, padH,
               padW, dilationH, dilationW);
