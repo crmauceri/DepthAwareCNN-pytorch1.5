@@ -286,7 +286,7 @@ torch::Tensor depthconv_backward_input_cuda(
 
         {
         using namespace torch::indexing;
-        gradInput.index_put_({elt, Ellipsis}, gradInput_n)
+        gradInput.index_put_({elt, Ellipsis}, gradInput_n);
         }
     }
 
