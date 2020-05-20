@@ -88,19 +88,3 @@ class DepthconvFunction(Function):
                     grad_bias = None
 
         return grad_input, None, grad_weight, grad_bias
-
-    def _output_size(self, input, weight):
-        channels = weight.size(0)
-
-        output_size = (input.size(0), channels)
-        for d in range(input.dim() - 2):
-            in_size = input.size(d + 2)
-            pad = self.padding[d]
-            kernel = self.dilation[d] * (weight.size(d + 2) - 1) + 1
-            stride = self.stride[d]
-            output_size += ((in_size + (2 * pad) - kernel) // stride + 1, )
-        if not all(map(lambda s: s > 0, output_size)):
-            raise ValueError(
-                "convolution input is too small (output would be {})".format(
-                    'x'.join(map(str, output_size))))
-        return output_size
