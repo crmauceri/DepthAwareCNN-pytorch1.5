@@ -50,7 +50,6 @@ void shape_check(torch::Tensor input, torch::Tensor input_depth,
     //////////// check bias //////////////////
 
     if (bias != NULL) {
-        //    THCUNN_check_dim_size(state, bias, 1, 0, weight->size[0]);
         if(bias.ndimension() != 1){
             throw std::invalid_argument(string_format("Need bias of dimension %d but got %d", 1, bias.ndimension()));
         }
@@ -166,10 +165,10 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
         input_depth = input_depth.reshape({1, input_depth.size(0), input_depth.size(1), input_depth.size(2)});
     }
 
-    long batchSize = input.size(state, 0);
-    long nInputPlane = input.size(state, 1);
-    long inputHeight = input.size(state, 2);
-    long inputWidth = input.size(state, 3);
+    long batchSize = input.size(0);
+    long nInputPlane = input.size(1);
+    long inputHeight = input.size(2);
+    long inputWidth = input.size(3);
 
     long nOutputPlane = weight.size(0);
 
@@ -193,26 +192,14 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
     for (int elt = 0; elt < batchSize; elt++) {
 
         input_n = input.select(0, elt);
-        depth_n = depth.select(0, elt);
+        depth_n = input_depth.select(0, elt);
         output_n = output.select(0, elt);
 
         // Do bias first
-        long m_ = nOutputPlane;
-        long n_ = outputHeight * outputWidth;
-        long k_ = 1;
-
-        if (bias) {
-            output_n = torch::matmul(ones, bias);
-        } else {
-            output_n.fill_(0);
-        }
+        output_n = torch::matmul(ones, bias);
 
         columns = depthconv_im2col(input_n, depth_n, nInputPlane, inputHeight,
             inputWidth, kH, kW, padH, padW, dH, dW, dilationH, dilationW);
-
-        long m = nOutputPlane;
-        long n = columns.size(1);
-        long k = nInputPlane * kH * kW;
 
         torch::addmm(output_n, columns, weight);
     }
@@ -273,7 +260,7 @@ torch::Tensor depthconv_backward_input_cuda(
         torch::Tensor gradOutput_n = gradOutput.select(0, elt);
 
         long m = nInputPlane * kW * kH;
-        long n = THCudaTensor_size(state, columns, 1);
+        long n = columns.size(1);
         long k = nOutputPlane;
 
         columns = torch::matmul(gradOutput_n, weight);
@@ -281,7 +268,7 @@ torch::Tensor depthconv_backward_input_cuda(
         torch::Tensor gradInput_n = depthconv_col2im(columns, input_depth_n, nInputPlane, inputHeight,
             inputWidth, kH, kW, padH, padW, dH, dW, dilationH, dilationW);
 
-        gradInput.input_put_({elt, Ellipsis}, gradInput_n)
+        gradInput.index_put_({elt, torch::indexing::Ellipsis}, gradInput_n)
     }
 
     if (batch == 0) {
@@ -307,8 +294,8 @@ std::vector<torch::Tensor> depthconv_backward_parameters_cuda(
     CHECK_INPUT(ones);
 
     //TODO Check these dimensions
-    torch::Tensor gradWeight = torch::zeros({gradOutput.size(0), input.size(0), kW, kH})
-    torch::Tensor gradBias = torch::zeros({gradOutput.size(0), 1})
+    torch::Tensor gradWeight = torch::zeros({gradOutput.size(0), input.size(0), kW, kH});
+    torch::Tensor gradBias = torch::zeros({gradOutput.size(0), 1});
 
     shape_check(input, input_depth, gradOutput, gradWeight, gradBias, kH, kW, dH, dW,
               padH, padW, dilationH, dilationW);
@@ -358,7 +345,6 @@ std::vector<torch::Tensor> depthconv_backward_parameters_cuda(
         // Do Bias:
         if (gradBias)
             torch::addmm(gradBias, gradOutput_n, ones, /*beta=*/1.0, /*alpha=*/scale);
-        }
     }
 
     if (batch == 0) {
