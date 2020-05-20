@@ -48,16 +48,13 @@ void shape_check(torch::Tensor input, torch::Tensor input_depth,
     }
 
     //////////// check bias //////////////////
+    if(bias.ndimension() != 1){
+        throw std::invalid_argument(string_format("Need bias of dimension %d but got %d", 1, bias.ndimension()));
+    }
 
-    if (bias != NULL) {
-        if(bias.ndimension() != 1){
-            throw std::invalid_argument(string_format("Need bias of dimension %d but got %d", 1, bias.ndimension()));
-        }
-
-        if(bias.size(0) != weight.size(0)){
-            throw std::invalid_argument(string_format("Need bias of size %d but got %d",
-                weight.size(0), bias.size(0)));
-        }
+    if(bias.size(0) != weight.size(0)){
+        throw std::invalid_argument(string_format("Need bias of size %d but got %d",
+            weight.size(0), bias.size(0)));
     }
 //////////////////////////////////////////
 

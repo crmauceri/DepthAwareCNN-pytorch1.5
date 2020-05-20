@@ -35,12 +35,12 @@ class DepthconvFunction(Function):
         self.dilation = dilation
         self.bias = bias
 
-    def forward(self, input, depth, weight, bias = None):
+    def forward(self, input, depth, weight, bias):
         # print('forward')
+        if bias is None:
+            bias = torch.zeros(weight.shape[0], device=weight.device)
+        
         self.save_for_backward(input, depth, weight, bias)
-        if (not self.bias) or (bias is None):
-            # print bias, self.bias
-            bias = None
 
         output_size = [int((input.size()[i + 2] + 2 * self.padding[i] - weight.size()[i + 2]) / self.stride[i] + 1)
                        for i in range(2)]
@@ -51,7 +51,7 @@ class DepthconvFunction(Function):
         if not input.is_cuda:
             raise NotImplementedError
         else:
-            return depthconv.depthconv_forward_cuda(
+            return depthconv.forward(
                     input, depth, weight, bias, self.columns,self.ones,
                     weight.size(3), weight.size(2), self.stride[1], self.stride[0],
                     self.padding[1], self.padding[0], self.dilation[1], self.dilation[0])
@@ -70,13 +70,13 @@ class DepthconvFunction(Function):
             if not isinstance(grad_output, torch.cuda.FloatTensor):
                 raise NotImplementedError
             if self.needs_input_grad[0]:
-                grad_input = depthconv.depthconv_backward_input_cuda(
+                grad_input = depthconv.backward_input(
                     input, depth, grad_output, weight, self.columns,
                     weight.size(3), weight.size(2), self.stride[1], self.stride[0],
                     self.padding[1], self.padding[0], self.dilation[1], self.dilation[0])
 
             if self.needs_input_grad[2]:
-                grad_weight, grad_bias = depthconv.depthconv_backward_parameters_cuda(
+                grad_weight, grad_bias = depthconv.backward_parameters(
                     input, depth, grad_output, self.columns, self.ones,
                     weight.size(3), weight.size(2), self.stride[1], self.stride[0],
                     self.padding[1], self.padding[0], self.dilation[1], self.dilation[0], 1)
