@@ -2,6 +2,8 @@
 #include <stdexcept>
 #include "depthconv_cuda_kernel.h"
 
+using namespace torch::indexing
+
 // C++ interface
 
 #define CHECK_CUDA(x) TORCH_CHECK(x.type().is_cuda(), #x " must be a CUDA tensor")
@@ -259,16 +261,12 @@ torch::Tensor depthconv_backward_input_cuda(
         torch::Tensor input_depth_n = input_depth.select(0, elt);
         torch::Tensor gradOutput_n = gradOutput.select(0, elt);
 
-        long m = nInputPlane * kW * kH;
-        long n = columns.size(1);
-        long k = nOutputPlane;
-
         columns = torch::matmul(gradOutput_n, weight);
 
         torch::Tensor gradInput_n = depthconv_col2im(columns, input_depth_n, nInputPlane, inputHeight,
             inputWidth, kH, kW, padH, padW, dH, dW, dilationH, dilationW);
 
-        gradInput.index_put_({elt, torch::indexing::Ellipsis}, gradInput_n)
+        gradInput.index_put_({elt, Ellipsis}, gradInput_n)
     }
 
     if (batch == 0) {
@@ -337,14 +335,13 @@ std::vector<torch::Tensor> depthconv_backward_parameters_cuda(
         depth_n = input_depth.select(0, elt);
         gradOutput_n = gradOutput.select(0, elt);
 
-        depthconv_im2col(input_n, depth_n, nInputPlane, inputHeight,
-            inputWidth, kH, kW, padH, padW, dH, dW, dilationH, dilationW, columns);
+        columns = depthconv_im2col(input_n, depth_n, nInputPlane, inputHeight,
+            inputWidth, kH, kW, padH, padW, dH, dW, dilationH, dilationW);
 
         torch::addmm(gradWeight, columns, gradOutput_n, /*beta=*/1.0, /*alpha=*/scale);
 
         // Do Bias:
-        if (gradBias)
-            torch::addmm(gradBias, gradOutput_n, ones, /*beta=*/1.0, /*alpha=*/scale);
+        torch::addmm(gradBias, gradOutput_n, ones, /*beta=*/1.0, /*alpha=*/scale);
     }
 
     if (batch == 0) {
