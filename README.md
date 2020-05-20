@@ -1,5 +1,7 @@
 ### Depth-aware CNN for RGB-D Segmentation [<a href="https://arxiv.org/pdf/1803.06791.pdf">Arxiv</a>]
 
+This fork is compatible with pytorch version 1.5
+
 ### Installation
 Install <a href="http://pytorch.org/">Pytorch</a>, <a href="https://github.com/Knio/dominate">dominate</a>, <a href="https://github.com/lanpa/tensorboard-pytorch">TensorBoardX</a>.
 

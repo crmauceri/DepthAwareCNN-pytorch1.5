@@ -39,7 +39,7 @@ class DepthconvFunction(Function):
         # print('forward')
         if bias is None:
             bias = torch.zeros(weight.shape[0], device=weight.device)
-        
+
         self.save_for_backward(input, depth, weight, bias)
 
         output_size = [int((input.size()[i + 2] + 2 * self.padding[i] - weight.size()[i + 2]) / self.stride[i] + 1)
@@ -52,7 +52,7 @@ class DepthconvFunction(Function):
             raise NotImplementedError
         else:
             return depthconv.forward(
-                    input, depth, weight, bias, self.columns,self.ones,
+                    input, depth, weight, bias, self.columns, self.ones,
                     weight.size(3), weight.size(2), self.stride[1], self.stride[0],
                     self.padding[1], self.padding[0], self.dilation[1], self.dilation[0])
 

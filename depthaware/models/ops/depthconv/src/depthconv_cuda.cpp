@@ -4,7 +4,7 @@
 
 // C++ interface
 
-#define CHECK_CUDA(x) TORCH_CHECK(x.type().is_cuda(), #x " must be a CUDA tensor")
+#define CHECK_CUDA(x) TORCH_CHECK(x.device().type() == torch::kCUDA, #x " must be a CUDA tensor")
 #define CHECK_CONTIGUOUS(x) TORCH_CHECK(x.is_contiguous(), #x " must be contiguous")
 #define CHECK_INPUT(x) CHECK_CUDA(x); CHECK_CONTIGUOUS(x)
 
@@ -18,10 +18,8 @@ std::string string_format( const std::string& format, Args ... args )
     return std::string( buf.get(), buf.get() + size - 1 ); // We don't want the '\0' inside
 }
 
-void shape_check(torch::Tensor input, torch::Tensor input_depth,
-                 torch::Tensor gradOutput, torch::Tensor weight, torch::Tensor bias, int kH, int kW,
-                 int dH, int dW, int padH, int padW, int dilationH,
-                 int dilationW) {
+void shape_check_forward(torch::Tensor input, torch::Tensor input_depth, torch::Tensor weight,
+    int kH, int kW, int dH, int dW, int padH, int padW, int dilationH, int dilationW) {
 
     if(weight.ndimension() != 4){
         throw std::invalid_argument(string_format("4D weight tensor (nOutputPlane,nInputPlane,kH,kW) expected, "
@@ -47,16 +45,7 @@ void shape_check(torch::Tensor input, torch::Tensor input_depth,
             dilationH, dilationW));
     }
 
-    //////////// check bias //////////////////
-    if(bias.ndimension() != 1){
-        throw std::invalid_argument(string_format("Need bias of dimension %d but got %d", 1, bias.ndimension()));
-    }
-
-    if(bias.size(0) != weight.size(0)){
-        throw std::invalid_argument(string_format("Need bias of size %d but got %d",
-            weight.size(0), bias.size(0)));
-    }
-//////////////////////////////////////////
+    //////////////////////////////////////////
 
     int ndim = input.ndimension();
     int dimf = 0;
@@ -122,19 +111,50 @@ void shape_check(torch::Tensor input, torch::Tensor input_depth,
     if(!(inputHeight == inputHeight_depth && inputWidth == inputWidth_depth)){
         throw std::invalid_argument("input image and input depth should be the same size");
     }
+}
+
+void shape_check_bias(torch::Tensor weight, torch::Tensor bias){
+    //////////// check bias //////////////////
+    if(bias.ndimension() != 1){
+        throw std::invalid_argument(string_format("Need bias of dimension %d but got %d", 1, bias.ndimension()));
+    }
+
+    if(bias.size(0) != weight.size(0)){
+        throw std::invalid_argument(string_format("Need bias of size %d but got %d",
+            weight.size(0), bias.size(0)));
+    }
+}
+
+void shape_check_gradOutput(torch::Tensor input, torch::Tensor weight, torch::Tensor gradOutput,
+    int kH, int kW, int dH, int dW, int padH, int padW, int dilationH, int dilationW){
+
+    int ndim = input.ndimension();
+    int dimf = 0;
+    int dimh = 1;
+    int dimw = 2;
+
+    if (ndim == 4) {
+        dimf++;
+        dimh++;
+        dimw++;
+    }
+
+    long inputHeight = input.size(dimh);
+    long inputWidth = input.size(dimw);
+    long nOutputPlane = weight.size(0);
+
+    long outputHeight = (inputHeight + 2 * padH - (dilationH * (kH - 1) + 1)) / dH + 1;
+    long outputWidth = (inputWidth + 2 * padW - (dilationW * (kW - 1) + 1)) / dW + 1;
 
 //////////////////////////////////////////
+    if(gradOutput.size(dimf) != nOutputPlane){
+        throw std::invalid_argument(string_format("invalid number of gradOutput planes, expected: %d, but got: %d",
+            nOutputPlane, gradOutput.size(dimf)));
+    }
 
-    if (gradOutput != NULL) {
-        if(gradOutput.size(dimf) != nOutputPlane){
-            throw std::invalid_argument(string_format("invalid number of gradOutput planes, expected: %d, but got: %d",
-                nOutputPlane, gradOutput.size(dimf)));
-        }
-
-        if(!(gradOutput.size(dimh) == outputHeight && gradOutput.size(dimw) == outputWidth)){
-            throw std::invalid_argument(string_format("invalid size of gradOutput, expected height: %d width: %d , but got height: %d width: %d",
-                outputHeight, outputWidth, gradOutput.size(dimh), gradOutput.size(dimw)));
-        }
+    if(!(gradOutput.size(dimh) == outputHeight && gradOutput.size(dimw) == outputWidth)){
+        throw std::invalid_argument(string_format("invalid size of gradOutput, expected height: %d width: %d , but got height: %d width: %d",
+            outputHeight, outputWidth, gradOutput.size(dimh), gradOutput.size(dimw)));
     }
 }
 
@@ -151,8 +171,9 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
     CHECK_INPUT(columns);
     CHECK_INPUT(ones);
 
-    shape_check(input, input_depth, NULL, weight, bias, kH, kW, dH, dW, padH, padW,
+    shape_check_forward(input, input_depth, weight, kH, kW, dH, dW, padH, padW,
               dilationH, dilationW);
+    shape_check_bias(weight, bias);
 
     int batch = 1;
     if (input.ndimension() == 3) {
@@ -221,7 +242,9 @@ torch::Tensor depthconv_backward_input_cuda(
     CHECK_INPUT(weight);
     CHECK_INPUT(columns);
 
-    shape_check(input, input_depth, gradOutput, weight, NULL, kH, kW, dH, dW, padH,
+    shape_check_forward(input, input_depth, weight, kH, kW, dH, dW, padH,
+              padW, dilationH, dilationW);
+    shape_check_gradOutput(input, weight, gradOutput, kH, kW, dH, dW, padH,
               padW, dilationH, dilationW);
 
     int batch = 1;
@@ -293,8 +316,10 @@ std::vector<torch::Tensor> depthconv_backward_parameters_cuda(
     torch::Tensor gradWeight = torch::zeros({gradOutput.size(0), input.size(0), kW, kH});
     torch::Tensor gradBias = torch::zeros({gradOutput.size(0), 1});
 
-    shape_check(input, input_depth, gradOutput, gradWeight, gradBias, kH, kW, dH, dW,
+    shape_check(input, input_depth, gradWeight, kH, kW, dH, dW,
               padH, padW, dilationH, dilationW);
+    shape_check_gradOutput(input, weight, gradOutput, kH, kW, dH, dW, padH,
+              padW, dilationH, dilationW);
 
     int batch = 1;
     if (input.ndimension() == 3) {
