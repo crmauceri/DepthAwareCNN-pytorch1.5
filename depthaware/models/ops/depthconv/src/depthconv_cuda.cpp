@@ -2,8 +2,6 @@
 #include <stdexcept>
 #include "depthconv_cuda_kernel.h"
 
-using namespace torch::indexing
-
 // C++ interface
 
 #define CHECK_CUDA(x) TORCH_CHECK(x.type().is_cuda(), #x " must be a CUDA tensor")
@@ -266,7 +264,10 @@ torch::Tensor depthconv_backward_input_cuda(
         torch::Tensor gradInput_n = depthconv_col2im(columns, input_depth_n, nInputPlane, inputHeight,
             inputWidth, kH, kW, padH, padW, dH, dW, dilationH, dilationW);
 
+        {
+        using namespace torch::indexing;
         gradInput.index_put_({elt, Ellipsis}, gradInput_n)
+        }
     }
 
     if (batch == 0) {
