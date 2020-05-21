@@ -187,16 +187,16 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
         input_depth = input_depth.reshape({1, input_depth.size(0), input_depth.size(1), input_depth.size(2)});
     }
 
-    long batchSize = input.size(0);
-    long nInputPlane = input.size(1);
-    long inputHeight = input.size(2);
-    long inputWidth = input.size(3);
+    int batchSize = input.size(0);
+    int nInputPlane = input.size(1);
+    int inputHeight = input.size(2);
+    int inputWidth = input.size(3);
 
-    long nOutputPlane = weight.size(0);
+    int nOutputPlane = weight.size(0);
 
-    long outputWidth =
+    int outputWidth =
         (inputWidth + 2 * padW - (dilationW * (kW - 1) + 1)) / dW + 1;
-    long outputHeight =
+    int outputHeight =
         (inputHeight + 2 * padH - (dilationH * (kH - 1) + 1)) / dH + 1;
 
     torch::Tensor output = torch::zeros({batchSize, nOutputPlane, outputHeight, outputWidth});
@@ -220,8 +220,12 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
         // Do bias first
         output_n = torch::matmul(ones, bias);
 
-        columns = depthconv_im2col(input_n, depth_n, nInputPlane, inputHeight,
-            inputWidth, kH, kW, padH, padW, dH, dW, dilationH, dilationW);
+        columns = depthconv_im2col(input_n, depth_n,
+            nInputPlane, inputHeight, inputWidth,
+            kH, kW,
+            padH, padW,
+            dH, dW,
+            dilationH, dilationW);
 
         torch::addmm(output_n, columns, weight);
     }
@@ -259,16 +263,16 @@ torch::Tensor depthconv_backward_input_cuda(
         gradOutput = gradOutput.reshape({1, gradOutput.size(0), gradOutput.size(1), gradOutput.size(2)});
     }
 
-    long batchSize = input.size(0);
-    long nInputPlane = input.size(1);
-    long inputHeight = input.size(2);
-    long inputWidth = input.size(3);
+    int batchSize = input.size(0);
+    int nInputPlane = input.size(1);
+    int inputHeight = input.size(2);
+    int inputWidth = input.size(3);
 
-    long nOutputPlane = weight.size(0);
+    int nOutputPlane = weight.size(0);
 
-    long outputWidth =
+    int outputWidth =
       (inputWidth + 2 * padW - (dilationW * (kW - 1) + 1)) / dW + 1;
-    long outputHeight =
+    int outputHeight =
       (inputHeight + 2 * padH - (dilationH * (kH - 1) + 1)) / dH + 1;
 
     if(input_depth.size(0) != batchSize){
@@ -278,15 +282,18 @@ torch::Tensor depthconv_backward_input_cuda(
     torch::Tensor gradInput = torch::zeros({batchSize, nInputPlane, inputHeight, inputWidth});
     columns = columns.reshape({nInputPlane * kW * kH, outputHeight * outputWidth});
 
-    //  printf("columns size: %d,%d\n", columns->size[0],columns->size[1]);
     for (int elt = 0; elt < batchSize; elt++) {
         torch::Tensor input_depth_n = input_depth.select(0, elt);
         torch::Tensor gradOutput_n = gradOutput.select(0, elt);
 
         columns = torch::matmul(gradOutput_n, weight);
 
-        torch::Tensor gradInput_n = depthconv_col2im(columns, input_depth_n, nInputPlane, inputHeight,
-            inputWidth, kH, kW, padH, padW, dH, dW, dilationH, dilationW);
+        torch::Tensor gradInput_n = depthconv_col2im(columns, input_depth_n,
+            nInputPlane, inputHeight, inputWidth,
+            kH, kW,
+            padH, padW,
+            dH, dW,
+            dilationH, dilationW);
 
         {
         using namespace torch::indexing;
@@ -333,16 +340,16 @@ std::vector<torch::Tensor> depthconv_backward_parameters_cuda(
         gradOutput = gradOutput.reshape({1, gradOutput.size(0), gradOutput.size(1), gradOutput.size(2)});
     }
 
-    long batchSize = input.size(0);
-    long nInputPlane = input.size(1);
-    long inputHeight = input.size(2);
-    long inputWidth = input.size(3);
+    int batchSize = input.size(0);
+    int nInputPlane = input.size(1);
+    int inputHeight = input.size(2);
+    int inputWidth = input.size(3);
 
-    long nOutputPlane = gradWeight.size(0);
+    int nOutputPlane = gradWeight.size(0);
 
-    long outputWidth =
+    int outputWidth =
         (inputWidth + 2 * padW - (dilationW * (kW - 1) + 1)) / dW + 1;
-    long outputHeight =
+    int outputHeight =
         (inputHeight + 2 * padH - (dilationH * (kH - 1) + 1)) / dH + 1;
 
     // Define a buffer of ones, for bias accumulation
@@ -362,8 +369,12 @@ std::vector<torch::Tensor> depthconv_backward_parameters_cuda(
         depth_n = input_depth.select(0, elt);
         gradOutput_n = gradOutput.select(0, elt);
 
-        columns = depthconv_im2col(input_n, depth_n, nInputPlane, inputHeight,
-            inputWidth, kH, kW, padH, padW, dH, dW, dilationH, dilationW);
+        columns = depthconv_im2col(input_n, depth_n,
+            nInputPlane, inputHeight, inputWidth,
+            kH, kW,
+            padH, padW,
+            dH, dW,
+            dilationH, dilationW);
 
         torch::addmm(gradWeight, columns, gradOutput_n, /*beta=*/1.0, /*alpha=*/scale);
 
