@@ -93,7 +93,7 @@ if __name__ == '__main__':
 
     # DepthConv pipeline
     conv_test = DepthConv(3, out_channels, kernel_size, bias=True, padding=padding, dilation=dilation, stride=1)
-    conv_size = DepthConv.output_size(input2, w, h, out_channels, kernel_size, kernel_size, stride, dilation)
+    conv_size = conv_test.output_size(input2)
 
     conv_test.weight = nn.Parameter(
         conv.weight.clone().detach().requires_grad_(True))  # Copy weights and bias from conv so result should be same
