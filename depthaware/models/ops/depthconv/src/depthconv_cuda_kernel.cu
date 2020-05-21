@@ -94,11 +94,11 @@ torch::Tensor depthconv_im2col(
     torch::Tensor data_col = torch::zeros({channels * ksize_h * ksize_w, height_col * width_col});
 
     // Launch
-    AT_DISPATCH_FLOATING_TYPES(data_im.type(), "depthconv_im2col_gpu_kernel", ([&] {
+    AT_DISPATCH_FLOATING_TYPES(data_im.scalar_type(), "depthconv_im2col_gpu_kernel", ([&] {
         depthconv_im2col_gpu_kernel<scalar_t><<<GET_BLOCKS(num_kernels), CUDA_NUM_THREADS>>>(
-            num_kernels, data_im.data<scalar_t>(), data_depth.data<scalar_t>(),
+            num_kernels, data_im.data_ptr<scalar_t>() , data_depth.data_ptr<scalar_t>() ,
             height, width, ksize_h, ksize_w, pad_h, pad_w,
-            stride_h, stride_w, dilation_h, dilation_w, height_col, width_col, data_col.data<scalar_t>());
+            stride_h, stride_w, dilation_h, dilation_w, height_col, width_col, data_col.data_ptr<scalar_t>() );
         }));
 
     return data_col;
@@ -186,15 +186,15 @@ torch::Tensor depthconv_col2im(
     // int channel_per_depthconv_group = channels / depthconv_group;
     // To avoid involving atomic operations, we will launch one kernel per
     // bottom dimension, and then in the kernel add up the top dimensions.
-    AT_DISPATCH_FLOATING_TYPES(data_col.type(), "depthconv_col2im", ([&] {
+    AT_DISPATCH_FLOATING_TYPES(data_col.scalar_type(), "depthconv_col2im", ([&] {
         depthconv_col2im_gpu_kernel<scalar_t><<<GET_BLOCKS(num_kernels), CUDA_NUM_THREADS>>>(
             num_kernels,
-            data_col.data<scalar_t>(),
-            data_depth.data<scalar_t>(),
+            data_col.data_ptr<scalar_t>(),
+            data_depth.data_ptr<scalar_t>() ,
             channels, height, width,
             ksize_h, ksize_w, pad_h, pad_w, stride_h, stride_w, dilation_h, dilation_w,
             height_col, width_col,
-            grad_im.data<scalar_t>());
+            grad_im.data_ptr<scalar_t>() );
     }));
 
     return grad_im;
