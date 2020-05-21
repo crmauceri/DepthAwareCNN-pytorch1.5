@@ -163,17 +163,15 @@ void shape_check_gradOutput(torch::Tensor input, torch::Tensor weight, torch::Te
 }
 
 
-torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_depth, torch::Tensor weight, torch::Tensor bias,
-                             torch::Tensor columns, torch::Tensor ones, int kW,
-                             int kH, int dW, int dH, int padW, int padH,
+torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_depth,
+                             torch::Tensor weight, torch::Tensor bias,
+                             int kW, int kH, int dW, int dH, int padW, int padH,
                              int dilationH, int dilationW) {
 
     CHECK_INPUT(input);
     CHECK_INPUT(input_depth);
     CHECK_INPUT(weight);
     CHECK_INPUT(bias);
-    CHECK_INPUT(columns);
-    CHECK_INPUT(ones);
 
     shape_check_forward(input, input_depth, weight, kH, kW, dH, dW, padH, padW,
               dilationH, dilationW);
@@ -200,12 +198,8 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
         (inputHeight + 2 * padH - (dilationH * (kH - 1) + 1)) / dH + 1;
 
     torch::Tensor output = torch::zeros({batchSize, nOutputPlane, outputHeight, outputWidth});
-    columns = columns.reshape({nInputPlane * kW * kH, outputHeight * outputWidth});
-
-    if (ones.ndimension() != 2 || ones.size(0) * ones.size(1) < outputHeight * outputWidth) {
-        ones = ones.reshape({outputHeight, outputWidth});
-        ones.fill_(1);
-    }
+    torch::Tensor columns = torch::zeros({nInputPlane * kW * kH, outputHeight * outputWidth});
+    torch::Tensor ones = torch::ones({outputHeight, outputWidth});
 
     torch::Tensor input_n;
     torch::Tensor depth_n;
@@ -241,14 +235,13 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
 
 torch::Tensor depthconv_backward_input_cuda(
     torch::Tensor input, torch::Tensor input_depth, torch::Tensor gradOutput,
-    torch::Tensor weight, torch::Tensor columns, int kW, int kH, int dW, int dH,
+    torch::Tensor weight, int kW, int kH, int dW, int dH,
     int padW, int padH, int dilationH, int dilationW) {
 
     CHECK_INPUT(input);
     CHECK_INPUT(input_depth);
     CHECK_INPUT(gradOutput);
     CHECK_INPUT(weight);
-    CHECK_INPUT(columns);
 
     shape_check_forward(input, input_depth, weight, kH, kW, dH, dW, padH,
               padW, dilationH, dilationW);
@@ -280,7 +273,7 @@ torch::Tensor depthconv_backward_input_cuda(
     }
 
     torch::Tensor gradInput = torch::zeros({batchSize, nInputPlane, inputHeight, inputWidth});
-    columns = columns.reshape({nInputPlane * kW * kH, outputHeight * outputWidth});
+    torch::Tensor columns = torch::zeros({nInputPlane * kW * kH, outputHeight * outputWidth});
 
     for (int elt = 0; elt < batchSize; elt++) {
         torch::Tensor input_depth_n = input_depth.select(0, elt);

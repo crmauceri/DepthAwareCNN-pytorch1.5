@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 from torch.nn.modules.module import Module
 from torch.nn.modules.utils import _pair
-from depthaware.models.ops.depthconv.functional import depth_conv
+from depthaware.models.ops.depthconv.functional import DepthconvFunction
 
 class DepthConv(Module):
     def __init__(self,
@@ -43,7 +43,7 @@ class DepthConv(Module):
             self.bias.data.uniform_(-stdv, stdv)
 
     def forward(self, input, depth):
-        return depth_conv(input, depth, self.weight, self.bias, self.stride,
+        return DepthconvFunction.apply(input, depth, self.weight, self.bias, self.stride,
                              self.padding, self.dilation)
 
     def output_size(self, input):
