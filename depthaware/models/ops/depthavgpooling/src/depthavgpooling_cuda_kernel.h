@@ -1,3 +1,5 @@
+#include <torch/extension.h>
+
 #ifndef DEPTH_AVG_POOL_CUDA_KERNEL
 #define DEPTH_AVG_POOL_CUDA_KERNEL
 

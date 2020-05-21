@@ -1,3 +1,5 @@
+#include <torch/extension.h>
+
 #ifndef DEPTH_CONV_CUDA_KERNEL
 #define DEPTH_CONV_CUDA_KERNEL
 
