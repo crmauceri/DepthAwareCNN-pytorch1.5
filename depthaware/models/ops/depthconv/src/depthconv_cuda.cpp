@@ -197,9 +197,9 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
     int outputHeight =
         (inputHeight + 2 * padH - (dilationH * (kH - 1) + 1)) / dH + 1;
 
-    torch::Tensor output = torch::zeros({batchSize, nOutputPlane, outputHeight, outputWidth});
-    torch::Tensor columns = torch::zeros({nInputPlane * kW * kH, outputHeight * outputWidth});
-    torch::Tensor ones = torch::ones({outputHeight, outputWidth});
+    torch::Tensor output = torch::zeros({batchSize, nOutputPlane, outputHeight, outputWidth}, torch::kCUDA);
+    torch::Tensor columns = torch::zeros({nInputPlane * kW * kH, outputHeight * outputWidth}, torch::kCUDA);
+    torch::Tensor ones = torch::ones({outputHeight, outputWidth}, torch::kCUDA);
 
     torch::Tensor input_n;
     torch::Tensor depth_n;
@@ -272,8 +272,8 @@ torch::Tensor depthconv_backward_input_cuda(
         throw std::invalid_argument("invalid batch size of input depth");
     }
 
-    torch::Tensor gradInput = torch::zeros({batchSize, nInputPlane, inputHeight, inputWidth});
-    torch::Tensor columns = torch::zeros({nInputPlane * kW * kH, outputHeight * outputWidth});
+    torch::Tensor gradInput = torch::zeros({batchSize, nInputPlane, inputHeight, inputWidth}, torch::kCUDA);
+    torch::Tensor columns = torch::zeros({nInputPlane * kW * kH, outputHeight * outputWidth}, torch::kCUDA);
 
     for (int elt = 0; elt < batchSize; elt++) {
         torch::Tensor input_depth_n = input_depth.select(0, elt);
