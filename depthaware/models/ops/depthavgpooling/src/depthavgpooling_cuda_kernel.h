@@ -1,3 +1,6 @@
+#ifndef DEPTH_AVG_POOL_CUDA_KERNEL
+#define DEPTH_AVG_POOL_CUDA_KERNEL
+
 void AvePoolForward(const int count,
     torch::Tensor const input_data, torch::Tensor const input_depth_data, const int channels,
     const int height, const int width, const int pooled_height,
@@ -13,3 +16,5 @@ void AvePoolBackward(const int count,
     const int kernel_h, const int kernel_w, const int stride_h,
     const int stride_w, const int pad_h, const int pad_w,
     torch::Tensor const bottom_diff);
+
+#endif

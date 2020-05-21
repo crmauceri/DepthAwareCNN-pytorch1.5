@@ -1,8 +1,10 @@
+#include "depthavgpooling_cuda_kernel.h"
+
 #include <torch/extension.h>
 #include <stdexcept>
 #include <memory>
 #include <string>
-#include "depthavgpooling_cuda_kernel.h"
+
 
 // C++ interface
 

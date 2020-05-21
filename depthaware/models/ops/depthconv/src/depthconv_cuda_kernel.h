@@ -1,3 +1,6 @@
+#ifndef DEPTH_CONV_CUDA_KERNEL
+#define DEPTH_CONV_CUDA_KERNEL
+
 torch::Tensor depthconv_im2col(
     torch::Tensor data_im,
     torch::Tensor data_depth,
@@ -16,4 +19,5 @@ torch::Tensor depthconv_col2im(
     const int stride_h, const int stride_w,
     const int dilation_h, const int dilation_w) ;
 
+#endif
 

@@ -5,8 +5,6 @@
 #include <vector>
 #include <cstdio>
 
-#include "depthconv_cuda_kernel.h"
-
 #define CUDA_KERNEL_LOOP(i, n)                                                 \
 for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < (n);                 \
     i += blockDim.x * gridDim.x)

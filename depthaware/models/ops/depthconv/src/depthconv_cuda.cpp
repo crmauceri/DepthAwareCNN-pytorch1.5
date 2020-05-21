@@ -1,6 +1,10 @@
+#include "depthconv_cuda_kernel.h"
+
 #include <torch/extension.h>
 #include <stdexcept>
-#include "depthconv_cuda_kernel.h"
+#include <memory>
+#include <string>
+
 
 // C++ interface
 
