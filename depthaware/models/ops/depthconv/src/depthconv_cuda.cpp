@@ -212,6 +212,9 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
         output_n = output.select(0, elt);
 
         // Do bias first
+        std::cout << string_format("Ones: %i x %i", ones.size(0), ones.size(1)) << std::endl;
+        std::cout << string_format("Bias: %i x %i", bias.size(0), bias.size(1)) << std::endl;
+
         output_n = torch::matmul(ones, bias);
 
         columns = depthconv_im2col(input_n, depth_n,
@@ -220,6 +223,10 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
             padH, padW,
             dH, dW,
             dilationH, dilationW);
+
+        std::cout << string_format("Output_n: %i x %i", output_n.size(0), output_n.size(1)) << std::endl;
+        std::cout << string_format("Columns: %i x %i", columns.size(0), columns.size(1)) << std::endl;
+        std::cout << string_format("Weight: %i x %i", weight.size(0), weight.size(1)) << std::endl;
 
         torch::addmm(output_n, columns, weight);
     }
