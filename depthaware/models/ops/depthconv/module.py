@@ -115,7 +115,7 @@ if __name__ == '__main__':
     conv_loss = loss(fc(conv_y.view(-1, torch.prod(torch.tensor(conv_size[1:])))),
                      target)
 
-    conv_test_y = conv_test((input2, depth))
+    conv_test_y = conv_test(input2, depth)
     conv_test_loss = loss(fc(conv_test_y.view(-1, torch.prod(torch.tensor(conv_size[1:])))),
                           target)
 
