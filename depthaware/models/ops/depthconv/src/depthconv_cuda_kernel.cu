@@ -76,7 +76,6 @@ __global__ void depthconv_im2col_gpu_kernel(
     }
 }
 
-template <typename DType>
 torch::Tensor depthconv_im2col(
     torch::Tensor data_im,
     torch::Tensor data_depth,
@@ -169,7 +168,6 @@ __global__ void depthconv_col2im_gpu_kernel(
     }
 }
 
-template <typename DType>
 torch::Tensor depthconv_col2im(
     torch::Tensor data_col,
     torch::Tensor data_depth,
