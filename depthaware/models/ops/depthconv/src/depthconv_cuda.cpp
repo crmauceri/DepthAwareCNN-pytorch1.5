@@ -199,7 +199,6 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
 
     torch::Tensor output = torch::zeros({batchSize, nOutputPlane, outputHeight, outputWidth}, torch::kCUDA);
     torch::Tensor columns = torch::zeros({nInputPlane * kW * kH, outputHeight * outputWidth}, torch::kCUDA);
-    torch::Tensor ones = torch::ones({outputHeight, outputWidth}, torch::kCUDA);
 
     torch::Tensor input_n;
     torch::Tensor depth_n;
@@ -212,7 +211,6 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
         output_n = output.select(0, elt);
 
         // Do bias first
-        std::cout << string_format("Ones: %i x %i", ones.size(0), ones.size(1)) << std::endl;
         std::cout << string_format("Bias: %i", bias.size(0)) << std::endl;
         std::cout << string_format("Output_n: %i x %i x %i", output_n.size(0), output_n.size(1), output_n.size(2)) << std::endl;
 
