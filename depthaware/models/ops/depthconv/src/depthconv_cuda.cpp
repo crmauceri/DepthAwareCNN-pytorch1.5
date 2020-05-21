@@ -213,7 +213,7 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
 
         // Do bias first
         std::cout << string_format("Ones: %i x %i", ones.size(0), ones.size(1)) << std::endl;
-        std::cout << string_format("Bias: %i x %i", bias.size(0), bias.size(1)) << std::endl;
+        std::cout << string_format("Bias: %i", bias.size(0)) << std::endl;
 
         output_n = torch::matmul(ones, bias);
 
