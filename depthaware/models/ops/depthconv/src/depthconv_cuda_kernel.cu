@@ -15,6 +15,7 @@ inline int GET_BLOCKS(const int N) {
     return (N + CUDA_NUM_THREADS - 1) / CUDA_NUM_THREADS;
 }
 
+// Fills data_col((khxkw)x(CxHxW)) with the depth difference weighted image values
 template <typename scalar_t>
 __global__ void depthconv_im2col_gpu_kernel(
     const int n, const scalar_t* data_im, const scalar_t* data_depth,
@@ -29,7 +30,6 @@ __global__ void depthconv_im2col_gpu_kernel(
         const int h_col = (index / width_col) % height_col;
         const int c_im = (index / width_col) / height_col;
         const int c_col = c_im * kernel_h * kernel_w;
-
 
         const int h_in = h_col * stride_h - pad_h;
         const int w_in = w_col * stride_w - pad_w;
@@ -46,8 +46,8 @@ __global__ void depthconv_im2col_gpu_kernel(
             Di = data_depth[(h_in + dilation_h * (kernel_h - 1) / 2) * width + w_in  + dilation_w * (kernel_w - 1) / 2];
         else
             valid = false;
-        //const scalar_t Di = data_depth[(h_in + (kernel_h - 1) / 2 + dilation_h - 1) * width + (w_in + (kernel_w - 1) / 2 + dilation_w - 1)];
 
+        //For each kernel element
         for (int i = 0; i < kernel_h; ++i) {
             for (int j = 0; j < kernel_w; ++j) {
                 scalar_t val = static_cast<scalar_t>(0);
@@ -67,6 +67,8 @@ __global__ void depthconv_im2col_gpu_kernel(
                     // printf("Di-Dval: %f, %f\n", Di, Dval);
                     // if (exp(-abs(Di - Dval))<0.2)
                     //	printf("Di-Dval: %f\n", exp(-abs(Di - Dval)));
+
+                    // Weight image value by depth difference
                     val *= exp(-abs(Di - Dval));
                 }
                 *data_col_ptr = val;

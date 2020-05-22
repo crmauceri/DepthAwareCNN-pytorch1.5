@@ -228,15 +228,15 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
         std::cout << string_format("Columns: %i x %i", columns.size(0), columns.size(1)) << std::endl;
         std::cout << string_format("Weight: %i x %i x %i x %i", weight.size(0), weight.size(1), weight.size(2), weight.size(3)) << std::endl;
 
-        //torch::addmm(output_n, columns, weight);
-        long m = weight.size(0);
-        long n = columns.size(1);
-        long k = input.size(1) * kH * kW;
-
-        THCudaBlas_Sgemm(state, 'n', 'n', n, m, k, 1.0f,
-                     columns.data(), n,
-                     weight.data(), k, 1.0f,
-                     output_n.data(), n);
+        torch::addmm(output_n, columns, weight);
+//        long m = weight.size(0);
+//        long n = columns.size(1);
+//        long k = input.size(1) * kH * kW;
+//
+//        THCudaBlas_Sgemm(state, 'n', 'n', n, m, k, 1.0f,
+//                     columns.data(), n,
+//                     weight.data(), k, 1.0f,
+//                     output_n.data(), n);
     }
 
     if (batch == 0) {
@@ -294,15 +294,15 @@ torch::Tensor depthconv_backward_input_cuda(
         torch::Tensor input_depth_n = input_depth.select(0, elt);
         torch::Tensor gradOutput_n = gradOutput.select(0, elt);
 
-        //columns = torch::matmul(gradOutput_n, weight);
-        long m = input.size(1) * kW * kH;
-        long n = columns.size(1);
-        long k = weight.size(0);
-
-        THCudaBlas_Sgemm(state, 'n', 't', n, m, k, 1.0f,
-                     gradOutput_n.data(), n,
-                     weight.data(), m, 0.0f,
-                     columns.data(), n);
+        columns = torch::matmul(gradOutput_n, weight);
+//        long m = input.size(1) * kW * kH;
+//        long n = columns.size(1);
+//        long k = weight.size(0);
+//
+//        THCudaBlas_Sgemm(state, 'n', 't', n, m, k, 1.0f,
+//                     gradOutput_n.data(), n,
+//                     weight.data(), m, 0.0f,
+//                     columns.data(), n);
 
         torch::Tensor gradInput_n = depthconv_col2im(columns, input_depth_n,
             nInputPlane, inputHeight, inputWidth,
