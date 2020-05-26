@@ -231,6 +231,7 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
         torch::Tensor columns = columns.reshape({nInputPlane, kH, kW, outputHeight*outputWidth});
 
         for(int c=0; c<nOutputPlane; c++){
+            using namespace torch::indexing;
             torch::addmm(output_n.index({c,Ellipsis}), weight.index({c, Ellipsis}), columns);
         }
 
