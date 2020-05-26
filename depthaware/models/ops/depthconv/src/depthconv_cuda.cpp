@@ -230,7 +230,7 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
 
         torch::Tensor columns = columns.reshape({nInputPlane, kH, kW, outputHeight*outputWidth})
 
-        for(int c=0; c++; c<nOutputPlane){
+        for(int c=0; c<nOutputPlane; c++){
             torch::addmm(output_n.index({c,Ellipsis}), weight.index({c, Ellipsis}), columns);
         }
 
@@ -300,7 +300,7 @@ torch::Tensor depthconv_backward_input_cuda(
         torch::Tensor gradOutput_n = gradOutput.select(0, elt);
 
         columns = torch::matmul(gradOutput_n, weight);
-        
+
 //        long m = input.size(1) * kW * kH;
 //        long n = columns.size(1);
 //        long k = weight.size(0);
