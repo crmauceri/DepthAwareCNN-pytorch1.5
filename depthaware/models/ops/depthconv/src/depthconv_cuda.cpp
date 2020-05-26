@@ -245,8 +245,9 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
 
     if (batch == 0) {
         output = output.reshape({nOutputPlane, outputHeight, outputWidth});
-        input = input.reshape({nInputPlane, inputHeight, inputWidth});
     }
+
+    std::cout << string_format("Output: %i x %i x %i", output.size(0), output.size(1), output.size(2)) << std::endl;
 
     return output;
 }
