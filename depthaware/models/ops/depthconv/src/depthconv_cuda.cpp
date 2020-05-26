@@ -225,12 +225,13 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
             dH, dW,
             dilationH, dilationW);
 
+        std::cout << string_format("Columns dim: %i", columns.ndimension()) << std::endl;
         std::cout << string_format("Columns: %i x %i", columns.size(0), columns.size(1)) << std::endl;
         std::cout << string_format("Weight: %i x %i x %i x %i", weight.size(0), weight.size(1), weight.size(2), weight.size(3)) << std::endl;
 
         for(int c=0; c<nOutputPlane; c++){
             using namespace torch::indexing;
-            torch::addmm(output_n.index({c,Ellipsis}), weight.index({c, Ellipsis}), columns);
+            torch::addmm(output_n.index({c,Slice(),Slice()}), weight.index({c, Slice(), Slice()}), columns);
         }
 
 //        long m = weight.size(0);
