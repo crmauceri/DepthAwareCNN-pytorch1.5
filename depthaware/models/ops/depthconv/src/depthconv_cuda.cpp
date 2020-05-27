@@ -234,16 +234,16 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
         std::cout << string_format("Columns: %i x %i", columns.size(0), columns.size(1)) << std::endl;
 //        std::cout << string_format("Weight: %i x %i x %i x %i", weight.size(0), weight.size(1), weight.size(2), weight.size(3)) << std::endl;
 
-        for(int c=0; c<nOutputPlane; c++){
-            using namespace torch::indexing;
+        {
+        using namespace torch::indexing;
 
-            torch::Tensor weight_slice = weight.index({c, Slice(), Slice(), Slice()});
-            torch::Tensor output_slice = output_n.index({c, Slice(), Slice()}).reshape({weight_slice.size(0), outputWidth*outputHeight});
+        torch::Tensor weight_slice = weight.reshape({c, weight.size(0)*weight.size(1)*weight.size(2)});
+        torch::Tensor output_slice = output_n.reshape({nOutputPlane, outputWidth*outputHeight});
 //            std::cout << string_format("Weight slice dim: %i", weight_slice.ndimension()) << std::endl;
-            std::cout << "Weight:" << weight_slice.size(0) << ", " << weight_slice.size(1) << ", " << weight_slice.size(2) << std::endl;
-            std::cout << string_format("output_n slice dim: %i", output_slice.ndimension()) << std::endl;
-            std::cout << "output_n:" << output_slice.size(0) << std::endl;
-            torch::addmm(output_slice, weight_slice, columns);
+        std::cout << "Weight:" << weight_slice.size(0) << ", " << weight_slice.size(1) << std::endl;
+//        std::cout << string_format("output_n slice dim: %i", output_slice.ndimension()) << std::endl;
+        std::cout << "output_n:" << output_slice.size(0) << "< " output_slice.size(1) << std::endl;
+        torch::addmm(output_slice, weight_slice, columns);
         }
 
 //        long m = weight.size(0);
