@@ -206,7 +206,7 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
     torch::Tensor depth_n;
     torch::Tensor output_n;
 
-    bias = bias.reshape({bias.size(0), 1, 1}).repeat({1, outputHeight, outputWidth})); //Without the extra singleton dimensions the repeat function has the wrong dimensionality
+    bias = bias.reshape({bias.size(0), 1, 1}).repeat({1, outputHeight, outputWidth}); //Without the extra singleton dimensions the repeat function has the wrong dimensionality
 
     for (int elt = 0; elt < batchSize; elt++) {
 
