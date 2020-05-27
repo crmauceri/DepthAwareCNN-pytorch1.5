@@ -41,14 +41,9 @@ class DepthconvFunction(Function):
             if not isinstance(grad_output, torch.cuda.FloatTensor):
                 raise NotImplementedError
 
-            grad_input = depthconv.backward_input(
+            grad_input, grad_weight, grad_bias = depthconv.backward(
                 input, depth, grad_output, weight,
                 weight.size(3), weight.size(2), ctx.stride[1], ctx.stride[0],
                 ctx.padding[1], ctx.padding[0], ctx.dilation[1], ctx.dilation[0])
-
-            grad_weight, grad_bias = depthconv.backward_parameters(
-                input, depth, grad_output,
-                weight.size(3), weight.size(2), ctx.stride[1], ctx.stride[0],
-                ctx.padding[1], ctx.padding[0], ctx.dilation[1], ctx.dilation[0], 1)
 
         return grad_input, None, grad_weight, grad_bias, None, None, None, None

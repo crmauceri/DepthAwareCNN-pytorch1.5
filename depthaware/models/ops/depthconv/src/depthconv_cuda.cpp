@@ -252,7 +252,7 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
 }
 
 
-torch::Tensor depthconv_backward_input_cuda(
+std::vector<torch::Tensor> depthconv_backward_cuda(
     torch::Tensor input, torch::Tensor input_depth, torch::Tensor gradOutput,
     torch::Tensor weight, int kW, int kH, int dW, int dH,
     int padW, int padH, int dilationH, int dilationW) {
@@ -291,8 +291,11 @@ torch::Tensor depthconv_backward_input_cuda(
         throw std::invalid_argument("invalid batch size of input depth");
     }
 
+    //TODO Check these dimensions
+    torch::Tensor gradWeight = torch::zeros({gradOutput.size(0), input.size(0), kW, kH}, torch::kCUDA);
+    torch::Tensor gradBias = torch::zeros({gradOutput.size(0), 1}, torch::kCUDA);
     torch::Tensor gradInput = torch::zeros({batchSize, nInputPlane, inputHeight, inputWidth}, torch::kCUDA);
-    torch::Tensor columns = torch::zeros({nInputPlane * kW * kH, outputHeight * outputWidth}, torch::kCUDA);
+    torch::Tensor ones = torch::ones({outputHeight, outputWidth})
 
     for (int elt = 0; elt < batchSize; elt++) {
         torch::Tensor input_depth_n = input_depth.select(0, elt);
@@ -312,7 +315,7 @@ torch::Tensor depthconv_backward_input_cuda(
         std::cout << string_format("weight_slice dim: %i", weight_slice.ndimension()) << std::endl;
         std::cout << weight_slice.size(0) << ", " << weight_slice.size(1) << std::endl;
 
-        columns = torch::matmul(gradOutput_n_slice, weight_slice);
+        torch::Tensor columns = torch::matmul(gradOutput_n_slice, weight_slice);
 
 //        long m = input.size(1) * kW * kH;
 //        long n = columns.size(1);
@@ -336,82 +339,6 @@ torch::Tensor depthconv_backward_input_cuda(
         using namespace torch::indexing;
         gradInput.index_put_({elt, Ellipsis}, gradInput_n);
         }
-    }
-
-    if (batch == 0) {
-        gradOutput = gradOutput.reshape({nOutputPlane, outputHeight, outputWidth});
-        input = input.reshape({nInputPlane, inputHeight, inputWidth});
-        input_depth = input_depth.reshape({1, inputHeight, inputWidth});
-        gradInput = gradInput.reshape({nInputPlane, inputHeight, inputWidth});
-    }
-
-    return gradInput;
-}
-
-std::vector<torch::Tensor> depthconv_backward_parameters_cuda(
-    torch::Tensor input, torch::Tensor input_depth, torch::Tensor gradOutput,
-    torch::Tensor columns, torch::Tensor ones, int kW, int kH, int dW, int dH,
-    int padW, int padH, int dilationH, int dilationW,
-    float scale) {
-
-    CHECK_INPUT(input);
-    CHECK_INPUT(input_depth);
-    CHECK_INPUT(gradOutput);
-    CHECK_INPUT(columns);
-    CHECK_INPUT(ones);
-
-    //TODO Check these dimensions
-    torch::Tensor gradWeight = torch::zeros({gradOutput.size(0), input.size(0), kW, kH}, torch::kCUDA);
-    torch::Tensor gradBias = torch::zeros({gradOutput.size(0), 1}, torch::kCUDA);
-
-    shape_check_forward(input, input_depth, gradWeight, kH, kW, dH, dW,
-              padH, padW, dilationH, dilationW);
-    shape_check_gradOutput(input, gradWeight, gradOutput, kH, kW, dH, dW, padH,
-              padW, dilationH, dilationW);
-
-    int batch = 1;
-    if (input.ndimension() == 3) {
-        // Force batch
-        batch = 0;
-        input = input.reshape({1, input.size(0), input.size(1), input.size(2)});
-        gradOutput = gradOutput.reshape({1, gradOutput.size(0), gradOutput.size(1), gradOutput.size(2)});
-    }
-
-    int batchSize = input.size(0);
-    int nInputPlane = input.size(1);
-    int inputHeight = input.size(2);
-    int inputWidth = input.size(3);
-
-    int nOutputPlane = gradWeight.size(0);
-
-    int outputWidth =
-        (inputWidth + 2 * padW - (dilationW * (kW - 1) + 1)) / dW + 1;
-    int outputHeight =
-        (inputHeight + 2 * padH - (dilationH * (kH - 1) + 1)) / dH + 1;
-
-    // Define a buffer of ones, for bias accumulation
-    if (ones.ndimension() != 2 || ones.size(0) * ones.size(1) < outputHeight * outputWidth) {
-        ones = ones.reshape({outputHeight, outputWidth});
-        ones.fill_(1);
-    }
-
-    columns = columns.reshape({nInputPlane * kW * kH, outputHeight * outputWidth});
-
-    torch::Tensor input_n;
-    torch::Tensor depth_n;
-    torch::Tensor gradOutput_n;
-
-    for (int elt = 0; elt < batchSize; elt++) {
-        input_n = input.select(0, elt);
-        depth_n = input_depth.select(0, elt);
-        gradOutput_n = gradOutput.select(0, elt);
-
-        columns = depthconv_im2col(input_n, depth_n,
-            nInputPlane, inputHeight, inputWidth,
-            kH, kW,
-            padH, padW,
-            dH, dW,
-            dilationH, dilationW);
 
         gradWeight.addmm_(columns, gradOutput_n, /*beta=*/1.0, /*alpha=*/scale);
 
@@ -422,13 +349,14 @@ std::vector<torch::Tensor> depthconv_backward_parameters_cuda(
     if (batch == 0) {
         gradOutput = gradOutput.reshape({nOutputPlane, outputHeight, outputWidth});
         input = input.reshape({nInputPlane, inputHeight, inputWidth});
+        input_depth = input_depth.reshape({1, inputHeight, inputWidth});
+        gradInput = gradInput.reshape({nInputPlane, inputHeight, inputWidth});
     }
 
-    return {gradWeight, gradBias};
+    return {gradInput, gradWeight, gradBias};
 }
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
   m.def("forward", &depthconv_forward_cuda, "Depth Aware Convolution forward (CUDA)");
-  m.def("backward_input", &depthconv_backward_input_cuda, "Depth Aware Convolution backward pass for input (CUDA)");
-  m.def("backward_parameters", &depthconv_backward_parameters_cuda, "Depth Aware Convolution backward pass for parameters (CUDA)");
+  m.def("backward", &depthconv_backward_cuda, "Depth Aware Convolution backward pass for input (CUDA)");
 }
