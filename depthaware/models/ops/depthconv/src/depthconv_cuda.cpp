@@ -342,8 +342,8 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
 
         std::cout << string_format("columns dim: %i", columns.ndimension()) << std::endl;
         std::cout << string_format("columns: %i x %i", columns.size(0), columns.size(1)) << std::endl;
-        std::cout << string_format("gradOutput dim: %i", gradOutput.ndimension()) << std::endl;
-        std::cout << string_format("gradOutput: %i x %i x %i x %i", gradOutput.size(0), gradOutput.size(1), gradOutput.size(2), gradOutput.size(3)) << std::endl;
+        std::cout << string_format("gradOutput_n_slice dim: %i", gradOutput.ndimension()) << std::endl;
+        std::cout << string_format("gradOutput_n_slice: %i x %i", gradOutput.size(0), gradOutput.size(1)) << std::endl;
         std::cout << string_format("ones dim: %i", ones.ndimension()) << std::endl;
         std::cout << string_format("ones: %i", ones.size(0)) << std::endl;
 
@@ -365,7 +365,7 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
         std::cout << string_format("gradBias_slice dim: %i", gradBias_slice.ndimension()) << std::endl;
         std::cout << string_format("gradBias_slice: %i", gradBias_slice.size(0)) << std::endl;
 
-        gradBias_slice.addmv_(gradOutput, ones, /*beta=*/1.0, /*alpha=*/scale);
+        gradBias_slice.addmv_(gradOutput_n_slice, ones, /*beta=*/1.0, /*alpha=*/scale);
     }
 
     if (batch == 0) {

@@ -66,7 +66,7 @@ class DepthConv(Module):
 if __name__ == '__main__':
     import numpy as np
 
-    batch_size = 1
+    batch_size = 4
     w, h = 5, 5
     kernel_size = 2
     out_channels = 1
