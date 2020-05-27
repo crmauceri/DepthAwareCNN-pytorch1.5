@@ -237,7 +237,7 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
             std::cout << string_format("Weight slice dim: %i", weight_slice.ndimension()) << std::endl;
             std::cout << "Weight:" << weight_slice.size(0) << ", " << weight_slice.size(1) << ", " << weight_slice.size(2) << std::endl;
             std::cout << string_format("output_n slice dim: %i", output_slice.ndimension()) << std::endl;
-            std::cout << string_format("output_n: %i x %i", output_slice.size(0), output_slice.size(2)) << std::endl;
+            std::cout << "output_n:" << output_slice.size(0) << ", " << output_slice.size(2) << std::endl;
             torch::addmm(output_slice, weight_slice, columns);
         }
 
