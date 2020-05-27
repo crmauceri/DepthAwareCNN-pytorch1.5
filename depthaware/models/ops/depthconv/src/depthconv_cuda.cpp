@@ -346,7 +346,7 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
         std::cout << "Do bias" << std::endl;
 
         // Do Bias:
-        torch::Tensor gradOutput_n_slice = gradOutput_n.reshape({nOutputPlane, outputWidth*outputHeight});
+        gradOutput_n_slice = gradOutput_n.reshape({nOutputPlane, outputWidth*outputHeight});
 
         std::cout << string_format("gradOutput_n_slice dim: %i", gradOutput.ndimension()) << std::endl;
         std::cout << string_format("gradOutput_n_slice: %i x %i", gradOutput.size(0), gradOutput.size(1)) << std::endl;
