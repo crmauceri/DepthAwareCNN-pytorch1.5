@@ -349,6 +349,8 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
 
         gradWeight.addmm_(columns.transpose(1,0), gradOutput_n_slice, /*beta=*/1.0, /*alpha=*/scale);
 
+        std::cout << "Do bias" << std::endl;
+
         // Do Bias:
         gradBias.addmm_(gradOutput_n_slice, ones, /*beta=*/1.0, /*alpha=*/scale);
 
