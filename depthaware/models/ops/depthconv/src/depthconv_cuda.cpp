@@ -403,10 +403,10 @@ std::vector<torch::Tensor> depthconv_backward_parameters_cuda(
             dH, dW,
             dilationH, dilationW);
 
-        torch::addmm_(gradWeight, columns, gradOutput_n, /*beta=*/1.0, /*alpha=*/scale);
+        gradWeight.addmm_(columns, gradOutput_n, /*beta=*/1.0, /*alpha=*/scale);
 
         // Do Bias:
-        torch::addmm_(gradBias, gradOutput_n, ones, /*beta=*/1.0, /*alpha=*/scale);
+        gradBias.addmm_(gradOutput_n, ones, /*beta=*/1.0, /*alpha=*/scale);
     }
 
     if (batch == 0) {
