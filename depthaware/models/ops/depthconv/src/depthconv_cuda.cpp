@@ -307,6 +307,7 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
 //        std::cout << weight.size(0) << ", " << weight.size(1) << ", " << weight.size(2) << ", " << weight.size(3) << std::endl;
 
         torch::Tensor gradOutput_n_slice = gradOutput_n.reshape({nOutputPlane, outputWidth*outputHeight});
+        gradOutput_n_slice.transpose_(1,0)
         torch::Tensor weight_slice = weight.reshape({nOutputPlane, weight.size(1)*weight.size(2)*weight.size(3)});
 
 //        std::cout << string_format("gradOutput_n_slice dim: %i", gradOutput_n_slice.ndimension()) << std::endl;
@@ -314,7 +315,7 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
 //        std::cout << string_format("weight_slice dim: %i", weight_slice.ndimension()) << std::endl;
 //        std::cout << weight_slice.size(0) << ", " << weight_slice.size(1) << std::endl;
 
-        torch::Tensor columns = torch::matmul(gradOutput_n_slice.transpose(1,0), weight_slice);
+        torch::Tensor columns = torch::matmul(gradOutput_n_slice, weight_slice);
 
 //        long m = input.size(1) * kW * kH;
 //        long n = columns.size(1);
@@ -340,7 +341,7 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
         }
 
         torch::Tensor gradWeight_slice = weight.reshape({nOutputPlane, weight.size(1)*weight.size(2)*weight.size(3)});
-        gradWeight_slice.addmm_(gradOutput_n_slice, columns, /*beta=*/1.0, /*alpha=*/scale);
+        gradWeight_slice.addmm_(gradOutput_n_slice.transpose(1,0), columns, /*beta=*/1.0, /*alpha=*/scale);
 
         std::cout << "Do bias" << std::endl;
 
@@ -352,7 +353,7 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
         std::cout << string_format("gradBias dim: %i", gradBias.ndimension()) << std::endl;
         std::cout << string_format("gradBias: %i x %i", gradBias.size(0), gradBias.size(1)) << std::endl;
 
-        gradBias.addmm_(gradOutput_n_slice, ones, /*beta=*/1.0, /*alpha=*/scale);
+        gradBias.addmm_(ones, gradOutput_n_slice, /*beta=*/1.0, /*alpha=*/scale);
     }
 
     if (batch == 0) {
