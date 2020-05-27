@@ -295,7 +295,7 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
     torch::Tensor gradWeight = torch::zeros({gradOutput.size(0), input.size(0), kW, kH}, torch::kCUDA);
     torch::Tensor gradBias = torch::zeros({gradOutput.size(0), 1}, torch::kCUDA);
     torch::Tensor gradInput = torch::zeros({batchSize, nInputPlane, inputHeight, inputWidth}, torch::kCUDA);
-    torch::Tensor ones = torch::ones({outputHeight*outputWidth, gradOutput.size(0)}, torch::kCUDA);
+    torch::Tensor ones = torch::ones({outputHeight*outputWidth}, torch::kCUDA);
 
     for (int elt = 0; elt < batchSize; elt++) {
         torch::Tensor input_depth_n = input_depth.select(0, elt);
