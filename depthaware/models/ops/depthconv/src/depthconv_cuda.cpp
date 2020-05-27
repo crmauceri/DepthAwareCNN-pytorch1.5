@@ -343,15 +343,13 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
         torch::Tensor gradWeight_slice = weight.reshape({nOutputPlane, weight.size(1)*weight.size(2)*weight.size(3)});
         gradWeight_slice.addmm_(gradOutput_n_slice.transpose(1,0), columns, /*beta=*/1.0, /*alpha=*/scale);
 
-        std::cout << "Do bias" << std::endl;
-
         // Do Bias:
-       std::cout << string_format("gradOutput_n_slice dim: %i", gradOutput_n_slice.ndimension()) << std::endl;
-        std::cout << string_format("gradOutput_n_slice: %i x %i", gradOutput_n_slice.size(0), gradOutput_n_slice.size(1)) << std::endl;
-        std::cout << string_format("ones dim: %i", ones.ndimension()) << std::endl;
-        std::cout << string_format("ones: %i x %i", ones.size(0), ones.size(1)) << std::endl;
-        std::cout << string_format("gradBias dim: %i", gradBias.ndimension()) << std::endl;
-        std::cout << string_format("gradBias: %i x %i", gradBias.size(0), gradBias.size(1)) << std::endl;
+//       std::cout << string_format("gradOutput_n_slice dim: %i", gradOutput_n_slice.ndimension()) << std::endl;
+//        std::cout << string_format("gradOutput_n_slice: %i x %i", gradOutput_n_slice.size(0), gradOutput_n_slice.size(1)) << std::endl;
+//        std::cout << string_format("ones dim: %i", ones.ndimension()) << std::endl;
+//        std::cout << string_format("ones: %i x %i", ones.size(0), ones.size(1)) << std::endl;
+//        std::cout << string_format("gradBias dim: %i", gradBias.ndimension()) << std::endl;
+//        std::cout << string_format("gradBias: %i x %i", gradBias.size(0), gradBias.size(1)) << std::endl;
 
         gradBias.addmm_(ones, gradOutput_n_slice, /*beta=*/1.0, /*alpha=*/scale);
     }
@@ -362,6 +360,13 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
         input_depth = input_depth.reshape({1, inputHeight, inputWidth});
         gradInput = gradInput.reshape({nInputPlane, inputHeight, inputWidth});
     }
+
+    std::cout << string_format("gradInput dim: %i", gradInput.ndimension()) << std::endl;
+    std::cout << string_format("gradInput: %i x %i", gradInput.size(0), gradInput.size(1)) << std::endl;
+    std::cout << string_format("gradWeight dim: %i", gradWeight.ndimension()) << std::endl;
+    std::cout << string_format("gradWeight: %i x %i", gradWeight.size(0), gradWeight.size(1)) << std::endl;
+    std::cout << string_format("gradBias dim: %i", gradBias.ndimension()) << std::endl;
+    std::cout << string_format("gradBias: %i x %i", gradBias.size(0), gradBias.size(1)) << std::endl;
 
     return {gradInput, gradWeight, gradBias};
 }
