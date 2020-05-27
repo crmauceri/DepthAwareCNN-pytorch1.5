@@ -216,10 +216,8 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
         std::cout << string_format("Bias: %i", bias.size(0)) << std::endl;
         std::cout << string_format("Output_n: %i x %i x %i", output_n.size(0), output_n.size(1), output_n.size(2)) << std::endl;
 
-        bias = bias.reshape({bias.size(0), 1, 1}); //Without the extra singleton dimensions the repeat function has the wrong dimensionality
-        output_n = bias.repeat({1, outputHeight, outputWidth});
-        std::cout << string_format("output_n dim: %i", output_n.ndimension()) << std::endl;
-        std::cout << string_format("output_n: %i x %i x %i", output_n.size(0), output_n.size(1), output_n.size(2)) << std::endl;
+        bias = bias.reshape({bias.size(0), 1}); //Without the extra singleton dimensions the repeat function has the wrong dimensionality
+        output_n.index_put_({Ellipsis}, bias.repeat({1, outputHeight*outputWidth}));
 
         columns = depthconv_im2col(input_n, depth_n,
             nInputPlane, inputHeight, inputWidth,
@@ -230,17 +228,17 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
 
         std::cout << string_format("Columns dim: %i", columns.ndimension()) << std::endl;
         std::cout << string_format("Columns: %i x %i", columns.size(0), columns.size(1)) << std::endl;
-        std::cout << string_format("Weight: %i x %i x %i x %i", weight.size(0), weight.size(1), weight.size(2), weight.size(3)) << std::endl;
+//        std::cout << string_format("Weight: %i x %i x %i x %i", weight.size(0), weight.size(1), weight.size(2), weight.size(3)) << std::endl;
 
         for(int c=0; c<nOutputPlane; c++){
             using namespace torch::indexing;
 
             torch::Tensor weight_slice = weight.index({c, Slice(), Slice(), Slice()});
-            torch::Tensor output_slice = output_n.index({c, Slice(), Slice()});
-            std::cout << string_format("Weight slice dim: %i", weight_slice.ndimension()) << std::endl;
+            torch::Tensor output_slice = output_n.index({c, Slice()});
+//            std::cout << string_format("Weight slice dim: %i", weight_slice.ndimension()) << std::endl;
             std::cout << "Weight:" << weight_slice.size(0) << ", " << weight_slice.size(1) << ", " << weight_slice.size(2) << std::endl;
             std::cout << string_format("output_n slice dim: %i", output_slice.ndimension()) << std::endl;
-            std::cout << "output_n:" << output_slice.size(0) << ", " << output_slice.size(1) << std::endl;
+            std::cout << "output_n:" << output_slice.size(0) << std::endl;
             torch::addmm(output_slice, weight_slice, columns);
         }
 
