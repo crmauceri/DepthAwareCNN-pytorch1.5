@@ -340,27 +340,21 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
         gradInput.index_put_({elt, Ellipsis}, gradInput_n);
         }
 
-        std::cout << string_format("columns dim: %i", columns.ndimension()) << std::endl;
-        std::cout << string_format("columns: %i x %i", columns.size(0), columns.size(1)) << std::endl;
-        std::cout << string_format("gradOutput_n_slice dim: %i", gradOutput.ndimension()) << std::endl;
-        std::cout << string_format("gradOutput_n_slice: %i x %i", gradOutput.size(0), gradOutput.size(1)) << std::endl;
-        std::cout << string_format("ones dim: %i", ones.ndimension()) << std::endl;
-        std::cout << string_format("ones: %i", ones.size(0)) << std::endl;
-
-        std::cout << string_format("gradWeight dim: %i", gradWeight.ndimension()) << std::endl;
-        std::cout << string_format("gradWeight: %i x %i", gradWeight.size(0), gradWeight.size(1)) << std::endl;
-        std::cout << string_format("gradBias dim: %i", gradBias.ndimension()) << std::endl;
-        std::cout << string_format("gradBias: %i x %i", gradBias.size(0), gradBias.size(1)) << std::endl;
-
         torch::Tensor gradWeight_slice = weight.reshape({nOutputPlane, weight.size(1)*weight.size(2)*weight.size(3)});
-        std::cout << string_format("gradWeight_slice dim: %i", gradWeight_slice.ndimension()) << std::endl;
-        std::cout << string_format("gradWeight_slice: %i x %i", gradWeight_slice.size(0), gradWeight_slice.size(1)) << std::endl;
-
         gradWeight_slice.addmm_(gradOutput_n_slice.transpose(1,0), columns, /*beta=*/1.0, /*alpha=*/scale);
 
         std::cout << "Do bias" << std::endl;
 
         // Do Bias:
+        torch::Tensor gradOutput_n_slice = gradOutput_n.reshape({nOutputPlane, outputWidth*outputHeight});
+
+        std::cout << string_format("gradOutput_n_slice dim: %i", gradOutput.ndimension()) << std::endl;
+        std::cout << string_format("gradOutput_n_slice: %i x %i", gradOutput.size(0), gradOutput.size(1)) << std::endl;
+        std::cout << string_format("ones dim: %i", ones.ndimension()) << std::endl;
+        std::cout << string_format("ones: %i", ones.size(0)) << std::endl;
+        std::cout << string_format("gradBias dim: %i", gradBias.ndimension()) << std::endl;
+        std::cout << string_format("gradBias: %i x %i", gradBias.size(0), gradBias.size(1)) << std::endl;
+
         torch::Tensor gradBias_slice = gradBias.reshape({nOutputPlane});
         std::cout << string_format("gradBias_slice dim: %i", gradBias_slice.ndimension()) << std::endl;
         std::cout << string_format("gradBias_slice: %i", gradBias_slice.size(0)) << std::endl;
