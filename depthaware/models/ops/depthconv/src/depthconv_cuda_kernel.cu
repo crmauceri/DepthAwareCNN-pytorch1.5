@@ -93,7 +93,7 @@ torch::Tensor depthconv_im2col(
     int width_col = (width + 2 * pad_w - (dilation_w * (ksize_w - 1) + 1)) / stride_w + 1;
     int num_kernels = channels * height_col * width_col;
 
-    torch::Tensor data_col = torch::zeros({channels * ksize_h * ksize_w, height_col * width_col});
+    torch::Tensor data_col = torch::zeros({channels * ksize_h * ksize_w, height_col * width_col}, torch::kCUDA);
 
     // Launch
     AT_DISPATCH_FLOATING_TYPES(data_im.scalar_type(), "depthconv_im2col_gpu_kernel", ([&] {
@@ -183,7 +183,7 @@ torch::Tensor depthconv_col2im(
     int width_col = (width + 2 * pad_w - (dilation_w * (ksize_w - 1) + 1)) / stride_w + 1;
     int num_kernels = channels * height_col * width_col;
 
-    torch::Tensor grad_im = torch::zeros({channels, height, width});
+    torch::Tensor grad_im = torch::zeros({channels, height, width}, torch::kCUDA);
 
     // int channel_per_depthconv_group = channels / depthconv_group;
     // To avoid involving atomic operations, we will launch one kernel per

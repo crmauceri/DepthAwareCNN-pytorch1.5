@@ -240,9 +240,9 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
         torch::Tensor weight_slice = weight.reshape({weight.size(0), weight.size(1)*weight.size(2)*weight.size(3)});
         torch::Tensor output_slice = output_n.reshape({nOutputPlane, outputWidth*outputHeight});
 //            std::cout << string_format("Weight slice dim: %i", weight_slice.ndimension()) << std::endl;
-        std::cout << "Weight:" << weight_slice.size(0) << ", " << weight_slice.size(1) << std::endl;
+//        std::cout << "Weight:" << weight_slice.size(0) << ", " << weight_slice.size(1) << std::endl;
 //        std::cout << string_format("output_n slice dim: %i", output_slice.ndimension()) << std::endl;
-        std::cout << "output_n:" << output_slice.size(0) << "< " << output_slice.size(1) << std::endl;
+//        std::cout << "output_n:" << output_slice.size(0) << ", " << output_slice.size(1) << std::endl;
         torch::addmm(output_slice, weight_slice, columns);
         }
 
