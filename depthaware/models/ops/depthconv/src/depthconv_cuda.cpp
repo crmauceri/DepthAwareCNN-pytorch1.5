@@ -255,7 +255,7 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
 std::vector<torch::Tensor> depthconv_backward_cuda(
     torch::Tensor input, torch::Tensor input_depth, torch::Tensor gradOutput,
     torch::Tensor weight, int kW, int kH, int dW, int dH,
-    int padW, int padH, int dilationH, int dilationW) {
+    int padW, int padH, int dilationH, int dilationW, double scale) {
 
     CHECK_INPUT(input);
     CHECK_INPUT(input_depth);
