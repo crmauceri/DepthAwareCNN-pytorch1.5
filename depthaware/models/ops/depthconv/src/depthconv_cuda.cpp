@@ -216,7 +216,7 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
         std::cout << string_format("Bias: %i", bias.size(0)) << std::endl;
         std::cout << string_format("Output_n: %i x %i x %i", output_n.size(0), output_n.size(1), output_n.size(2)) << std::endl;
 
-        bias = bias.reshape({bias.size(0), 1, 1});
+        bias = bias.reshape({bias.size(0), 1, 1}); //Without the extra singleton dimensions the repeat function has the wrong dimensionality
         output_n = bias.repeat({1, outputHeight, outputWidth});
         std::cout << string_format("output_n dim: %i", output_n.ndimension()) << std::endl;
         std::cout << string_format("output_n: %i x %i x %i", output_n.size(0), output_n.size(1), output_n.size(2)) << std::endl;
@@ -236,7 +236,7 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
             using namespace torch::indexing;
 
             torch::Tensor weight_slice = weight.index({c, Slice(), Slice(), Slice()});
-            torch::Tensor output_slice = output_n.index({Slice(), c, Slice()});
+            torch::Tensor output_slice = output_n.index({c, Slice(), Slice()});
             std::cout << string_format("Weight slice dim: %i", weight_slice.ndimension()) << std::endl;
             std::cout << "Weight:" << weight_slice.size(0) << ", " << weight_slice.size(1) << ", " << weight_slice.size(2) << std::endl;
             std::cout << string_format("output_n slice dim: %i", output_slice.ndimension()) << std::endl;
