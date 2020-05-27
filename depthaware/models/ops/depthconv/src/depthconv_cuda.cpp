@@ -295,7 +295,7 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
     torch::Tensor gradWeight = torch::zeros({gradOutput.size(0), input.size(0), kW, kH}, torch::kCUDA);
     torch::Tensor gradBias = torch::zeros({gradOutput.size(0), 1}, torch::kCUDA);
     torch::Tensor gradInput = torch::zeros({batchSize, nInputPlane, inputHeight, inputWidth}, torch::kCUDA);
-    torch::Tensor ones = torch::ones({outputHeight*outputWidth}, torch::kCUDA);
+    torch::Tensor ones = torch::ones({nOutputPlane}, torch::kCUDA);
 
     for (int elt = 0; elt < batchSize; elt++) {
         torch::Tensor input_depth_n = input_depth.select(0, elt);
@@ -346,9 +346,7 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
         std::cout << "Do bias" << std::endl;
 
         // Do Bias:
-        gradOutput_n_slice = gradOutput_n.reshape({nOutputPlane, outputWidth*outputHeight});
-
-        std::cout << string_format("gradOutput_n_slice dim: %i", gradOutput_n_slice.ndimension()) << std::endl;
+       std::cout << string_format("gradOutput_n_slice dim: %i", gradOutput_n_slice.ndimension()) << std::endl;
         std::cout << string_format("gradOutput_n_slice: %i x %i", gradOutput_n_slice.size(0), gradOutput_n_slice.size(1)) << std::endl;
         std::cout << string_format("ones dim: %i", ones.ndimension()) << std::endl;
         std::cout << string_format("ones: %i", ones.size(0)) << std::endl;
