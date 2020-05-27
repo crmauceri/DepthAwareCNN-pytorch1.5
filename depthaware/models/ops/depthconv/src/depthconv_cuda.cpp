@@ -292,10 +292,10 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
     }
 
     //TODO Check these dimensions
-    torch::Tensor gradWeight = torch::zeros({gradOutput.size(0), input.size(0), kW, kH}, torch::kCUDA);
-    torch::Tensor gradBias = torch::zeros({gradOutput.size(0), 1}, torch::kCUDA);
-    torch::Tensor gradInput = torch::zeros({batchSize, nInputPlane, inputHeight, inputWidth}, torch::kCUDA);
-    torch::Tensor ones = torch::ones({batchSize, outputWidth*outputHeight}, torch::kCUDA);
+    torch::Tensor gradWeight = torch::zeros_like(weight, torch::kCUDA);
+    torch::Tensor gradBias = torch::zeros_like(bias, torch::kCUDA);
+    torch::Tensor gradInput = torch::zeros_like(input, torch::kCUDA);
+    torch::Tensor ones = torch::ones({weight.size(0), outputWidth*outputHeight}, torch::kCUDA);
 
     std::cout << string_format("gradInput dim: %i", gradInput.ndimension()) << std::endl;
     std::cout << string_format("gradInput: %i x %i x %i x %i", gradInput.size(0), gradInput.size(1), gradInput.size(2), gradInput.size(3)) << std::endl;
