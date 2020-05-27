@@ -206,22 +206,13 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
     torch::Tensor depth_n;
     torch::Tensor output_n;
 
+    bias = bias.reshape({bias.size(0), 1, 1}).repeat({1, outputHeight, outputWidth})); //Without the extra singleton dimensions the repeat function has the wrong dimensionality
+
     for (int elt = 0; elt < batchSize; elt++) {
 
         input_n = input.select(0, elt);
         depth_n = input_depth.select(0, elt);
         output_n = output.select(0, elt);
-
-        // Do bias first
-//        std::cout << string_format("Bias: %i", bias.size(0)) << std::endl;
-//        std::cout << string_format("Output_n: %i x %i x %i", output_n.size(0), output_n.size(1), output_n.size(2)) << std::endl;
-
-        bias = bias.reshape({bias.size(0), 1, 1}); //Without the extra singleton dimensions the repeat function has the wrong dimensionality
-
-        {
-        using namespace torch::indexing;
-        output_n.index_put_({Ellipsis}, bias.repeat({1, outputHeight, outputWidth}));
-        }
 
         std::cout << input_n << std::endl;
 
@@ -247,9 +238,9 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
 //        std::cout << string_format("output_n slice dim: %i", output_slice.ndimension()) << std::endl;
 //        std::cout << "output_n:" << output_slice.size(0) << ", " << output_slice.size(1) << std::endl;
         std::cout << weight_slice << std::endl;
-        std::cout << output_slice << std::endl;
+        std::cout << bias << std::endl;
 
-        torch::addmm(output_slice, weight_slice, columns);
+        output_slice.index_put_({Ellipsis}, torch::addmm(bias, weight_slice, columns));
 
         std::cout << output_slice << std::endl;
         }
