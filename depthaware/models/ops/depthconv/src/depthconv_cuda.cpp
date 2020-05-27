@@ -206,7 +206,9 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
     torch::Tensor depth_n;
     torch::Tensor output_n;
 
-    bias = bias.reshape({bias.size(0), 1, 1}).repeat({1, outputHeight, outputWidth}); //Without the extra singleton dimensions the repeat function has the wrong dimensionality
+    //Repeat bias to match output size
+    //Without the extra singleton dimensions the repeat function has the wrong dimensionality
+    bias = bias.reshape({bias.size(0), 1}).repeat({1, outputHeight*outputWidth});
 
     for (int elt = 0; elt < batchSize; elt++) {
 
@@ -223,9 +225,6 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
             dH, dW,
             dilationH, dilationW);
 
-//        std::cout << string_format("Columns dim: %i", columns.ndimension()) << std::endl;
-//        std::cout << string_format("Columns: %i x %i", columns.size(0), columns.size(1)) << std::endl;
-//        std::cout << string_format("Weight: %i x %i x %i x %i", weight.size(0), weight.size(1), weight.size(2), weight.size(3)) << std::endl;
         std::cout << columns << std::endl;
 
         {
@@ -233,10 +232,6 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
 
         torch::Tensor weight_slice = weight.reshape({weight.size(0), weight.size(1)*weight.size(2)*weight.size(3)});
         torch::Tensor output_slice = output_n.reshape({nOutputPlane, outputWidth*outputHeight});
-//        std::cout << string_format("Weight slice dim: %i", weight_slice.ndimension()) << std::endl;
-//        std::cout << "Weight:" << weight_slice.size(0) << ", " << weight_slice.size(1) << std::endl;
-//        std::cout << string_format("output_n slice dim: %i", output_slice.ndimension()) << std::endl;
-//        std::cout << "output_n:" << output_slice.size(0) << ", " << output_slice.size(1) << std::endl;
         std::cout << weight_slice << std::endl;
         std::cout << bias << std::endl;
 
@@ -245,6 +240,7 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
         std::cout << output_slice << std::endl;
         }
 
+       //Original code for reference
 //        long m = weight.size(0);
 //        long n = columns.size(1);
 //        long k = input.size(1) * kH * kW;
