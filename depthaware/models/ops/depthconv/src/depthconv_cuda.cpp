@@ -343,9 +343,9 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
         std::cout << string_format("columns dim: %i", columns.ndimension()) << std::endl;
         std::cout << string_format("columns: %i x %i", columns.size(0), columns.size(1)) << std::endl;
         std::cout << string_format("gradOutput dim: %i", gradOutput.ndimension()) << std::endl;
-        std::cout << string_format("gradOutput: %i x %i", gradOutput.size(0), gradOutput.size(1)) << std::endl;
+        std::cout << string_format("gradOutput: %i x %i x %i x %i", gradOutput.size(0), gradOutput.size(1), gradOutput.size(2), gradOutput.size(3)) << std::endl;
         std::cout << string_format("ones dim: %i", ones.ndimension()) << std::endl;
-        std::cout << string_format("ones: %i x %i", ones.size(0)) << std::endl;
+        std::cout << string_format("ones: %i", ones.size(0)) << std::endl;
 
         std::cout << string_format("gradWeight dim: %i", gradWeight.ndimension()) << std::endl;
         std::cout << string_format("gradWeight: %i x %i", gradWeight.size(0), gradWeight.size(1)) << std::endl;
