@@ -10,7 +10,10 @@ class DepthconvFunction(Function):
         if bias is None:
             bias = torch.zeros(weight.shape[0], device=weight.device)
 
-        ctx.save_for_backward(input, depth, weight, bias, stride, padding, dilation)
+        ctx.save_for_backward(input, depth, weight, bias)
+        ctx.stride = stride
+        ctx.padding = padding
+        ctx.dilation = dilation
 
         output_size = [int((input.size()[i + 2] + 2 * padding[i] - weight.size()[i + 2]) / stride[i] + 1)
                        for i in range(2)]
@@ -28,7 +31,7 @@ class DepthconvFunction(Function):
     @staticmethod
     def backward(ctx, grad_output):
         # print('backward')
-        input, depth, weight, bias, stride, padding, dilation = ctx.saved_tensors
+        input, depth, weight, bias = ctx.saved_tensors
 
         grad_input = grad_weight = grad_bias = None
 
@@ -40,12 +43,12 @@ class DepthconvFunction(Function):
 
             grad_input = depthconv.backward_input(
                 input, depth, grad_output, weight,
-                weight.size(3), weight.size(2), stride[1], stride[0],
-                padding[1], padding[0], dilation[1], dilation[0])
+                weight.size(3), weight.size(2), ctx.stride[1], ctx.stride[0],
+                ctx.padding[1], ctx.padding[0], ctx.dilation[1], ctx.dilation[0])
 
             grad_weight, grad_bias = depthconv.backward_parameters(
                 input, depth, grad_output,
-                weight.size(3), weight.size(2), stride[1], stride[0],
-                padding[1], padding[0], dilation[1], dilation[0], 1)
+                weight.size(3), weight.size(2), ctx.stride[1], ctx.stride[0],
+                ctx.padding[1], ctx.padding[0], ctx.dilation[1], ctx.dilation[0], 1)
 
         return grad_input, None, grad_weight, grad_bias, None, None, None, None
