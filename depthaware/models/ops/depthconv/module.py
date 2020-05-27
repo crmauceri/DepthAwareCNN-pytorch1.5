@@ -126,10 +126,6 @@ if __name__ == '__main__':
     conv_loss.backward()
     conv_test_loss.backward()
 
-    weight_grad = conv.weight.grad
-    weight_grad_test = conv_test.weight.grad
-    np.testing.assert_array_almost_equal(weight_grad.detach().cpu().numpy(), weight_grad_test.detach().cpu().numpy())
-
     if bias:
         bias_grad = conv.bias.grad
         bias_grad_test = conv_test.bias.grad
@@ -138,3 +134,7 @@ if __name__ == '__main__':
     input_grad = input1.grad
     input_grad_test = input2.grad
     np.testing.assert_array_almost_equal(input_grad.detach().cpu().numpy(), input_grad_test.detach().cpu().numpy())
+
+    weight_grad = conv.weight.grad
+    weight_grad_test = conv_test.weight.grad
+    np.testing.assert_array_almost_equal(weight_grad.detach().cpu().numpy(), weight_grad_test.detach().cpu().numpy())
