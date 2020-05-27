@@ -301,7 +301,7 @@ torch::Tensor depthconv_backward_input_cuda(
         std::cout << string_format("gradOutput_n dim: %i", gradOutput_n.ndimension()) << std::endl;
         std::cout << string_format("gradOutput_n: %i x %i x %i", gradOutput_n.size(0), gradOutput_n.size(1), gradOutput_n.size(2)) << std::endl;
         std::cout << string_format("weight dim: %i", weight.ndimension()) << std::endl;
-        std::cout << weight.size(0) << ", " << weight.size(1) << ", " << weight.size(2) << ", " << weight.size(3)) << std::endl;
+        std::cout << weight.size(0) << ", " << weight.size(1) << ", " << weight.size(2) << ", " << weight.size(3) << std::endl;
 
         columns = torch::matmul(gradOutput_n.reshape({nOutputPlane, outputWidth}).transpose_(1, 0), weight.reshape({nOutputPlane, }));
 
