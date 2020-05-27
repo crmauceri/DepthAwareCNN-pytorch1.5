@@ -231,7 +231,10 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
 
         for(int c=0; c<nOutputPlane; c++){
             using namespace torch::indexing;
-            torch::addmm(output_n.index({c,Slice(),Slice()}), weight.index({c, Slice(), Slice()}), columns);
+
+            std::cout << string_format("Weight: %i x %i", weight.index({c, Ellipsis}).size(0), weight.index({c, Ellipsis}).size(1)) << std::endl;
+            std::cout << string_format("output_n: %i x %i", output_n.index({c,Slice(),Slice()}).size(0), output_n.index({c,Slice(),Slice()}).size(1)) << std::endl;
+            torch::addmm(output_n.index({c,Slice(),Slice()}), weight.index({c, Ellipsis}), columns);
         }
 
 //        long m = weight.size(0);
