@@ -216,6 +216,7 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
         std::cout << string_format("Bias: %i", bias.size(0)) << std::endl;
         std::cout << string_format("Output_n: %i x %i x %i", output_n.size(0), output_n.size(1), output_n.size(2)) << std::endl;
 
+        bias = bias.reshape({bias.size(0), 1, 1});
         output_n = bias.repeat({1, outputHeight, outputWidth});
         std::cout << string_format("output_n dim: %i", output_n.ndimension()) << std::endl;
         std::cout << string_format("output_n: %i x %i x %i", output_n.size(0), output_n.size(1), output_n.size(2)) << std::endl;
