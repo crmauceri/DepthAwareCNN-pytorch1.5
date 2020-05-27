@@ -346,8 +346,11 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
         std::cout << string_format("gradOutput_n_slice: %i x %i", gradOutput_n_slice.size(0), gradOutput_n_slice.size(1)) << std::endl;
         std::cout << string_format("ones dim: %i", ones.ndimension()) << std::endl;
         std::cout << string_format("ones: %i x %i", ones.size(0), ones.size(1)) << std::endl;
+        std::cout << string_format("gradWeight_slice dim: %i", gradWeight_slice.ndimension()) << std::endl;
+        std::cout << string_format("gradWeight_slice: %i x %i", gradWeight_slice.size(0), gradWeight_slice.size(1)) << std::endl;
 
-        gradWeight.addmm_(columns.transpose(1,0), gradOutput_n_slice, /*beta=*/1.0, /*alpha=*/scale);
+        torch::Tensor gradWeight_slice = weight.reshape({nOutputPlane, weight.size(1)*weight.size(2)*weight.size(3)})
+        gradWeight_slice.addmm_(columns.transpose(1,0), gradOutput_n_slice, /*beta=*/1.0, /*alpha=*/scale);
 
         std::cout << "Do bias" << std::endl;
 
