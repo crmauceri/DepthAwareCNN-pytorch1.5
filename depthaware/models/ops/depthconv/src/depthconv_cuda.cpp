@@ -308,14 +308,13 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
 
         torch::Tensor gradOutput_n_slice = gradOutput_n.reshape({nOutputPlane, outputWidth*outputHeight});
         torch::Tensor weight_slice = weight.reshape({nOutputPlane, weight.size(1)*weight.size(2)*weight.size(3)});
-        gradOutput_n_slice.transpose_(1, 0);
 
 //        std::cout << string_format("gradOutput_n_slice dim: %i", gradOutput_n_slice.ndimension()) << std::endl;
 //        std::cout << string_format("gradOutput_n_slice: %i x %i", gradOutput_n_slice.size(0), gradOutput_n_slice.size(1)) << std::endl;
 //        std::cout << string_format("weight_slice dim: %i", weight_slice.ndimension()) << std::endl;
 //        std::cout << weight_slice.size(0) << ", " << weight_slice.size(1) << std::endl;
 
-        torch::Tensor columns = torch::matmul(gradOutput_n_slice, weight_slice);
+        torch::Tensor columns = torch::matmul(gradOutput_n_slice.transpose(1,0), weight_slice);
 
 //        long m = input.size(1) * kW * kH;
 //        long n = columns.size(1);
@@ -341,7 +340,7 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
         }
 
         torch::Tensor gradWeight_slice = weight.reshape({nOutputPlane, weight.size(1)*weight.size(2)*weight.size(3)});
-        gradWeight_slice.addmm_(gradOutput_n_slice.transpose(1,0), columns, /*beta=*/1.0, /*alpha=*/scale);
+        gradWeight_slice.addmm_(gradOutput_n_slice, columns, /*beta=*/1.0, /*alpha=*/scale);
 
         std::cout << "Do bias" << std::endl;
 
