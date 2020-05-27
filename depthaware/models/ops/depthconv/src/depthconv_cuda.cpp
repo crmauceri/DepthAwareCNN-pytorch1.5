@@ -223,6 +223,8 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
         output_n.index_put_({Ellipsis}, bias.repeat({1, outputHeight, outputWidth}));
         }
 
+        std::cout << input_n << std::endl;
+
         columns = depthconv_im2col(input_n, depth_n,
             nInputPlane, inputHeight, inputWidth,
             kH, kW,
@@ -240,14 +242,13 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
 
         torch::Tensor weight_slice = weight.reshape({weight.size(0), weight.size(1)*weight.size(2)*weight.size(3)});
         torch::Tensor output_slice = output_n.reshape({nOutputPlane, outputWidth*outputHeight});
-//            std::cout << string_format("Weight slice dim: %i", weight_slice.ndimension()) << std::endl;
+//        std::cout << string_format("Weight slice dim: %i", weight_slice.ndimension()) << std::endl;
 //        std::cout << "Weight:" << weight_slice.size(0) << ", " << weight_slice.size(1) << std::endl;
 //        std::cout << string_format("output_n slice dim: %i", output_slice.ndimension()) << std::endl;
 //        std::cout << "output_n:" << output_slice.size(0) << ", " << output_slice.size(1) << std::endl;
         std::cout << weight_slice << std::endl;
         std::cout << output_slice << std::endl;
 
-        torch::addmm(output_slice, weight_slice, columns);
         }
 
 //        long m = weight.size(0);
