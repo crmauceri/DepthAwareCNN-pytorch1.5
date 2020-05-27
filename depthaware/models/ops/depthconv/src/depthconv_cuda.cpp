@@ -249,6 +249,9 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
         std::cout << weight_slice << std::endl;
         std::cout << output_slice << std::endl;
 
+        torch::addmm(output_slice, weight_slice, columns);
+
+        std::cout << output_slice << std::endl;
         }
 
 //        long m = weight.size(0);
