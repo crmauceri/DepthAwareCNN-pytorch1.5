@@ -342,15 +342,15 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
 
         std::cout << string_format("columns dim: %i", columns.ndimension()) << std::endl;
         std::cout << string_format("columns: %i x %i", columns.size(0), columns.size(1)) << std::endl;
-        std::cout << string_format("gradOutput_n dim: %i", gradOutput_n.ndimension()) << std::endl;
-        std::cout << string_format("gradOutput_n: %i x %i", gradOutput_n.size(0), gradOutput_n.size(1)) << std::endl;
+        std::cout << string_format("gradOutput_n_slice dim: %i", gradOutput_n_slice.ndimension()) << std::endl;
+        std::cout << string_format("gradOutput_n_slice: %i x %i", gradOutput_n_slice.size(0), gradOutput_n_slice.size(1)) << std::endl;
         std::cout << string_format("ones dim: %i", ones.ndimension()) << std::endl;
         std::cout << string_format("ones: %i x %i", ones.size(0), ones.size(1)) << std::endl;
 
         gradWeight.addmm_(columns.transpose(1,0), gradOutput_n_slice, /*beta=*/1.0, /*alpha=*/scale);
 
         // Do Bias:
-        gradBias.addmm_(gradOutput_n, ones, /*beta=*/1.0, /*alpha=*/scale);
+        gradBias.addmm_(gradOutput_n_slice, ones, /*beta=*/1.0, /*alpha=*/scale);
 
         std::cout << string_format("gradWeight dim: %i", gradWeight.ndimension()) << std::endl;
         std::cout << string_format("gradWeight: %i x %i", gradWeight.size(0), gradWeight.size(1)) << std::endl;
