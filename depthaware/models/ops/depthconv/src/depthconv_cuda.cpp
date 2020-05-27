@@ -217,7 +217,11 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
         std::cout << string_format("Output_n: %i x %i x %i", output_n.size(0), output_n.size(1), output_n.size(2)) << std::endl;
 
         bias = bias.reshape({bias.size(0), 1}); //Without the extra singleton dimensions the repeat function has the wrong dimensionality
+
+        {
+        using namespace torch::indexing;
         output_n.index_put_({Ellipsis}, bias.repeat({1, outputHeight*outputWidth}));
+        }
 
         columns = depthconv_im2col(input_n, depth_n,
             nInputPlane, inputHeight, inputWidth,
