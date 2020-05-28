@@ -294,7 +294,6 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
     }
 
     //TODO Check these dimensions
-    torch::Tensor gradWeight = torch::zeros_like(weight, torch::kCUDA);
     torch::Tensor gradInput = torch::zeros_like(input, torch::kCUDA);
 
     std::cout << string_format("gradOutput dim: %i", gradOutput.ndimension()) << std::endl;
@@ -338,15 +337,14 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
     }
 
     //Compute weight gradient
-    torch::Tensor gradWeight_flat = gradWeight.view({nOutputPlane, weight.size(1)*weight.size(2)*weight.size(3)});
-    torch::Tensor product = torch::matmul(columns.transpose(2,1),
+    torch::Tensor gradWeight_batch = torch::matmul(columns.transpose(2,1),
                                           gradOutput.view({gradOutput.size(0), gradOutput.size(1),
                                                            gradOutput.size(2)*gradOutput.size(3)}).transpose(2,1));
 
     std::cout << string_format("product dim: %i", product.ndimension()) << std::endl;
     std::cout << string_format("product: %i x %i x %i", product.size(0), product.size(1), product.size(2)) << std::endl;
 
-    gradWeight_flat.add_(product);
+    torch::Tensor gradWeight = gradWeight_batch.mul(scale).sum(/*dim=*/{0})
 
 //        {
 //        using namespace torch::indexing;
