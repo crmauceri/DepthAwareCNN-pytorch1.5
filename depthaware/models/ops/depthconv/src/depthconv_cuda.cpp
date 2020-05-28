@@ -329,12 +329,12 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
         gradInput.index_put_({elt, Ellipsis}, gradInput_n);
         }
 
-        torch::Tensor gradWeight_slice = weight.view({nOutputPlane, weight.size(1)*weight.size(2)*weight.size(3)});
-        {
-        using namespace torch::indexing;
+        torch::Tensor gradWeight_slice = gradWeight.view({nOutputPlane, weight.size(1)*weight.size(2)*weight.size(3)});
+//        {
+//        using namespace torch::indexing;
         //gradWeight.index_put_({Ellipsis}, gradWeight_slice.reshape({nOutputPlane, weight.size(1), weight.size(2), weight.size(3)}));
-        gradWeight.index_put_({Ellipsis}, gradWeight_slice.addmm(columns.transpose(1,0), gradOutput_n_slice, /*beta=*/1.0, /*alpha=*/scale));
-        }
+        gradWeight_slice.addmm_(columns.transpose(1,0), gradOutput_n_slice, /*beta=*/1.0, /*alpha=*/scale));
+//        }
 
         //Original code for reference
 //        long m = nOutputPlane;
