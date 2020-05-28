@@ -344,7 +344,7 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
     std::cout << string_format("product dim: %i", product.ndimension()) << std::endl;
     std::cout << string_format("product: %i x %i x %i", product.size(0), product.size(1), product.size(2)) << std::endl;
 
-    torch::Tensor gradWeight = gradWeight_batch.mul(scale).sum(/*dim=*/{0})
+    torch::Tensor gradWeight = gradWeight_batch.mul(scale).sum(/*dim=*/{0});
 
 //        {
 //        using namespace torch::indexing;
