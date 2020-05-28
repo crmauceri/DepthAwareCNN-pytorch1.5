@@ -84,7 +84,6 @@ if __name__ == '__main__':
     input2 = input1.clone().detach().requires_grad_(True).to(device)  # Using True throws error on backward pass
     depth = torch.ones((batch_size, 1, w, h), device=device)
     target = torch.randint(0, 10, (batch_size,), device=device)
-    bias = True
 
     # Pytorch Conv2d pipeline
     conv = nn.Conv2d(3, out_channels, kernel_size, bias=True, padding=padding, dilation=dilation, stride=1)
@@ -97,8 +96,8 @@ if __name__ == '__main__':
 
     conv_test.weight = nn.Parameter(
         conv.weight.clone().detach().requires_grad_(True))  # Copy weights and bias from conv so result should be same
-    if bias:
-        conv_test.bias = nn.Parameter(conv.bias.clone().detach().requires_grad_(True))
+
+    conv_test.bias = nn.Parameter(conv.bias.clone().detach().requires_grad_(True))
 
     if torch.cuda.is_available():
         conv_test = conv_test.cuda()
@@ -126,15 +125,14 @@ if __name__ == '__main__':
     conv_loss.backward()
     conv_test_loss.backward()
 
-    if bias:
-        bias_grad = conv.bias.grad
-        bias_grad_test = conv_test.bias.grad
-        np.testing.assert_array_almost_equal(bias_grad.detach().cpu().numpy(), bias_grad_test.detach().cpu().numpy())
+    weight_grad = conv.weight.grad
+    weight_grad_test = conv_test.weight.grad
+    np.testing.assert_array_almost_equal(weight_grad.detach().cpu().numpy(), weight_grad_test.detach().cpu().numpy())
+
+    bias_grad = conv.bias.grad
+    bias_grad_test = conv_test.bias.grad
+    np.testing.assert_array_almost_equal(bias_grad.detach().cpu().numpy(), bias_grad_test.detach().cpu().numpy())
 
     input_grad = input1.grad
     input_grad_test = input2.grad
     np.testing.assert_array_almost_equal(input_grad.detach().cpu().numpy(), input_grad_test.detach().cpu().numpy())
-
-    weight_grad = conv.weight.grad
-    weight_grad_test = conv_test.weight.grad
-    np.testing.assert_array_almost_equal(weight_grad.detach().cpu().numpy(), weight_grad_test.detach().cpu().numpy())
