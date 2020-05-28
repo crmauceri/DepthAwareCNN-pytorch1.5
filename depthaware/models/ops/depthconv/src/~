@@ -269,8 +269,8 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
     if (input.ndimension() == 3) {
         // Force batch
         batch = 0;
-        input = input.view({1, input.size(0), input.size(1), input.size(2)});
-        gradOutput = gradOutput.view({1, gradOutput.size(0), gradOutput.size(1), gradOutput.size(2)});
+        input = input.reshape({1, input.size(0), input.size(1), input.size(2)});
+        gradOutput = gradOutput.reshape({1, gradOutput.size(0), gradOutput.size(1), gradOutput.size(2)});
     }
 
     int batchSize = input.size(0);
@@ -290,26 +290,20 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
     }
 
     //TODO Check these dimensions
+    torch::Tensor gradWeight = torch::zeros_like(weight, torch::kCUDA);
+    torch::Tensor gradBias = torch::zeros({nOutputPlane, 1}, torch::kCUDA);
     torch::Tensor gradInput = torch::zeros_like(input, torch::kCUDA);
+    torch::Tensor ones = torch::ones({nOutputPlane, outputWidth*outputHeight}, torch::kCUDA);
 
-    std::cout << string_format("gradOutput dim: %i", gradOutput.ndimension()) << std::endl;
-    std::cout << string_format("gradOutput: %i x %i x %i x %i", gradOutput.size(0), gradOutput.size(1), gradOutput.size(2), gradOutput.size(3)) << std::endl;
-    std::cout << string_format("weight dim: %i", weight.ndimension()) << std::endl;
-    std::cout << weight.size(0)  << "," << weight.size(1) << "," << weight.size(2) << "," << weight.size(3) << std::endl;
-
-    torch::Tensor columns = torch::matmul(gradOutput.view({batchSize, nOutputPlane, outputWidth*outputHeight}).transpose(2, 1),
-                   weight.view({nOutputPlane, weight.size(1)*weight.size(2)*weight.size(3)}));
-
-    std::cout << string_format("Columns dim: %i", columns.ndimension()) << std::endl;
-    std::cout << string_format("Columns: %i x %i x %i", columns.size(0), columns.size(1), columns.size(2)) << std::endl;
-
-    //Compute input gradient
     for (int elt = 0; elt < batchSize; elt++) {
         torch::Tensor input_depth_n = input_depth.select(0, elt);
-        torch::Tensor columns_n = columns.select(0, elt);
         torch::Tensor gradOutput_n = gradOutput.select(0, elt);
 
-        //Original code for reference
+        torch::Tensor gradOutput_n_slice = gradOutput_n.reshape({nOutputPlane, outputWidth*outputHeight});
+        gradOutput_n_slice.transpose_(1,0);
+        torch::Tensor weight_slice = weight.reshape({nOutputPlane, weight.size(1)*weight.size(2)*weight.size(3)});
+        torch::Tensor columns = torch::matmul(gradOutput_n_slice, weight_slice);
+
 //        long m = input.size(1) * kW * kH;
 //        long n = columns.size(1);
 //        long k = weight.size(0);
@@ -319,7 +313,7 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
 //                     weight.data(), m, 0.0f,
 //                     columns.data(), n);
 
-        torch::Tensor gradInput_n = depthconv_col2im(columns_n, input_depth_n,
+        torch::Tensor gradInput_n = depthconv_col2im(columns, input_depth_n,
             nInputPlane, inputHeight, inputWidth,
             kH, kW,
             padH, padW,
@@ -330,41 +324,26 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
         using namespace torch::indexing;
         gradInput.index_put_({elt, Ellipsis}, gradInput_n);
         }
+
+        torch::Tensor gradWeight_slice = weight.reshape({nOutputPlane, weight.size(1)*weight.size(2)*weight.size(3)});
+        gradWeight_slice.addmm_(gradOutput_n_slice.transpose(1,0), columns, /*beta=*/1.0, /*alpha=*/scale);
+        {
+        using namespace torch::indexing;
+        gradWeight.index_put_({Ellipsis}, gradWeight_slice.reshape({nOutputPlane, weight.size(1), weight.size(2), weight.size(3)}));
+        }
+
+        std::cout << gradWeight << std::endl;
+
+        // Do Bias:
+        gradBias.addmm_(ones, gradOutput_n_slice, /*beta=*/1.0, /*alpha=*/scale);
+        std::cout << gradBias << std::endl;
     }
 
-    //Compute weight gradient
-    //matmul does batch broadcasting
-    torch::Tensor gradWeight_batch = torch::matmul(columns.transpose(2,1),
-                                          gradOutput.view({gradOutput.size(0), 1, gradOutput.size(1)*gradOutput.size(2)*gradOutput.size(3)}));
-
-    std::cout << string_format("gradWeight_batch dim: %i", gradWeight_batch.ndimension()) << std::endl;
-    std::cout << string_format("gradWeight_batch: %i x %i x %i", gradWeight_batch.size(0), gradWeight_batch.size(1), gradWeight_batch.size(2)) << std::endl;
-
-    torch::Tensor gradWeight = gradWeight_batch.mul(scale).sum(/*dim=*/{0}).reshape({weight.size(0), weight.size(1), weight.size(2), weight.size(2)});
-
-    std::cout << string_format("gradWeight dim: %i", gradWeight.ndimension()) << std::endl;
-    std::cout << string_format("gradWeight: %i x %i x %i x %i", gradWeight.size(0), gradWeight.size(1), gradWeight.size(2), gradWeight.size(3)) << std::endl;
-
-    //Original code for reference
-//        long m = nOutputPlane;
-//        long n = nInputPlane * kW * kH;
-//        long k = columns->size[1];
-//
-//        THCudaBlas_Sgemm(state, 't', 'n', n, m, k, scale,
-//                     THCudaTensor_data(state, columns), k,
-//                     THCudaTensor_data(state, gradOutput_n), k, 1.0f,
-//                     THCudaTensor_data(state, gradWeight), n);
-
-    std::cout << gradWeight << std::endl;
-
-    // Do Bias:
-    torch::Tensor gradBias = gradOutput.mul(scale).sum(/*dim=*/{0, 2, 3});
-
     if (batch == 0) {
-        gradOutput = gradOutput.view({nOutputPlane, outputHeight, outputWidth});
-        input = input.view({nInputPlane, inputHeight, inputWidth});
-        input_depth = input_depth.view({1, inputHeight, inputWidth});
-        gradInput = gradInput.view({nInputPlane, inputHeight, inputWidth});
+        gradOutput = gradOutput.reshape({nOutputPlane, outputHeight, outputWidth});
+        input = input.reshape({nInputPlane, inputHeight, inputWidth});
+        input_depth = input_depth.reshape({1, inputHeight, inputWidth});
+        gradInput = gradInput.reshape({nInputPlane, inputHeight, inputWidth});
     }
 
     return {gradInput, gradWeight, gradBias};
