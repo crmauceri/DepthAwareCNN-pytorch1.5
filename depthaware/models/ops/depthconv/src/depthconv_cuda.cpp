@@ -304,7 +304,7 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
         torch::Tensor gradOutput_n = gradOutput.select(0, elt);
 
         torch::Tensor gradOutput_n_slice = gradOutput_n.reshape({nOutputPlane, outputWidth*outputHeight}).transpose(1,0);
-        torch::Tensor weight_slice = weight.reshape({nOutputPlane, weight.size(1)*weight.size(2)*weight.size(3)});
+        torch::Tensor weight_slice = weight.view({nOutputPlane, weight.size(1)*weight.size(2)*weight.size(3)});
         torch::Tensor columns = torch::matmul(gradOutput_n_slice, weight_slice);
 
         //Original code for reference
@@ -330,15 +330,26 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
         }
 
         torch::Tensor gradWeight_slice = weight.view({nOutputPlane, weight.size(1)*weight.size(2)*weight.size(3)});
-        gradWeight_slice.addmm_(gradOutput_n_slice.transpose(1,0), columns, /*beta=*/1.0, /*alpha=*/scale);
-//        {
-//        using namespace torch::indexing;
-//        gradWeight.index_put_({Ellipsis}, gradWeight_slice.reshape({nOutputPlane, weight.size(1), weight.size(2), weight.size(3)}));
-//        }
+        {
+        using namespace torch::indexing;
+        //gradWeight.index_put_({Ellipsis}, gradWeight_slice.reshape({nOutputPlane, weight.size(1), weight.size(2), weight.size(3)}));
+        gradWeight.index_put_({Ellipsis}, gradWeight_slice.addmm(columns.transpose(1,0), gradOutput_n_slice, /*beta=*/1.0, /*alpha=*/scale))
+        }
+
+        //Original code for reference
+//        long m = nOutputPlane;
+//        long n = nInputPlane * kW * kH;
+//        long k = columns->size[1];
+//
+//        THCudaBlas_Sgemm(state, 't', 'n', n, m, k, scale,
+//                     THCudaTensor_data(state, columns), k,
+//                     THCudaTensor_data(state, gradOutput_n), k, 1.0f,
+//                     THCudaTensor_data(state, gradWeight), n);
 
         std::cout << gradWeight << std::endl;
 
         // Do Bias:
+        // Correct result!
         gradBias.addmm_(ones, gradOutput_n_slice, /*beta=*/1.0, /*alpha=*/scale);
     }
 
