@@ -333,7 +333,7 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
         {
         using namespace torch::indexing;
         //gradWeight.index_put_({Ellipsis}, gradWeight_slice.reshape({nOutputPlane, weight.size(1), weight.size(2), weight.size(3)}));
-        gradWeight.index_put_({Ellipsis}, gradWeight_slice.addmm(columns.transpose(1,0), gradOutput_n_slice, /*beta=*/1.0, /*alpha=*/scale))
+        gradWeight.index_put_({Ellipsis}, gradWeight_slice.addmm(columns.transpose(1,0), gradOutput_n_slice, /*beta=*/1.0, /*alpha=*/scale));
         }
 
         //Original code for reference
