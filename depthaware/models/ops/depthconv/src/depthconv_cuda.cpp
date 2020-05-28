@@ -299,13 +299,17 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
     torch::Tensor gradInput = torch::zeros_like(input, torch::kCUDA);
     torch::Tensor ones = torch::ones({nOutputPlane, outputWidth*outputHeight}, torch::kCUDA);
 
+    torch::Tensor columns = torch::matmul(gradOutput.view({batchSize, nOutputPlane, outputWidth*outputHeight}),
+                   weight.view({nOutputPlane, weight.size(1)*weight.size(2)*weight.size(3)}));
+
+    std::cout << string_format("Columns dim: %i", columns.ndimension()) << std::endl;
+    std::cout << string_format("Columns: %i x %i x %i", columns.size(0), columns.size(1), columns.size(2)) << std::endl;
+
+    //Compute input gradient
     for (int elt = 0; elt < batchSize; elt++) {
         torch::Tensor input_depth_n = input_depth.select(0, elt);
+        torch::Tensor columns_n = columns.select(0, elt);
         torch::Tensor gradOutput_n = gradOutput.select(0, elt);
-
-        torch::Tensor gradOutput_n_slice = gradOutput_n.reshape({nOutputPlane, outputWidth*outputHeight}).transpose(1,0);
-        torch::Tensor weight_slice = weight.view({nOutputPlane, weight.size(1)*weight.size(2)*weight.size(3)});
-        torch::Tensor columns = torch::matmul(gradOutput_n_slice, weight_slice);
 
         //Original code for reference
 //        long m = input.size(1) * kW * kH;
@@ -317,7 +321,7 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
 //                     weight.data(), m, 0.0f,
 //                     columns.data(), n);
 
-        torch::Tensor gradInput_n = depthconv_col2im(columns, input_depth_n,
+        torch::Tensor gradInput_n = depthconv_col2im(columns_n, input_depth_n,
             nInputPlane, inputHeight, inputWidth,
             kH, kW,
             padH, padW,
@@ -328,12 +332,17 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
         using namespace torch::indexing;
         gradInput.index_put_({elt, Ellipsis}, gradInput_n);
         }
+    }
 
-        torch::Tensor gradWeight_slice = gradWeight.view({nOutputPlane, weight.size(1)*weight.size(2)*weight.size(3)});
+    //Compute weight gradient
+    torch::Tensor gradWeight_flat = gradWeight.view({nOutputPlane, weight.size(1)*weight.size(2)*weight.size(3)});
+    torch::Tensor product = torch.matmul(columns.transpose(2,1), gradWeight_flat);
+    gradWeight_slice.add_()
+
 //        {
 //        using namespace torch::indexing;
         //gradWeight.index_put_({Ellipsis}, gradWeight_slice.reshape({nOutputPlane, weight.size(1), weight.size(2), weight.size(3)}));
-        gradWeight_slice.addmm_(gradOutput_n_slice.transpose(1,0), columns, /*beta=*/1.0, /*alpha=*/scale);
+//        gradWeight_slice.addmm_(gradOutput_n_slice.transpose(1,0), columns, /*beta=*/1.0, /*alpha=*/scale);
 //        }
 
         //Original code for reference
@@ -346,12 +355,12 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
 //                     THCudaTensor_data(state, gradOutput_n), k, 1.0f,
 //                     THCudaTensor_data(state, gradWeight), n);
 
-        std::cout << gradWeight << std::endl;
+    std::cout << gradWeight << std::endl;
 
-        // Do Bias:
-        // Correct result!
-        gradBias.addmm_(ones, gradOutput_n_slice, /*beta=*/1.0, /*alpha=*/scale);
-    }
+    // Do Bias:
+    // Correct result!
+    torch::Tensor gradBias = gradOutput.sum(/*dim=*/{0, 2, 3});
+    //gradBias.addmm_(ones, gradOutput_n_slice, /*beta=*/1.0, /*alpha=*/scale);
 
     if (batch == 0) {
         gradOutput = gradOutput.view({nOutputPlane, outputHeight, outputWidth});
