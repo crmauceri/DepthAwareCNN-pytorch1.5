@@ -301,8 +301,7 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
         torch::Tensor input_depth_n = input_depth.select(0, elt);
         torch::Tensor gradOutput_n = gradOutput.select(0, elt);
 
-        torch::Tensor gradOutput_n_slice = gradOutput_n.reshape({nOutputPlane, outputWidth*outputHeight});
-        gradOutput_n_slice.transpose_(1,0);
+        torch::Tensor gradOutput_n_slice = gradOutput_n.reshape({nOutputPlane, outputWidth*outputHeight}).transpose(1,0);
         torch::Tensor weight_slice = weight.reshape({nOutputPlane, weight.size(1)*weight.size(2)*weight.size(3)});
         torch::Tensor columns = torch::matmul(gradOutput_n_slice, weight_slice);
 
