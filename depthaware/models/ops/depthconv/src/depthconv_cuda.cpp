@@ -345,12 +345,12 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
     std::cout << string_format("gradWeight_batch dim: %i", gradWeight_batch.ndimension()) << std::endl;
     std::cout << string_format("gradWeight_batch: %i x %i x %i", gradWeight_batch.size(0), gradWeight_batch.size(1), gradWeight_batch.size(2)) << std::endl;
 
-    torch::Tensor gradWeight = gradWeight_batch.mul(scale).sum(/*dim=*/{0});
+    torch::Tensor gradWeight = gradWeight_batch.mul(scale).sum(/*dim=*/{0}).reshape({weight.size(0), weight.size(1), weight.size(2), weight.size(2)});
 
     std::cout << string_format("gradWeight dim: %i", gradWeight.ndimension()) << std::endl;
-    std::cout << string_format("gradWeight: %i x %i x %i", gradWeight.size(0), gradWeight.size(1), gradWeight.size(2)) << std::endl;
+    std::cout << string_format("gradWeight: %i x %i x %i", gradWeight.size(0), gradWeight.size(1), gradWeight.size(2), gradWeight.size(3)) << std::endl;
 
-        //Original code for reference
+    //Original code for reference
 //        long m = nOutputPlane;
 //        long n = nInputPlane * kW * kH;
 //        long k = columns->size[1];
