@@ -337,20 +337,18 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
     }
 
     //Compute weight gradient
+    //matmul does batch broadcasting
     torch::Tensor gradWeight_batch = torch::matmul(columns.transpose(2,1),
                                           gradOutput.view({gradOutput.size(0), gradOutput.size(1),
                                                            gradOutput.size(2)*gradOutput.size(3)}).transpose(2,1));
 
-    std::cout << string_format("product dim: %i", product.ndimension()) << std::endl;
-    std::cout << string_format("product: %i x %i x %i", product.size(0), product.size(1), product.size(2)) << std::endl;
+    std::cout << string_format("gradWeight_batch dim: %i", gradWeight_batch.ndimension()) << std::endl;
+    std::cout << string_format("gradWeight_batch: %i x %i x %i", gradWeight_batch.size(0), gradWeight_batch.size(1), gradWeight_batch.size(2)) << std::endl;
 
     torch::Tensor gradWeight = gradWeight_batch.mul(scale).sum(/*dim=*/{0});
 
-//        {
-//        using namespace torch::indexing;
-        //gradWeight.index_put_({Ellipsis}, gradWeight_slice.reshape({nOutputPlane, weight.size(1), weight.size(2), weight.size(3)}));
-//        gradWeight_slice.addmm_(gradOutput_n_slice.transpose(1,0), columns, /*beta=*/1.0, /*alpha=*/scale);
-//        }
+    std::cout << string_format("gradWeight dim: %i", gradWeight.ndimension()) << std::endl;
+    std::cout << string_format("gradWeight: %i x %i x %i", gradWeight.size(0), gradWeight.size(1), gradWeight.size(2)) << std::endl;
 
         //Original code for reference
 //        long m = nOutputPlane;
