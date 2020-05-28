@@ -208,7 +208,8 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
 
     //Repeat bias to match output size
     //Without the extra singleton dimensions the repeat function has the wrong dimensionality
-    bias = bias.reshape({bias.size(0), 1}).repeat({1, outputHeight*outputWidth});
+    //bias = bias.reshape({bias.size(0), 1}).repeat({1, outputHeight*outputWidth});
+    output = bias.reshape({bias.size(0), 1}).repeat({batchSize, 1, outputHeight, outputWidth});
 
     for (int elt = 0; elt < batchSize; elt++) {
 
@@ -224,13 +225,14 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
             dH, dW,
             dilationH, dilationW);
 
-        torch::Tensor weight_slice = weight.reshape({weight.size(0), weight.size(1)*weight.size(2)*weight.size(3)});
-        torch::Tensor output_slice = output_n.reshape({nOutputPlane, outputWidth*outputHeight});
+        torch::Tensor weight_slice = weight.view({weight.size(0), weight.size(1)*weight.size(2)*weight.size(3)});
+        torch::Tensor output_slice = output_n.view({nOutputPlane, outputWidth*outputHeight});
 
         //Multiplication with reshaped input is equivalent to 2d convolution
         {
         using namespace torch::indexing;
-        output_slice.index_put_({Ellipsis}, torch::addmm(bias, weight_slice, columns));
+        //output_slice.index_put_({Ellipsis}, torch::addmm(bias, weight_slice, columns));
+        output_slice.addmm_(weight_slice, columns);
         }
 
        //Original code for reference
@@ -245,7 +247,7 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
     }
 
     if (batch == 0) {
-        output = output.reshape({nOutputPlane, outputHeight, outputWidth});
+        output = output.view({nOutputPlane, outputHeight, outputWidth});
     }
 
     return output;
@@ -271,8 +273,8 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
     if (input.ndimension() == 3) {
         // Force batch
         batch = 0;
-        input = input.reshape({1, input.size(0), input.size(1), input.size(2)});
-        gradOutput = gradOutput.reshape({1, gradOutput.size(0), gradOutput.size(1), gradOutput.size(2)});
+        input = input.view({1, input.size(0), input.size(1), input.size(2)});
+        gradOutput = gradOutput.view({1, gradOutput.size(0), gradOutput.size(1), gradOutput.size(2)});
     }
 
     int batchSize = input.size(0);
@@ -305,6 +307,7 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
         torch::Tensor weight_slice = weight.reshape({nOutputPlane, weight.size(1)*weight.size(2)*weight.size(3)});
         torch::Tensor columns = torch::matmul(gradOutput_n_slice, weight_slice);
 
+        //Original code for reference
 //        long m = input.size(1) * kW * kH;
 //        long n = columns.size(1);
 //        long k = weight.size(0);
@@ -326,25 +329,24 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
         gradInput.index_put_({elt, Ellipsis}, gradInput_n);
         }
 
-        torch::Tensor gradWeight_slice = weight.reshape({nOutputPlane, weight.size(1)*weight.size(2)*weight.size(3)});
+        torch::Tensor gradWeight_slice = weight.view({nOutputPlane, weight.size(1)*weight.size(2)*weight.size(3)});
         gradWeight_slice.addmm_(gradOutput_n_slice.transpose(1,0), columns, /*beta=*/1.0, /*alpha=*/scale);
-        {
-        using namespace torch::indexing;
-        gradWeight.index_put_({Ellipsis}, gradWeight_slice.reshape({nOutputPlane, weight.size(1), weight.size(2), weight.size(3)}));
-        }
+//        {
+//        using namespace torch::indexing;
+//        gradWeight.index_put_({Ellipsis}, gradWeight_slice.reshape({nOutputPlane, weight.size(1), weight.size(2), weight.size(3)}));
+//        }
 
         std::cout << gradWeight << std::endl;
 
         // Do Bias:
         gradBias.addmm_(ones, gradOutput_n_slice, /*beta=*/1.0, /*alpha=*/scale);
-        std::cout << gradBias << std::endl;
     }
 
     if (batch == 0) {
-        gradOutput = gradOutput.reshape({nOutputPlane, outputHeight, outputWidth});
-        input = input.reshape({nInputPlane, inputHeight, inputWidth});
-        input_depth = input_depth.reshape({1, inputHeight, inputWidth});
-        gradInput = gradInput.reshape({nInputPlane, inputHeight, inputWidth});
+        gradOutput = gradOutput.view({nOutputPlane, outputHeight, outputWidth});
+        input = input.view({nInputPlane, inputHeight, inputWidth});
+        input_depth = input_depth.view({1, inputHeight, inputWidth});
+        gradInput = gradInput.view({nInputPlane, inputHeight, inputWidth});
     }
 
     return {gradInput, gradWeight, gradBias};
