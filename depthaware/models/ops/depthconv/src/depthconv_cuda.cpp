@@ -336,7 +336,7 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
 
     //Compute weight gradient
     torch::Tensor gradWeight_flat = gradWeight.view({nOutputPlane, weight.size(1)*weight.size(2)*weight.size(3)});
-    torch::Tensor product = torch.matmul(columns.transpose(2,1), gradWeight_flat);
+    torch::Tensor product = torch::matmul(columns.transpose(2,1), gradWeight_flat);
     gradWeight_slice.add_();
 
 //        {
