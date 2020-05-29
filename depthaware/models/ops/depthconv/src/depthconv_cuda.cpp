@@ -293,7 +293,7 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
     torch::Tensor gradInput = torch::zeros_like(input, torch::kCUDA);
 
     torch::Tensor gradOutput_flattened[] = {gradOutput.reshape({batchSize, nOutputPlane, outputWidth*outputHeight}),
-                                            gradOutput.transpose(3, 2).reshape({batchSize, nOutputPlane, outputWidth*outputHeight})}
+                                            gradOutput.transpose(3, 2).reshape({batchSize, nOutputPlane, outputWidth*outputHeight})};
     torch::Tensor weight_flattened[] = {weight.permute({0, 1, 2, 3}).reshape({nOutputPlane, weight.size(1)*weight.size(2)*weight.size(3)}),
                                          weight.permute({0, 1, 3, 2}).reshape({nOutputPlane, weight.size(1)*weight.size(2)*weight.size(3)}),
                                          weight.permute({0, 2, 1, 3}).reshape({nOutputPlane, weight.size(1)*weight.size(2)*weight.size(3)}),
