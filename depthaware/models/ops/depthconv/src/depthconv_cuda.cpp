@@ -311,7 +311,7 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
     std::vector<torch::Tensor> columns;
     for(torch::Tensor g : gradOutput_flattened){
         for(torch::Tensor w : weight_flattened){
-            columns.push_pack(torch::matmul(g.transpose(2, 1), w));
+            columns.push_back(torch::matmul(g.transpose(2, 1), w));
         }
     }
 //    torch::Tensor columns = torch::matmul(gradOutput_flattened.transpose(2, 1), weight_flattened);
