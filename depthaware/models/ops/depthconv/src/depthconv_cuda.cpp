@@ -360,7 +360,7 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
 
     //Compute weight gradient
     //matmul does batch broadcasting
-    torch::Tensor gradWeight_batch = torch::matmul(gradOutput_flattened1, columns11);
+    torch::Tensor gradWeight_batch = torch::matmul(gradOutput_flattened[0], columns[0]);
 
 //    std::cout << string_format("gradWeight_batch dim: %i", gradWeight_batch.ndimension()) << std::endl;
 //    std::cout << string_format("gradWeight_batch: %i x %i x %i", gradWeight_batch.size(0), gradWeight_batch.size(1), gradWeight_batch.size(2)) << std::endl;
