@@ -292,12 +292,14 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
     //TODO Check these dimensions
     torch::Tensor gradInput = torch::zeros_like(input, torch::kCUDA);
 
-    torch::Tensor gradOutput_flattened1 = gradOutput.reshape({batchSize, nOutputPlane, outputWidth*outputHeight});
-    torch::Tensor gradOutput_flattened2 = gradOutput.transpose(3, 2).reshape({batchSize, nOutputPlane, outputWidth*outputHeight});
-    torch::Tensor weight_flattened1 = weight.permute({0, 2, 3, 1}).reshape({nOutputPlane, weight.size(1)*weight.size(2)*weight.size(3)});
-    torch::Tensor weight_flattened2 = weight.permute({0, 3, 2, 1}).reshape({nOutputPlane, weight.size(1)*weight.size(2)*weight.size(3)});
-//    torch::Tensor weight_flattened3 = weight.transpose(3, 1).reshape({nOutputPlane, weight.size(1)*weight.size(2)*weight.size(3)});
-//    torch::Tensor weight_flattened4 = weight.transpose(2, 1).reshape({nOutputPlane, weight.size(1)*weight.size(2)*weight.size(3)});
+    torch::Tensor gradOutput_flattened[] = {gradOutput.reshape({batchSize, nOutputPlane, outputWidth*outputHeight}),
+                                            gradOutput.transpose(3, 2).reshape({batchSize, nOutputPlane, outputWidth*outputHeight})}
+    torch::Tensor weight_flattened[] = {weight.permute({0, 2, 3, 1}).reshape({nOutputPlane, weight.size(1)*weight.size(2)*weight.size(3)}),
+                                         weight.permute({0, 3, 2, 1}).reshape({nOutputPlane, weight.size(1)*weight.size(2)*weight.size(3)}),
+                                         weight.permute({0, 1, 2, 3}).reshape({nOutputPlane, weight.size(1)*weight.size(2)*weight.size(3)}),
+                                         weight.permute({0, 1, 3, 2}).reshape({nOutputPlane, weight.size(1)*weight.size(2)*weight.size(3)}),
+                                         weight.permute({0, 2, 1, 3}).reshape({nOutputPlane, weight.size(1)*weight.size(2)*weight.size(3)}),
+                                         weight.permute({0, 3, 1, 2}).reshape({nOutputPlane, weight.size(1)*weight.size(2)*weight.size(3)})};
 //
 //    std::cout << string_format("gradOutput dim: %i", gradOutput.ndimension()) << std::endl;
 //    std::cout << string_format("gradOutput: %i x %i x %i x %i", gradOutput.size(0), gradOutput.size(1), gradOutput.size(2), gradOutput.size(3)) << std::endl;
@@ -306,23 +308,20 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
 //    std::cout << string_format("weight dim: %i", weight.ndimension()) << std::endl;
 //    std::cout << weight.size(0)  << "," << weight.size(1) << "," << weight.size(2) << "," << weight.size(3) << std::endl;
 //    std::cout << weight_flattened << std::endl;
-
-    torch::Tensor columns11 = torch::matmul(gradOutput_flattened1.transpose(2, 1), weight_flattened1);
-    torch::Tensor columns12 = torch::matmul(gradOutput_flattened1.transpose(2, 1), weight_flattened2);
-//    torch::Tensor columns13 = torch::matmul(gradOutput_flattened1.transpose(2, 1), weight_flattened3);
-//    torch::Tensor columns14 = torch::matmul(gradOutput_flattened1.transpose(2, 1), weight_flattened4);
-    torch::Tensor columns21 = torch::matmul(gradOutput_flattened2.transpose(2, 1), weight_flattened1);
-    torch::Tensor columns22 = torch::matmul(gradOutput_flattened2.transpose(2, 1), weight_flattened2);
-//    torch::Tensor columns23 = torch::matmul(gradOutput_flattened2.transpose(2, 1), weight_flattened3);
-//    torch::Tensor columns24 = torch::matmul(gradOutput_flattened2.transpose(2, 1), weight_flattened4);
+    std::vector<torch::Tensor> columns;
+    for(torch::Tensor g : gradOutput_flattened){
+        for(torch::Tensor w : weight_flattened){
+            columns.push_pack(torch::matmul(g.transpose(2, 1), w))
+        }
+    }
+//    torch::Tensor columns = torch::matmul(gradOutput_flattened.transpose(2, 1), weight_flattened);
 
 //    std::cout << string_format("Columns dim: %i", columns.ndimension()) << std::endl;
 //    std::cout << string_format("Columns: %i x %i x %i", columns.size(0), columns.size(1), columns.size(2)) << std::endl;
 //    std::cout << columns << std::endl;
 
     //Compute input gradient
-    // TODO elt < batchSize
-    for (int elt = 0; elt < 1; elt++) {
+    for (int elt = 0; elt < batchSize; elt++) {
         torch::Tensor input_depth_n = input_depth.select(0, elt);
         torch::Tensor gradOutput_n = gradOutput.select(0, elt);
 
@@ -336,78 +335,24 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
 //                     weight.data(), m, 0.0f,
 //                     columns.data(), n);
 
-        torch::Tensor gradInput_n = depthconv_col2im(columns11.select(0, elt), input_depth_n,
-            nInputPlane, inputHeight, inputWidth,
-            kH, kW,
-            padH, padW,
-            dH, dW,
-            dilationH, dilationW);
+        for(torch::Tensor c : columns){
+            torch::Tensor gradInput_n = depthconv_col2im(c.select(0, elt), input_depth_n,
+                nInputPlane, inputHeight, inputWidth,
+                kH, kW,
+                padH, padW,
+                dH, dW,
+                dilationH, dilationW);
 
-        std::cout << string_format("gradInput_n dim: %i", gradInput_n.ndimension()) << std::endl;
-        std::cout << string_format("gradInput_n: %i x %i x %i", gradInput_n.size(0), gradInput_n.size(1), gradInput_n.size(2)) << std::endl;
-        std::cout << gradInput_n << std::endl;
+            std::cout << string_format("gradInput_n dim: %i", gradInput_n.ndimension()) << std::endl;
+            std::cout << string_format("gradInput_n: %i x %i x %i", gradInput_n.size(0), gradInput_n.size(1), gradInput_n.size(2)) << std::endl;
+            std::cout << gradInput_n << std::endl;
 
-        torch::Tensor gradInput12_n = depthconv_col2im(columns12.select(0, elt), input_depth_n,
-            nInputPlane, inputHeight, inputWidth,
-            kH, kW,
-            padH, padW,
-            dH, dW,
-            dilationH, dilationW);
-        std::cout << gradInput12_n << std::endl;
-
-//        torch::Tensor gradInput13_n = depthconv_col2im(columns13.select(0, elt), input_depth_n,
-//            nInputPlane, inputHeight, inputWidth,
-//            kH, kW,
-//            padH, padW,
-//            dH, dW,
-//            dilationH, dilationW);
-//        std::cout << gradInput13_n << std::endl;
-//
-//        torch::Tensor gradInput14_n = depthconv_col2im(columns14.select(0, elt), input_depth_n,
-//            nInputPlane, inputHeight, inputWidth,
-//            kH, kW,
-//            padH, padW,
-//            dH, dW,
-//            dilationH, dilationW);
-//        std::cout << gradInput14_n << std::endl;
-
-        torch::Tensor gradInput21_n = depthconv_col2im(columns21.select(0, elt), input_depth_n,
-            nInputPlane, inputHeight, inputWidth,
-            kH, kW,
-            padH, padW,
-            dH, dW,
-            dilationH, dilationW);
-        std::cout << gradInput21_n << std::endl;
-
-        torch::Tensor gradInput22_n = depthconv_col2im(columns22.select(0, elt), input_depth_n,
-            nInputPlane, inputHeight, inputWidth,
-            kH, kW,
-            padH, padW,
-            dH, dW,
-            dilationH, dilationW);
-        std::cout << gradInput22_n << std::endl;
-
-//        torch::Tensor gradInput23_n = depthconv_col2im(columns23.select(0, elt), input_depth_n,
-//            nInputPlane, inputHeight, inputWidth,
-//            kH, kW,
-//            padH, padW,
-//            dH, dW,
-//            dilationH, dilationW);
-//        std::cout << gradInput23_n << std::endl;
-//
-//        torch::Tensor gradInput24_n = depthconv_col2im(columns24.select(0, elt), input_depth_n,
-//            nInputPlane, inputHeight, inputWidth,
-//            kH, kW,
-//            padH, padW,
-//            dH, dW,
-//            dilationH, dilationW);
-//        std::cout << gradInput24_n << std::endl;
-
-    {
-        using namespace torch::indexing;
-        gradInput.index_put_({elt, Ellipsis}, gradInput_n);
+            {
+                using namespace torch::indexing;
+                gradInput.index_put_({elt, Ellipsis}, gradInput_n);
+                }
+            }
         }
-    }
 
     //Compute weight gradient
     //matmul does batch broadcasting
