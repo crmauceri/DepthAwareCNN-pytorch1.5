@@ -352,7 +352,6 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
             {
                 using namespace torch::indexing;
                 gradInput.index_put_({elt, Ellipsis}, gradInput_n);
-                }
             }
 
             i++;
