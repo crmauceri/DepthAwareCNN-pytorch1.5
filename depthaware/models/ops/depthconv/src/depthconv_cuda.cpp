@@ -356,6 +356,7 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
 
             i++;
         }
+    }
 
     //Compute weight gradient
     //matmul does batch broadcasting
