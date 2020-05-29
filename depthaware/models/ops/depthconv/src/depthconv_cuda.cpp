@@ -292,8 +292,8 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
     //TODO Check these dimensions
     torch::Tensor gradInput = torch::zeros_like(input, torch::kCUDA);
 
-    torch::Tensor gradOutput_flattened = gradOutput.transpose(3, 2).view({batchSize, nOutputPlane, outputWidth*outputHeight});
-    torch::Tensor weight_flattened = weight.view({nOutputPlane, weight.size(1)*weight.size(2)*weight.size(3)});
+    torch::Tensor gradOutput_flattened = gradOutput.transpose(3, 2).reshape({batchSize, nOutputPlane, outputWidth*outputHeight});
+    torch::Tensor weight_flattened = weight.reshape({nOutputPlane, weight.size(1)*weight.size(2)*weight.size(3)});
 
     std::cout << string_format("gradOutput dim: %i", gradOutput.ndimension()) << std::endl;
     std::cout << string_format("gradOutput: %i x %i x %i x %i", gradOutput.size(0), gradOutput.size(1), gradOutput.size(2), gradOutput.size(3)) << std::endl;
