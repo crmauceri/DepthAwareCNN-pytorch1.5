@@ -294,14 +294,17 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
 
     std::cout << string_format("gradOutput dim: %i", gradOutput.ndimension()) << std::endl;
     std::cout << string_format("gradOutput: %i x %i x %i x %i", gradOutput.size(0), gradOutput.size(1), gradOutput.size(2), gradOutput.size(3)) << std::endl;
+    std::cout << gradOutput << std::endl;
     std::cout << string_format("weight dim: %i", weight.ndimension()) << std::endl;
     std::cout << weight.size(0)  << "," << weight.size(1) << "," << weight.size(2) << "," << weight.size(3) << std::endl;
+    std::cout << weight << std::endl;
 
     torch::Tensor columns = torch::matmul(gradOutput.view({batchSize, nOutputPlane, outputWidth*outputHeight}).transpose(2, 1),
                    weight.view({nOutputPlane, weight.size(1)*weight.size(2)*weight.size(3)}));
 
     std::cout << string_format("Columns dim: %i", columns.ndimension()) << std::endl;
     std::cout << string_format("Columns: %i x %i x %i", columns.size(0), columns.size(1), columns.size(2)) << std::endl;
+    std::cout << columns << std::endl;
 
     //Compute input gradient
     for (int elt = 0; elt < batchSize; elt++) {
@@ -326,7 +329,10 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
             dH, dW,
             dilationH, dilationW);
 
-        {
+    std::cout << string_format("gradInput_n dim: %i", gradInput_n.ndimension()) << std::endl;
+    std::cout << string_format("gradInput_n: %i x %i x %i", gradInput_n.size(0), gradInput_n.size(1), gradInput_n.size(2)) << std::endl;
+    
+    {
         using namespace torch::indexing;
         gradInput.index_put_({elt, Ellipsis}, gradInput_n);
         }
