@@ -39,6 +39,7 @@ if __name__ == '__main__':
     grad_output = torch.FloatTensor(range(outsize[0]*outsize[1])).cuda().reshape((1, outsize[0], outsize[1]))
 
     print(grad_output)
+    print(weight.ndimension())
 
     grad_input, grad_weight, grad_bias = depthconv.backward(
         input, depth, grad_output, weight,
