@@ -36,7 +36,7 @@ if __name__ == '__main__':
     depth = torch.ones((batch_size, 1, w, h), device=device)
     weight = torch.ones((out_channels, batch_size, kernel_size, kernel_size), device=device)
     outsize = output_size(input, weight, padding, dilation, stride)
-    grad_output = torch.FloatTensor(range(outsize[0]*outsize[1]), device=device).reshape((1, outsize[0], outsize[1]))
+    grad_output = torch.FloatTensor(range(outsize[0]*outsize[1])).cuda().reshape((1, outsize[0], outsize[1]))
 
     print(grad_output)
 
