@@ -36,13 +36,11 @@ if __name__ == '__main__':
     depth = torch.ones((batch_size, 1, w, h), device=device)
     weight = torch.ones((out_channels, batch_size, kernel_size, kernel_size), device=device)
     outsize = output_size(input, weight, padding, dilation, stride)
-    grad_output = torch.FloatTensor(range(outsize[0]*outsize[1])).cuda().reshape((1, outsize[0], outsize[1]))
+    grad_output = torch.FloatTensor(range(outsize[0]*outsize[1]*outsize[2]*outsize[3])).cuda().reshape(outsize)
 
-    print(outsize)
-    print(range(outsize[0]*outsize[1]))
     print(grad_output)
-    print(weight.ndimension())
-    print(weight)
+    print(weight.shape())
+    print(weight.size(3))
 
     grad_input, grad_weight, grad_bias = depthconv.backward(
         input, depth, grad_output, weight,
