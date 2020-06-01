@@ -289,7 +289,6 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
         throw std::invalid_argument("invalid batch size of input depth");
     }
 
-    //TODO Check these dimensions
     torch::Tensor gradInput = torch::zeros_like(input, torch::kCUDA);
 
     torch::Tensor gradOutput_flattened[] = {gradOutput.reshape({batchSize, nOutputPlane, outputWidth*outputHeight}),
@@ -300,14 +299,15 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
                                          weight.permute({0, 2, 3, 1}).reshape({nOutputPlane, weight.size(1)*weight.size(2)*weight.size(3)}),
                                          weight.permute({0, 3, 1, 2}).reshape({nOutputPlane, weight.size(1)*weight.size(2)*weight.size(3)}),
                                          weight.permute({0, 3, 2, 1}).reshape({nOutputPlane, weight.size(1)*weight.size(2)*weight.size(3)})};
-//
-//    std::cout << string_format("gradOutput dim: %i", gradOutput.ndimension()) << std::endl;
-//    std::cout << string_format("gradOutput: %i x %i x %i x %i", gradOutput.size(0), gradOutput.size(1), gradOutput.size(2), gradOutput.size(3)) << std::endl;
-//    std::cout << gradOutput_flattened << std::endl;
-//
-//    std::cout << string_format("weight dim: %i", weight.ndimension()) << std::endl;
-//    std::cout << weight.size(0)  << "," << weight.size(1) << "," << weight.size(2) << "," << weight.size(3) << std::endl;
-//    std::cout << weight_flattened << std::endl;
+
+    std::cout << string_format("gradOutput dim: %i", gradOutput.ndimension()) << std::endl;
+    std::cout << string_format("gradOutput: %i x %i x %i x %i", gradOutput.size(0), gradOutput.size(1), gradOutput.size(2), gradOutput.size(3)) << std::endl;
+    std::cout << gradOutput_flattened[0] << std::endl;
+
+    std::cout << string_format("weight dim: %i", weight.ndimension()) << std::endl;
+    std::cout << weight.size(0)  << "," << weight.size(1) << "," << weight.size(2) << "," << weight.size(3) << std::endl;
+    std::cout << weight_flattened[0] << std::endl;
+
     std::vector<torch::Tensor> columns;
     for(torch::Tensor g : gradOutput_flattened){
         for(torch::Tensor w : weight_flattened){
@@ -346,8 +346,8 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
 
 //            std::cout << string_format("gradInput_n dim: %i", gradInput_n.ndimension()) << std::endl;
 //            std::cout << string_format("gradInput_n: %i x %i x %i", gradInput_n.size(0), gradInput_n.size(1), gradInput_n.size(2)) << std::endl;
-            std::cout << "Permutation: " << i << std::endl;
-            std::cout << gradInput_n << std::endl;
+//            std::cout << "Permutation: " << i << std::endl;
+//            std::cout << gradInput_n << std::endl;
 
             {
                 using namespace torch::indexing;
