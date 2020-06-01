@@ -6,8 +6,8 @@ def output_size(input, weight, padding, dilation, stride):
         in_size = input.size(d + 2)
         pad = padding[d]
         kernel = dilation[d] * (weight.size(d + 2) - 1) + 1
-        stride = stride[d]
-        output_size += ((in_size + (2 * pad) - kernel) // stride + 1,)
+        stride_x = stride[d]
+        output_size += ((in_size + (2 * pad) - kernel) // stride_x + 1,)
     if not all(map(lambda s: s > 0, output_size)):
         raise ValueError(
             "convolution input is too small (output would be {})".format(
