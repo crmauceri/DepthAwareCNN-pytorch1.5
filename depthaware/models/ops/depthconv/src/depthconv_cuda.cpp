@@ -362,8 +362,7 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
 
     torch::Tensor gradInput = depthconv_input_grad(input_depth, gradOutput, weight,
                                                    nInputPlane, inputWidth, inputHeight,
-                                                   kW, kH,
-                                                   strideW, strideH, padW, padH,
+                                                   kW, kH, strideW, strideH,
                                                    dilationW, dilationH);
 
     //TODO Compute weight gradient as depth convolution between image and grad_output
