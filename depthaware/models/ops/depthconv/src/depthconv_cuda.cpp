@@ -270,7 +270,7 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
     int padW = ((weight.size(2) - 1)*dilationW + 1) / 2;
     int padH = ((weight.size(3) - 1)*dilationH + 1) / 2;
     namespace F = torch::nn::functional;
-    torch::Tensor gradOutput_padded = F::pad(gradOutput, F::PadFuncOptions({0, 0, padW, padH}));
+    torch::Tensor gradOutput_padded = F::pad(gradOutput, F::PadFuncOptions({padW, padW, padH, padH}));
 
     // Allocate memory to build up output representation
     torch::Tensor gradInput = torch::zeros({batchSize, nInputPlane, inputWidth, inputHeight}, torch::kCUDA);
@@ -295,11 +295,12 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
         {
         using namespace torch::indexing;
         columns = torch::matmul(weight_t, columns);
-        int dif_w = (columns.size(2) - inputWidth) / 2;
-        int dif_h = (columns.size(3) - inputHeight) / 2;
-        gradInput_n.index_put_({Ellipsis}, columns.index({Ellipsis,
-                                                          Slice(dif_w, columns.size(2)-dif_w),
-                                                          Slice(dif_h, columns.size(3)-dif_h)}));
+
+        std::cout << string_format("columns dim: %i", columns.ndimension()) << std::endl;
+        std::cout << columns << std::endl;
+        
+        gradInput_n.index_put_({Ellipsis}, columns.index({Slice(padH, -padH),
+                                                          Slice(padW, -padW}));
         }
     }
 
