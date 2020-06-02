@@ -263,15 +263,15 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
 
     int batchSize = gradOutput.size(0);
     int nOutputPlane = gradOutput.size(1);
-    int inputHeight = gradOutput.size(2);
-    int inputWidth = gradOutput.size(3);
+    int outputHeight = gradOutput.size(2);
+    int outputWidth = gradOutput.size(3);
 
     //This is a full convolution, so we need extra padding based on kernel size
     int padW = ((weight.size(2) - 1)*dilationW + 1) / 2;
     int padH = ((weight.size(3) - 1)*dilationH + 1) / 2;
 
     // Allocate memory to build up output representation
-    torch::Tensor gradInput = torch::zeros({batchSize, nInputPlane, width, height}, torch::kCUDA);
+    torch::Tensor gradInput = torch::zeros({batchSize, nInputPlane, inputWidth, inputHeight}, torch::kCUDA);
 
     for(int elt=0; elt<batchSize; elt++){
         gradOutput_n = gradOutput.select(0, elt);
@@ -280,7 +280,7 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
 
         //Reshape input and weight with depth difference
         torch::Tensor columns = depthconv_im2col(gradOutput_n, depth_n,
-                nOutputPlane, inputHeight, inputWidth,
+                nOutputPlane, outputHeight, outputWidth,
                 kH, kW,
                 padH, padW,
                 strideH, strideW,
