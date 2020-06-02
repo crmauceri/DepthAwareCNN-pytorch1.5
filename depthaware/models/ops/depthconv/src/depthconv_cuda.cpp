@@ -254,7 +254,7 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
 //Compute input gradient as a full convolution between grad_output and dialated_weight transposed
 torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor gradOutput,
     torch::Tensor weight, int kW, int kH, int strideW, int strideH,
-    int padW, int padH, int dilationW, int dilationH, double scale){
+    int padW, int padH, int dilationW, int dilationH){
 
     //Weight with depth_diff (F_D in paper)
     torch::Tensor depth_diff = depth_diff(input_depth, kw, kH, strideW, strideH, padW, padH, dilationW, dilationH);
@@ -328,7 +328,9 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
         throw std::invalid_argument("invalid batch size of input depth");
     }
 
-    torch::Tensor gradInput = depthconv_input_grad();
+    torch::Tensor gradInput = depthconv_input_grad(input_depth, gradOutput, weight,
+                                                   kW, kH, strideW, strideH, padW, padH,
+                                                   dilationW, dilationH);
 
     //TODO Compute weight gradient as depth convolution between image and grad_output
     torch::Tensor gradWeight = depthconv_weight_grad();
