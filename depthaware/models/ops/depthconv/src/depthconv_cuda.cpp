@@ -254,29 +254,47 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
 //Compute input gradient as a full convolution between grad_output and dialated_weight transposed
 torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor gradOutput,
     torch::Tensor weight,
-    int width, int height,
+    int nInputPlane, int inputWidth, int inputHeight,
     int kW, int kH, int strideW, int strideH,
-    int padW, int padH, int dilationW, int dilationH){
+    int dilationW, int dilationH){
 
-    //Weight with depth_diff (F_D in paper)
-    torch::Tensor F_D = depth_diff(input_depth, width, height,
-                                          kW, kH, padW, padH,
-                                          strideW, strideH, dilationW, dilationH);
+    //Transpose weight
+    torch::Tensor weight_t = weight.transpose(3,2).reshape({weight.size(0), weight.size(1)*weight.size(2)*weight.size(3)});
 
-    std::cout << string_format("depth_diff dim: %i", F_D.ndimension()) << std::endl;
-    std::cout << string_format("depth_diff: %i x %i", F_D.size(0), F_D.size(1)) << std::endl;
-    std::cout << F_D << std::endl;
+    int batchSize = gradOutput.size(0)
+    int nOutputPlane = gradOutput.size(1)
+    int inputHeight = gradOutput.size(2)
+    int inputWidth = gradOutput.size(3)
 
-    std::cout << string_format("gradOutput dim: %i", gradOutput.ndimension()) << std::endl;
-    std::cout << string_format("gradOutput: %i x %i", gradOutput.size(0), gradOutput.size(1), gradOutput.size(2)) << std::endl;
-    std::cout << gradOutput << std::endl;
+    //This is a full convolution, so we need extra padding based on kernel size
+    int padW = ((weight.size(2) - 1)*dilationW + 1) / 2;
+    int padH = ((weight.size(3) - 1)*dilationH + 1) / 2;
 
-    torch::Tensor gradOutput_weighted = gradOutput.mul(F_D);
+    // Allocate memory to build up output representation
+    torch::Tensor gradInput = torch::zeros({batchSize, nInputPlane, width, height}, torch::kCUDA);
 
-    //Use built in convolution
-    namespace F = torch::nn::functional;
-    torch::Tensor gradInput = F::conv_transpose2d(gradOutput_weighted, weight,
-                        F::ConvTranspose2dFuncOptions().stride({strideW, strideH}).dilation({dilationW, dilationH}));
+    for(int elt=0; elt<batchSize; elt++){
+        gradOutput_n = gradOutput.select(0, elt);
+        depth_n = input_depth.select(0, elt);
+        gradInput_n = gradInput.select(0, elt);
+
+        //Reshape input and weight with depth difference
+        torch::Tensor columns = depthconv_im2col(gradOutput_n, depth_n,
+                nOutputPlane, inputHeight, inputWidth,
+                kH, kW,
+                padH, padW,
+                strideH, strideW,
+                dilationH, dilationW);
+
+        std::cout << string_format("columns dim: %i", F_D.ndimension()) << std::endl;
+        std::cout << columns << std::endl;
+
+        //Multiplication with reshaped input is equivalent to 2d convolution
+        {
+        using namespace torch::indexing;
+        gradInput_n.index_put_({Ellipsis}, torch::matmul(weight_t, columns));
+        }
+    }
 
     std::cout << string_format("gradInput dim: %i", gradInput.ndimension()) << std::endl;
     std::cout << string_format("gradInput: %i x %i x %i", gradInput.size(0), gradInput.size(1), gradInput.size(2)) << std::endl;
@@ -287,6 +305,8 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
 
 torch::Tensor depthconv_weight_grad(){
     torch::Tensor gradWeight;
+
+    //In backward pass of convolutional, stride and dilation switch roles
     return gradWeight;
 }
 
@@ -336,7 +356,8 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
     }
 
     torch::Tensor gradInput = depthconv_input_grad(input_depth, gradOutput, weight,
-                                                   inputWidth, inputHeight, kW, kH,
+                                                   nInputPlane, inputWidth, inputHeight,
+                                                   kW, kH,
                                                    strideW, strideH, padW, padH,
                                                    dilationW, dilationH);
 

@@ -19,6 +19,7 @@ if __name__ == '__main__':
     import numpy as np
     import depthconv
 
+    #TODO check dilation and stride
     batch_size = 1
     w, h = 5, 5
     kernel_size = 2
