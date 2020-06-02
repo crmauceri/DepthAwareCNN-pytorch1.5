@@ -261,10 +261,10 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
     //Transpose weight
     torch::Tensor weight_t = weight.transpose(3,2).reshape({weight.size(0), weight.size(1)*weight.size(2)*weight.size(3)});
 
-    int batchSize = gradOutput.size(0)
-    int nOutputPlane = gradOutput.size(1)
-    int inputHeight = gradOutput.size(2)
-    int inputWidth = gradOutput.size(3)
+    int batchSize = gradOutput.size(0);
+    int nOutputPlane = gradOutput.size(1);
+    int inputHeight = gradOutput.size(2);
+    int inputWidth = gradOutput.size(3);
 
     //This is a full convolution, so we need extra padding based on kernel size
     int padW = ((weight.size(2) - 1)*dilationW + 1) / 2;
@@ -292,7 +292,12 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
         //Multiplication with reshaped input is equivalent to 2d convolution
         {
         using namespace torch::indexing;
-        gradInput_n.index_put_({Ellipsis}, torch::matmul(weight_t, columns));
+        columns = torch::matmul(weight_t, columns);
+        int dif_w = (columns.size(2) - inputWidth) / 2;
+        int dif_h = (columns.size(3) - inputHeight) / 2;
+        gradInput_n.index_put_({Ellipsis}, columns.index({Ellipsis,
+                                                          Slice(dif_w, columns.size(2)-dif_w),
+                                                          Slice(dif_h, columns.size(3)-dif_h)}));
         }
     }
 
