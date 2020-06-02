@@ -286,7 +286,7 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
                 strideH, strideW,
                 dilationH, dilationW);
 
-        std::cout << string_format("columns dim: %i", F_D.ndimension()) << std::endl;
+        std::cout << string_format("columns dim: %i", columns.ndimension()) << std::endl;
         std::cout << columns << std::endl;
 
         //Multiplication with reshaped input is equivalent to 2d convolution
