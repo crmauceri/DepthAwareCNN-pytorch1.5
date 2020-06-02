@@ -257,7 +257,7 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
     int padW, int padH, int dilationW, int dilationH){
 
     //Weight with depth_diff (F_D in paper)
-    torch::Tensor depth_diff = depth_diff(input_depth, kw, kH, strideW, strideH, padW, padH, dilationW, dilationH);
+    torch::Tensor depth_diff = depth_diff(input_depth, kW, kH, strideW, strideH, padW, padH, dilationW, dilationH);
 
     std::cout << string_format("depth_diff dim: %i", depth_diff.ndimension()) << std::endl;
     std::cout << string_format("depth_diff: %i x %i x %i", depth_diff.size(0), depth_diff.size(1), depth_diff.size(2)) << std::endl;
@@ -266,11 +266,9 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
     torch::gradOutput_weighted = gradOutput.mul(depth_diff)
 
     //Use built in convolution
-    {
     namespace F = torch::nn::functional;
     torch::Tensor gradInput = F::conv_transpose2d(gradOutput_weighted, weight,
                         F::ConvTranspose2dFuncOptions().stride({strideW, strideH}).pad({padW, padH}).dilation({dilationW, dilationH}));
-    }
 
     std::cout << string_format("gradInput dim: %i", gradInput.ndimension()) << std::endl;
     std::cout << string_format("gradInput: %i x %i x %i", gradInput.size(0), gradInput.size(1), gradInput.size(2)) << std::endl;
@@ -280,7 +278,8 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
 }
 
 torch::Tensor depthconv_weight_grad(){
-
+    torch::Tensor gradWeight;
+    return gradWeight
 }
 
 torch::Tensor depthconv_bias_grad(torch::Tensor gradOutput, double scale){
