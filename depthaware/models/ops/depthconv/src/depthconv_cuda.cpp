@@ -264,7 +264,7 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
                                           strideW, strideH, dilationW, dilationH);
 
     std::cout << string_format("depth_diff dim: %i", F_D.ndimension()) << std::endl;
-    std::cout << string_format("depth_diff: %i x %i x %i", F_D.size(0), F_D.size(1), F_D.size(2)) << std::endl;
+    std::cout << string_format("depth_diff: %i x %i", F_D.size(0), F_D.size(1)) << std::endl;
     std::cout << F_D << std::endl;
 
     torch::Tensor gradOutput_weighted = gradOutput.mul(F_D);
