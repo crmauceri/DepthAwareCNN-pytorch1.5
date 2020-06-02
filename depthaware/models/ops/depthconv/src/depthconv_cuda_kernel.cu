@@ -115,7 +115,7 @@ __global__ void depthdiff_gpu_kernel(
     const int dilation_h, const int dilation_w, const int height_col,
     const int width_col, scalar_t* data_col) {
 
-    // CxHxW --> (khxkw)x(CxHxW)
+    // HxW --> (khxkw)x(HxW)
     CUDA_KERNEL_LOOP(index, n) {
         const int w_col = index % width_col;
         const int h_col = (index / width_col) % height_col;
@@ -174,12 +174,12 @@ torch::Tensor depth_diff(
     // kernel responsible for copying a single-channel grid.
     int height_col = (height + 2 * pad_h - (dilation_h * (ksize_h - 1) + 1)) / stride_h + 1;
     int width_col = (width + 2 * pad_w - (dilation_w * (ksize_w - 1) + 1)) / stride_w + 1;
-    int num_kernels = channels * height_col * width_col;
+    int num_kernels =  height_col * width_col;
 
-    torch::Tensor data_col = torch::zeros({channels * ksize_h * ksize_w, height_col * width_col}, torch::kCUDA);
+    torch::Tensor data_col = torch::zeros({ksize_h * ksize_w, height_col * width_col}, torch::kCUDA);
 
     // Launch
-    AT_DISPATCH_FLOATING_TYPES(data_im.scalar_type(), "depthdiff_gpu_kernel", ([&] {
+    AT_DISPATCH_FLOATING_TYPES(data_depth.scalar_type(), "depthdiff_gpu_kernel", ([&] {
         depthdiff_gpu_kernel<scalar_t><<<GET_BLOCKS(num_kernels), CUDA_NUM_THREADS>>>(
             num_kernels, data_depth.data_ptr<scalar_t>() ,
             height, width, ksize_h, ksize_w, pad_h, pad_w,
