@@ -259,7 +259,7 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
     int dilationW, int dilationH){
 
     //Transpose weight
-    torch::Tensor weight_t = weight.permute(1, 0, 3, 2).reshape({weight.size(0), weight.size(1), weight.size(2)*weight.size(3)});
+    torch::Tensor weight_t = weight.permute({1, 0, 3, 2}).reshape({weight.size(0), weight.size(1), weight.size(2)*weight.size(3)});
 
     int batchSize = gradOutput.size(0);
     int nOutputPlane = gradOutput.size(1);
