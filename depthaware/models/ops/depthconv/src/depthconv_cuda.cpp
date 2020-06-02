@@ -279,7 +279,7 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
 
 torch::Tensor depthconv_weight_grad(){
     torch::Tensor gradWeight;
-    return gradWeight
+    return gradWeight;
 }
 
 torch::Tensor depthconv_bias_grad(torch::Tensor gradOutput, double scale){
