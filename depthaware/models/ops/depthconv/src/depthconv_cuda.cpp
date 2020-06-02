@@ -254,12 +254,12 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
 //Compute input gradient as a full convolution between grad_output and dialated_weight transposed
 torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor gradOutput,
     torch::Tensor weight,
-    int weight, int height,
+    int width, int height,
     int kW, int kH, int strideW, int strideH,
     int padW, int padH, int dilationW, int dilationH){
 
     //Weight with depth_diff (F_D in paper)
-    torch::Tensor depth_diff = depth_diff(input_depth, weight, height, kW, kH, padW, padH, strideW, strideH, dilationW, dilationH);
+    torch::Tensor depth_diff = depth_diff(input_depth, width, height, kW, kH, padW, padH, strideW, strideH, dilationW, dilationH);
 
     std::cout << string_format("depth_diff dim: %i", depth_diff.ndimension()) << std::endl;
     std::cout << string_format("depth_diff: %i x %i x %i", depth_diff.size(0), depth_diff.size(1), depth_diff.size(2)) << std::endl;
