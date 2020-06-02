@@ -306,7 +306,7 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
                                                           Slice(padW, -padW)}));
         }
     }
-cd
+
     std::cout << string_format("gradInput dim: %i", gradInput.ndimension()) << std::endl;
     std::cout << string_format("gradInput: %i x %i x %i", gradInput.size(0), gradInput.size(1), gradInput.size(2)) << std::endl;
     std::cout << gradInput << std::endl;
