@@ -282,7 +282,7 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
 
         //Reshape input and weight with depth difference
         torch::Tensor columns = depthconv_im2col(gradOutput_n, depth_n,
-                nOutputPlane, outputHeight, outputWidth,
+                nOutputPlane, gradOutput_padded.size(2), gradOutput_padded.size(3),
                 kH, kW,
                 0, 0,
                 strideH, strideW,
