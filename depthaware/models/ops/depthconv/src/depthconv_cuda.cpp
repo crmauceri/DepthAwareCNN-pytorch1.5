@@ -298,9 +298,9 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
 
         std::cout << string_format("columns dim: %i", columns.ndimension()) << std::endl;
         std::cout << columns << std::endl;
-        
+
         gradInput_n.index_put_({Ellipsis}, columns.index({Slice(padH, -padH),
-                                                          Slice(padW, -padW}));
+                                                          Slice(padW, -padW)}));
         }
     }
 
