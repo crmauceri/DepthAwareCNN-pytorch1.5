@@ -268,7 +268,7 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
     //Use built in convolution
     namespace F = torch::nn::functional;
     torch::Tensor gradInput = F::conv_transpose2d(gradOutput_weighted, weight,
-                        F::ConvTranspose2dFuncOptions().stride({strideW, strideH}).pad({padW, padH}).dilation({dilationW, dilationH}));
+                        F::ConvTranspose2dFuncOptions().stride({strideW, strideH}).padding({padW, padH}).dilation({dilationW, dilationH}));
 
     std::cout << string_format("gradInput dim: %i", gradInput.ndimension()) << std::endl;
     std::cout << string_format("gradInput: %i x %i x %i", gradInput.size(0), gradInput.size(1), gradInput.size(2)) << std::endl;
