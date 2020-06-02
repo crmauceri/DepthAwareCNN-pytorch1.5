@@ -274,9 +274,9 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
     torch::Tensor gradInput = torch::zeros({batchSize, nInputPlane, inputWidth, inputHeight}, torch::kCUDA);
 
     for(int elt=0; elt<batchSize; elt++){
-        gradOutput_n = gradOutput.select(0, elt);
-        depth_n = input_depth.select(0, elt);
-        gradInput_n = gradInput.select(0, elt);
+        torch::Tensor gradOutput_n = gradOutput.select(0, elt);
+        torch::Tensor depth_n = input_depth.select(0, elt);
+        torch::Tensor gradInput_n = gradInput.select(0, elt);
 
         //Reshape input and weight with depth difference
         torch::Tensor columns = depthconv_im2col(gradOutput_n, depth_n,
