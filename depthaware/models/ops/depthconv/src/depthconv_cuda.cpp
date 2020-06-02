@@ -259,7 +259,7 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
     int dilationW, int dilationH){
 
     //Transpose weight
-    torch::Tensor weight_t = weight.transpose(3,2).reshape({weight.size(0), weight.size(1), weight.size(2)*weight.size(3)});
+    torch::Tensor weight_t = weight.permute(1, 0, 3, 2).reshape({weight.size(0), weight.size(1), weight.size(2)*weight.size(3)});
 
     int batchSize = gradOutput.size(0);
     int nOutputPlane = gradOutput.size(1);
@@ -302,11 +302,11 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
         std::cout << string_format("columns dim: %i", columns.ndimension()) << std::endl;
         std::cout << columns << std::endl;
 
-        gradInput_n.index_put_({Ellipsis}, columns.index({Slice(padH, -padH),
+        gradInput_n.index_put_({Ellipsis}, columns.index({Ellipsis, Slice(padH, -padH),
                                                           Slice(padW, -padW)}));
         }
     }
-
+cd
     std::cout << string_format("gradInput dim: %i", gradInput.ndimension()) << std::endl;
     std::cout << string_format("gradInput: %i x %i x %i", gradInput.size(0), gradInput.size(1), gradInput.size(2)) << std::endl;
     std::cout << gradInput << std::endl;
