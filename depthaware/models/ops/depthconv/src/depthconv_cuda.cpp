@@ -28,7 +28,7 @@ torch::Tensor pad_within(torch::Tensor x, int strideX, int strideY){
     namespace F = torch::nn::functional;
     torch::Tensor w = torch::zeros({strideX, strideY}, torch::kCUDA);
     w.index_put_({0, 0}, 1);
-    return F::conv_transpose2d(x, w.expand({x.size(1), 1, stride, stride}),
+    return F::conv_transpose2d(x, w.expand({x.size(1), 1, strideX, strideY}),
                                F::ConvTranspose2dFuncOptions().stride({strideX, strideY}).groups(x.size(1)));
 }
 
