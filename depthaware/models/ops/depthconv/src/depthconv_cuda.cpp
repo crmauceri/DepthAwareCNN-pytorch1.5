@@ -341,7 +341,7 @@ torch::Tensor depthconv_weight_grad(torch::Tensor input, torch::Tensor input_dep
         std::cout << gradOutput_n << std::endl;
 
         //Multiplication with reshaped input is equivalent to 2d convolution
-        torch::Tensor product = torch::matmul(gradOutput_n, columns.transpose(2,3));
+        torch::Tensor product = torch::matmul(gradOutput_n, columns.transpose(1,0));
         gradWeight.add_(product.reshape({nOutputPlane, nInputPlane, kW,  kH}));
     }
 
