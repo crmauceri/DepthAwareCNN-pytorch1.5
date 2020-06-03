@@ -18,11 +18,14 @@ inline int GET_BLOCKS(const int N) {
 // Fills data_col((khxkw)x(CxHxW)) with the depth difference weighted image values
 template <typename scalar_t>
 __global__ void depthconv_im2col_gpu_kernel(
-    const int n, const scalar_t* data_im, const scalar_t* data_depth,
-    const int height, const int width, const int kernel_h, const int kernel_w,
-    const int pad_h, const int pad_w, const int stride_h, const int stride_w,
-    const int dilation_h, const int dilation_w, const int height_col,
-    const int width_col, scalar_t* data_col) {
+    const int n, const scalar_t* data_im, const scalar_t* data_depth, const int alpha,
+    const int height, const int width,
+    const int kernel_h, const int kernel_w,
+    const int pad_h, const int pad_w,
+    const int stride_h, const int stride_w,
+    const int dilation_h, const int dilation_w,
+    const int height_col, const int width_col,
+    scalar_t* data_col) {
 
     // CxHxW --> (khxkw)x(CxHxW)
     CUDA_KERNEL_LOOP(index, n) {
@@ -69,7 +72,7 @@ __global__ void depthconv_im2col_gpu_kernel(
                     //	printf("Di-Dval: %f\n", exp(-abs(Di - Dval)));
 
                     // Weight image value by depth difference
-                    val *= exp(-abs(Di - Dval));
+                    val *= exp(-alpha * abs(Di - Dval));
                 }
                 *data_col_ptr = val;
                 data_col_ptr += height_col * width_col;
@@ -81,6 +84,7 @@ __global__ void depthconv_im2col_gpu_kernel(
 torch::Tensor depthconv_im2col(
     torch::Tensor data_im,
     torch::Tensor data_depth,
+    const int alpha, //Scaling factor
     const int channels, const int height, const int width,
     const int ksize_h, const int ksize_w,
     const int pad_h, const int pad_w,
@@ -98,9 +102,10 @@ torch::Tensor depthconv_im2col(
     // Launch
     AT_DISPATCH_FLOATING_TYPES(data_im.scalar_type(), "depthconv_im2col_gpu_kernel", ([&] {
         depthconv_im2col_gpu_kernel<scalar_t><<<GET_BLOCKS(num_kernels), CUDA_NUM_THREADS>>>(
-            num_kernels, data_im.data_ptr<scalar_t>() , data_depth.data_ptr<scalar_t>() ,
+            num_kernels, data_im.data_ptr<scalar_t>(), data_depth.data_ptr<scalar_t>(), alpha,
             height, width, ksize_h, ksize_w, pad_h, pad_w,
-            stride_h, stride_w, dilation_h, dilation_w, height_col, width_col, data_col.data_ptr<scalar_t>() );
+            stride_h, stride_w, dilation_h, dilation_w, height_col, width_col,
+            data_col.data_ptr<scalar_t>() );
         }));
 
     return data_col;
