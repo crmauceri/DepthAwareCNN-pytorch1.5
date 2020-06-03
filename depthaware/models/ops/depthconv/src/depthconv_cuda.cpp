@@ -334,7 +334,7 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
         {
         using namespace torch::indexing;
         columns = torch::matmul(weight_t, columns).reshape({weight.size(0), nInputPlane, inputWidth, inputHeight});
-        gradInput_n.index_put_({Ellipsis}, columns.index({Ellipsis, Slice(padW, -padW), Slice(padH, -padH)}));
+        gradInput_n.index_put_({Ellipsis}, columns); //.index({Ellipsis, Slice(padW, -padW), Slice(padH, -padH)})
         }
     }
 
