@@ -321,7 +321,7 @@ torch::Tensor depthconv_weight_grad(torch::Tensor input, torch::Tensor input_dep
     torch::Tensor gradWeight = torch::zeros({nOutputPlane, nInputPlane, kW, kH});
 
     for(int elt=0; elt<batchSize; elt++){
-        torch::Tensor gradOutput_n = gradOutput.select(0, elt).reshape(nOutputPlane, gradOutput.size(2)*gradOutput.size(3));
+        torch::Tensor gradOutput_n = gradOutput.select(0, elt).reshape({nOutputPlane, gradOutput.size(2)*gradOutput.size(3)});
         torch::Tensor depth_n = input_depth.select(0, elt);
         torch::Tensor input_n = input.select(0, elt);
 
