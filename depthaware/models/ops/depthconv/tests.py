@@ -42,6 +42,6 @@ if __name__ == '__main__':
     print(grad_output)
 
     grad_input, grad_weight, grad_bias = depthconv.backward(
-        input, depth, grad_output, weight,
+        input, depth, grad_output, weight, 1.0,
         weight.size(3), weight.size(2), stride[1], stride[0],
         padding[1], padding[0], dilation[1], dilation[0], 1.0)

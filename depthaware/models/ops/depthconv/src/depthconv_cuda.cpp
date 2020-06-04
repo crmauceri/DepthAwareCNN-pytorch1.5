@@ -261,7 +261,7 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
 
 //Compute input gradient as a full convolution between grad_output and dialated_weight transposed
 torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor gradOutput,
-    torch::Tensor weight, int alpha,
+    torch::Tensor weight, double alpha,
     int nInputPlane, int inputWidth, int inputHeight,
     int kW, int kH, int strideW, int strideH,
     int dilationW, int dilationH){
@@ -351,7 +351,7 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
 
 //Compute weight gradient as covolution of input and gradOutput
 torch::Tensor depthconv_weight_grad(torch::Tensor input, torch::Tensor input_depth, torch::Tensor gradOutput,
-    int alpha, int kW, int kH, int strideW, int strideH, int padW, int padH, int dilationH, int dilationW){
+    double alpha, int kW, int kH, int strideW, int strideH, int padW, int padH, int dilationH, int dilationW){
 
     int batchSize = input.size(0);
     int nInputPlane = input.size(1);
@@ -401,7 +401,7 @@ torch::Tensor depthconv_bias_grad(torch::Tensor gradOutput, double scale){
 
 std::vector<torch::Tensor> depthconv_backward_cuda(
     torch::Tensor input, torch::Tensor input_depth, torch::Tensor gradOutput,
-    torch::Tensor weight, int alpha, int kW, int kH, int strideW, int strideH,
+    torch::Tensor weight, double alpha, int kW, int kH, int strideW, int strideH,
     int padW, int padH, int dilationH, int dilationW, double scale) {
 
     CHECK_INPUT(input);
