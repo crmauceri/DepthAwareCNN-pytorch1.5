@@ -225,7 +225,7 @@ torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_de
         output_n = output.select(0, elt);
 
         //Reshape input and weight with depth difference
-        torch::Tensor columns = depthconv_im2col(input_n, depth_n, alpha
+        torch::Tensor columns = depthconv_im2col(input_n, depth_n, alpha,
             nInputPlane, inputHeight, inputWidth,
             kH, kW,
             padH, padW,
