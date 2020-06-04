@@ -319,6 +319,9 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
         torch::Tensor depth_n = depth_padded.select(0, elt);
         torch::Tensor gradInput_n = gradInput.select(0, elt);
 
+        std::cout << string_format("gradOutput_n dim: %i", gradOutput_n.ndimension()) << std::endl;
+        std::cout << gradOutput_n << std::endl;
+
         //Reshape input and weight with depth difference
         torch::Tensor columns = depthconv_im2col(gradOutput_n, depth_n, alpha,
                 nOutputPlane, gradOutput_padded.size(2), gradOutput_padded.size(3),
