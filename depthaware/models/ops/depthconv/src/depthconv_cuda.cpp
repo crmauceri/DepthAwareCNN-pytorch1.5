@@ -278,6 +278,11 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
     namespace F = torch::nn::functional;
     torch::Tensor gradOutput_padded = F::pad(gradOutput, F::PadFuncOptions({padW, padW, padH, padH}));
 
+    //The depth also needs padding
+    int depth_padW = (gradOutput_padded.size(2) - input_depth.size(2)) / 2;
+    int depth_padH = (gradOutput_padded.size(3) - input_depth.size(3)) / 2;
+    torch::Tensor depth_padded = F::pad(input_depth, F::PadFuncOptions({depth_padW, depth_padW, depth_padH, depth_padH}));
+
     std::cout << string_format("weight_t dim: %i", weight_t.ndimension()) << std::endl;
     std::cout << weight_t << std::endl;
 
@@ -298,10 +303,10 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
     std::cout << string_format("gradOutput_padded dim: %i", gradOutput_padded.ndimension()) << std::endl;
     std::cout << gradOutput_padded << std::endl;
 
-    std::cout << string_format("input_depth dim: %i", input_depth.ndimension()) << std::endl;
-    std::cout << input_depth << std::endl;
+    std::cout << string_format("depth_padded dim: %i", depth_padded.ndimension()) << std::endl;
+    std::cout << depth_padded << std::endl;
 
-    torch::Tensor depth_padded = pad_within(input_depth, strideW, strideH);
+    torch::Tensor depth_padded = pad_within(depth_padded, strideW, strideH);
 
     //Stride and dialation are added with padding between matrix elements
 //    weight_t = pad_within(weight_t, dilationW, dilationH);
