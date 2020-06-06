@@ -274,6 +274,9 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
 
     //Pre-dialate weight matrix
     weight_t = pad_within(weight_t, dilationW, dilationH);
+    int kt_W = weight_t.size(2);
+    int kt_H = weight_t.size(3);
+    weight_t = weight_t.reshape({weight_t.size(1), weight_t.size(0), weight_t.size(2)*weight_t.size(3)});
 
     //This is a full convolution, so we need extra padding based on kernel size
     int padW = weight_t.size(2) - 1;
