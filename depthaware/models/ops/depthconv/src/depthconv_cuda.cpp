@@ -273,8 +273,8 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
     int nOutputPlane = gradOutput.size(1);
 
     //This is a full convolution, so we need extra padding based on kernel size
-    int padW = ((weight.size(2) - 1)*dilationW + 1) / 2;
-    int padH = ((weight.size(3) - 1)*dilationH + 1) / 2;
+    int padW = ((weight.size(2) - 1)*dilationW + 1);
+    int padH = ((weight.size(3) - 1)*dilationH + 1);
     namespace F = torch::nn::functional;
     torch::Tensor gradOutput_padded = F::pad(gradOutput, F::PadFuncOptions({padW, padW, padH, padH}));
 
