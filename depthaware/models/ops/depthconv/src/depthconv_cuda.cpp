@@ -306,7 +306,7 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
     std::cout << string_format("depth_padded dim: %i", depth_padded.ndimension()) << std::endl;
     std::cout << depth_padded << std::endl;
 
-    torch::Tensor depth_padded = pad_within(depth_padded, strideW, strideH);
+    depth_padded = pad_within(depth_padded, strideW, strideH);
 
     //Stride and dialation are added with padding between matrix elements
 //    weight_t = pad_within(weight_t, dilationW, dilationH);
