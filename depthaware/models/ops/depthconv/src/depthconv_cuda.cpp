@@ -266,15 +266,18 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
     int kW, int kH, int strideW, int strideH,
     int dilationW, int dilationH){
 
-    //Transpose weight
-    torch::Tensor weight_t = weight.permute({1, 0, 3, 2});
-
     int batchSize = gradOutput.size(0);
     int nOutputPlane = gradOutput.size(1);
 
+    //Transpose weight
+    torch::Tensor weight_t = weight.permute({1, 0, 3, 2});
+
+    //Pre-dialate weight matrix
+    weight_t = pad_within(weight_t, dilationW, dilationH);
+
     //This is a full convolution, so we need extra padding based on kernel size
-    int padW = ((weight.size(2) - 1)*dilationW);
-    int padH = ((weight.size(3) - 1)*dilationH);
+    int padW = weight_t.size(2) - 1;
+    int padH = weight_t.size(3) - 1;
     namespace F = torch::nn::functional;
     torch::Tensor gradOutput_padded = F::pad(gradOutput, F::PadFuncOptions({padW, padW, padH, padH}));
 
@@ -283,18 +286,7 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
     int depth_padH = (gradOutput_padded.size(3) - input_depth.size(3)) / 2;
     torch::Tensor depth_padded = F::pad(input_depth, F::PadFuncOptions({depth_padW, depth_padW, depth_padH, depth_padH}));
 
-    std::cout << string_format("weight_t dim: %i", weight_t.ndimension()) << std::endl;
-    std::cout << weight_t << std::endl;
-
-    //Stride and dialation are added with padding between matrix elements
-    weight_t = pad_within(weight_t, dilationW, dilationH);
-
-    std::cout << string_format("weight_t dim: %i", weight_t.ndimension()) << std::endl;
-    std::cout << weight_t << std::endl;
-    int kt_W = weight_t.size(2);
-    int kt_H = weight_t.size(3);
-    weight_t = weight_t.reshape({weight_t.size(1), weight_t.size(0), weight_t.size(2)*weight_t.size(3)});
-
+    //Stride is added with padding between matrix elements
     std::cout << string_format("gradOutput_padded dim: %i", gradOutput_padded.ndimension()) << std::endl;
     std::cout << gradOutput_padded << std::endl;
 
@@ -335,7 +327,6 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
 
         std::cout << string_format("columns dim: %i", columns.ndimension()) << std::endl;
         std::cout << columns << std::endl;
-
         std::cout << string_format("weight_t dim: %i", weight_t.ndimension()) << std::endl;
         std::cout << weight_t << std::endl;
 
