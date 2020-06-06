@@ -64,7 +64,7 @@ if __name__ == '__main__':
     conv_layer = torch.nn.Conv2d(out_channels, kernel_size, kernel_size, bias=True, stride=stride, padding=padding,
                                  dilation=dilation, groups=1)
     conv_layer.weight = torch.nn.Parameter(weight, requires_grad=True)
-    bias = torch.zeros((out_channels), device=device)
+    bias = torch.zeros((out_channels, 1), device=device)
     conv_layer.bias = torch.nn.Parameter(bias.squeeze(1), requires_grad=True)
 
     input = torch.ones((batch_size, 3, w, h), device=device, requires_grad=True)
