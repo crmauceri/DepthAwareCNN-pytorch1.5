@@ -22,7 +22,7 @@ if __name__ == '__main__':
     #TODO check dilation and stride
     batch_size = 1
     w, h = 5, 5
-    kernel_size = 2
+    kernel_size = 3
     out_channels = 1
     stride = [1, 1]
     padding = [0, 0]
