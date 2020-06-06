@@ -74,8 +74,8 @@ if __name__ == '__main__':
     loss.backward(grad_output)
 
     print("Pytorch input gradient:")
-    print(input.grad)
+    print(input.grad.cpu())
 
-    np.testing.assert_array_almost_equal(grad_input, input.grad)
-    np.testing.assert_array_almost_equal(grad_weight, conv_layer.weight.grad)
-    np.testing.assert_array_almost_equal(grad_bias, conv_layer.bias.grad)
+    np.testing.assert_array_almost_equal(grad_input.cpu().detach().numpy(), input.grad.cpu().detach().numpy())
+    np.testing.assert_array_almost_equal(grad_weight.cpu().detach().numpy(), conv_layer.weight.grad.cpu().detach().numpy())
+    np.testing.assert_array_almost_equal(grad_bias.cpu().detach().numpy(), conv_layer.bias.grad.cpu().detach().numpy())
