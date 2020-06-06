@@ -5,12 +5,13 @@ import depthconv
 
 class DepthconvFunction(Function):
     @staticmethod
-    def forward(ctx, input, depth, weight, bias, stride, padding, dilation):
+    def forward(ctx, input, depth, weight, bias, alpha, stride, padding, dilation):
         # print('forward')
         if bias is None:
             bias = torch.zeros(weight.shape[0], device=weight.device)
 
         ctx.save_for_backward(input, depth, weight, bias)
+        ctx.alpha = alpha
         ctx.stride = stride
         ctx.padding = padding
         ctx.dilation = dilation
@@ -22,7 +23,7 @@ class DepthconvFunction(Function):
             raise NotImplementedError
         else:
             return depthconv.forward(
-                    input, depth, weight, bias,
+                    input, depth, weight, bias, alpha,
                     weight.size(3), weight.size(2), stride[1], stride[0],
                     padding[1], padding[0], dilation[1], dilation[0])
 
@@ -42,7 +43,7 @@ class DepthconvFunction(Function):
                 raise NotImplementedError
 
             grad_input, grad_weight, grad_bias = depthconv.backward(
-                input, depth, grad_output, weight,
+                input, depth, grad_output, weight, ctx.alpha,
                 weight.size(3), weight.size(2), ctx.stride[1], ctx.stride[0],
                 ctx.padding[1], ctx.padding[0], ctx.dilation[1], ctx.dilation[0], 1.0)
 

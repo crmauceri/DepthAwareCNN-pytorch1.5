@@ -11,6 +11,7 @@ class DepthConv(Module):
                  in_channels,
                  out_channels,
                  kernel_size,
+                 alpha=1,
                  stride=1,
                  padding=0,
                  dilation=1,
@@ -19,6 +20,7 @@ class DepthConv(Module):
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.kernel_size = _pair(kernel_size)
+        self.alpha = alpha
         self.stride = _pair(stride)
         self.padding = _pair(padding)
         self.dilation = _pair(dilation)
@@ -43,7 +45,7 @@ class DepthConv(Module):
             self.bias.data.uniform_(-stdv, stdv)
 
     def forward(self, input, depth):
-        return DepthconvFunction.apply(input, depth, self.weight, self.bias, self.stride,
+        return DepthconvFunction.apply(input, depth, self.weight, self.bias, self.alpha, self.stride,
                              self.padding, self.dilation)
 
     def output_size(self, input):
