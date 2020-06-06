@@ -276,7 +276,6 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
     weight_t = pad_within(weight_t, dilationW, dilationH);
     int kt_W = weight_t.size(2);
     int kt_H = weight_t.size(3);
-    weight_t = weight_t.reshape({weight_t.size(1), weight_t.size(0), weight_t.size(2)*weight_t.size(3)});
 
     //This is a full convolution, so we need extra padding based on kernel size
     int padW = weight_t.size(2) - 1;
@@ -313,6 +312,9 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
 
     // Allocate memory to build up output representation
     torch::Tensor gradInput = torch::zeros({batchSize, nInputPlane, inputWidth, inputHeight}, torch::kCUDA);
+
+    //Flatted weight for matrix multiplication
+    weight_t = weight_t.reshape({weight_t.size(1), weight_t.size(0), weight_t.size(2)*weight_t.size(3)});
 
     for(int elt=0; elt<batchSize; elt++){
         torch::Tensor gradOutput_n = gradOutput_padded.select(0, elt);
