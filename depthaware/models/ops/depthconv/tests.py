@@ -46,7 +46,7 @@ if __name__ == '__main__':
 
     input = torch.ones((batch_size, 3, w, h), device=device)
     depth = torch.ones((batch_size, 1, w, h), device=device)
-    weight = torch.ones((out_channels, 3, kernel_size, kernel_size), device=device)
+    weight = torch.randn((out_channels, 3, kernel_size, kernel_size), device=device)
     outsize = output_size(input, weight, padding, dilation, stride)
     grad_output = torch.FloatTensor(range(outsize[0]*outsize[1]*outsize[2]*outsize[3])).cuda().reshape(outsize)
 
@@ -63,7 +63,7 @@ if __name__ == '__main__':
 
     conv_layer = torch.nn.Conv2d(out_channels, kernel_size, kernel_size, bias=True, stride=stride, padding=padding,
                                  dilation=dilation, groups=1)
-    conv_layer.weight = torch.nn.Parameter(weight, requires_grad=True)
+    conv_layer.weight = torch.nn.Parameter(weight.clone(), requires_grad=True)
     bias = torch.zeros((out_channels, 1), device=device)
     conv_layer.bias = torch.nn.Parameter(bias.squeeze(1), requires_grad=True)
 
