@@ -67,7 +67,7 @@ if __name__ == '__main__':
     bias = torch.zeros((out_channels, 1), device=device)
     conv_layer.bias = torch.nn.Parameter(bias.squeeze(1), requires_grad=True)
 
-    input = input.clone().detach().device(device).requires_grad(True)
+    input = input.clone().detach().cuda().requires_grad(True)
     x = conv_layer(input)
     target = torch.zeros(x.shape, device=device)
     loss = TestLoss.apply(x, target)
