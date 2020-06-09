@@ -44,7 +44,7 @@ if __name__ == '__main__':
     else:
         device = torch.device('cpu')
 
-    input = torch.randn((batch_size, 3, w, h), device=device)
+    input = torch.ones((batch_size, 3, w, h), device=device)
     depth = torch.ones((batch_size, 1, w, h), device=device)
     weight_size = (out_channels, 3, kernel_size, kernel_size)
     weight = 0.01 * torch.FloatTensor(range(weight_size[0]*weight_size[1]*weight_size[2]*weight_size[3])).cuda().reshape(weight_size)
@@ -53,6 +53,9 @@ if __name__ == '__main__':
 
     print("Toy grad output:")
     print(grad_output)
+
+    print("Toy weights output:")
+    print(weight)
 
     grad_input, grad_weight, grad_bias = depthconv.backward(
         input, depth, grad_output, weight, 1.0,
