@@ -104,21 +104,15 @@ if __name__ == '__main__':
     if torch.cuda.is_available():
         conv_test = conv_test.cuda()
 
-    #Shared layers
-    fc = nn.Linear(torch.prod(torch.tensor(conv_size[1:])), 10)
-    loss = nn.CrossEntropyLoss()
-    if torch.cuda.is_available():
-        fc = fc.cuda()
-        loss = loss.cuda()
+    #TestLoss is difference between input and target
+    from depthaware.models.ops.depthconv.tests import TestLoss
 
     #Run forward pass
     conv_y = conv(input1)
-    conv_loss = loss(fc(conv_y.view(-1, torch.prod(torch.tensor(conv_size[1:])))),
-                     target)
+    conv_loss = TestLoss.apply(conv_y, target)
 
     conv_test_y = conv_test(input2, depth)
-    conv_test_loss = loss(fc(conv_test_y.view(-1, torch.prod(torch.tensor(conv_size[1:])))),
-                          target)
+    conv_test_loss = TestLoss.apply(conv_test_y, target)
 
     # The convolution forward results are equal within 5 decimal places
     np.testing.assert_array_almost_equal(conv_y.detach().cpu().numpy(), conv_test_y.detach().cpu().numpy(), decimal=5)
