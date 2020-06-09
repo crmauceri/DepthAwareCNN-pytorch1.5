@@ -44,7 +44,7 @@ if __name__ == '__main__':
     else:
         device = torch.device('cpu')
 
-    input = torch.ones((batch_size, 3, w, h), device=device)
+    input = torch.randn((batch_size, 3, w, h), device=device)
     depth = torch.ones((batch_size, 1, w, h), device=device)
     weight = 0.5 * torch.ones((out_channels, 3, kernel_size, kernel_size), device=device)
     outsize = output_size(input, weight, padding, dilation, stride)
