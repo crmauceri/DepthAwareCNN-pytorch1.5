@@ -44,12 +44,16 @@ if __name__ == '__main__':
     else:
         device = torch.device('cpu')
 
-    input = torch.ones((batch_size, 3, w, h), device=device)
+    input_size = (batch_size, 3, w, h)
+    input =  0.01 * torch.FloatTensor(range(input_size[0]*input_size[1]*input_size[2]*input_size[3])).cuda().reshape(input_size)
     depth = torch.ones((batch_size, 1, w, h), device=device)
     weight_size = (out_channels, 3, kernel_size, kernel_size)
     weight = 0.01 * torch.FloatTensor(range(weight_size[0]*weight_size[1]*weight_size[2]*weight_size[3])).cuda().reshape(weight_size)
     outsize = output_size(input, weight, padding, dilation, stride)
     grad_output = torch.FloatTensor(range(outsize[0]*outsize[1]*outsize[2]*outsize[3])).cuda().reshape(outsize)
+
+    print("Toy input:")
+    print(input)
 
     print("Toy grad output:")
     print(grad_output)
