@@ -269,8 +269,8 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
     int batchSize = gradOutput.size(0);
     int nOutputPlane = gradOutput.size(1);
 
-    //Transpose weight
-    torch::Tensor weight_t = weight.permute({1, 0, 3, 2});
+    //"Invert" weights
+    torch::Tensor weight_t = weight.flip((2, 3));
 
     //Pre-dialate weight matrix
     weight_t = pad_within(weight_t, dilationW, dilationH);
