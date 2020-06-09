@@ -89,5 +89,5 @@ if __name__ == '__main__':
     print(conv_layer.bias.grad.cpu())
 
     np.testing.assert_array_almost_equal(grad_input.cpu().detach().numpy(), input.grad.cpu().detach().numpy())
-    np.testing.assert_array_almost_equal(grad_weight.cpu().detach().numpy(), conv_layer.weight.grad.cpu().detach().numpy())
+    np.testing.assert_array_almost_equal(grad_weight.cpu().detach().numpy(), conv_layer.weight.grad.cpu().detach().numpy(), decimal=5)
     np.testing.assert_array_almost_equal(grad_bias.cpu().detach().numpy(), conv_layer.bias.grad.cpu().detach().numpy())
