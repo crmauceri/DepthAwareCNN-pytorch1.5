@@ -81,10 +81,11 @@ if __name__ == '__main__':
     else:
         device = torch.device('cpu')
 
-    #Toy data
+    # Toy data
     input1 = torch.randn((batch_size, 3, w, h), requires_grad=True, device=device)
     input2 = input1.clone().detach().requires_grad_(True).to(device)  # Using True throws error on backward pass
     depth = torch.ones((batch_size, 1, w, h), device=device)
+    target = torch.randint(0, 10, (batch_size,), device=device)
 
     # Pytorch Conv2d pipeline
     conv = nn.Conv2d(3, out_channels, kernel_size, bias=True, padding=padding, dilation=dilation, stride=1)
@@ -103,25 +104,28 @@ if __name__ == '__main__':
     if torch.cuda.is_available():
         conv_test = conv_test.cuda()
 
-    #TestLoss is difference between input and target
-    from depthaware.models.ops.depthconv.tests import TestLoss
-    target = torch.randint(0, 10, conv_size, device=device)
+    # Shared layers
+    fc = nn.Linear(torch.prod(torch.tensor(conv_size[1:])), 10)
+    loss = nn.CrossEntropyLoss()
+    if torch.cuda.is_available():
+        fc = fc.cuda()
+        loss = loss.cuda()
 
-    #Run forward pass
+    # Run forward pass
     conv_y = conv(input1)
-    conv_loss = TestLoss.apply(conv_y, target)
+    conv_loss = loss(fc(conv_y.view(-1, torch.prod(torch.tensor(conv_size[1:])))),
+                     target)
 
     conv_test_y = conv_test(input2, depth)
-    conv_test_loss = TestLoss.apply(conv_test_y, target)
+    conv_test_loss = loss(fc(conv_test_y.view(-1, torch.prod(torch.tensor(conv_size[1:])))),
+                          target)
 
     # The convolution forward results are equal within 5 decimal places
     np.testing.assert_array_almost_equal(conv_y.detach().cpu().numpy(), conv_test_y.detach().cpu().numpy(), decimal=5)
 
     # The gradient calculation is equal within 6 decimal places
-    grad1 = torch.randint(0, 10, conv_size, device=device)
-    grad2 = grad1.clone().detach()
-    conv_loss.backward(grad1)
-    conv_test_loss.backward(grad2)
+    conv_loss.backward()
+    conv_test_loss.backward()
 
     bias_grad = conv.bias.grad
     bias_grad_test = conv_test.bias.grad
@@ -134,5 +138,3 @@ if __name__ == '__main__':
     input_grad = input1.grad
     input_grad_test = input2.grad
     np.testing.assert_array_almost_equal(input_grad.detach().cpu().numpy(), input_grad_test.detach().cpu().numpy())
-    
-
