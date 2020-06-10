@@ -274,7 +274,7 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
 
     //Stride is added with padding between matrix elements
     torch::Tensor gradOutput_padded = pad_within(gradOutput, strideW, strideH);
-    torch::Tensor  = pad_within(input_depth, strideW, strideH);
+    torch::Tensor depth_padded = pad_within(input_depth, strideW, strideH);
 
     //Calculate dilated kernel shape for padding
     int kt_W = (kW-1)*(dilationW-1) + kW;
