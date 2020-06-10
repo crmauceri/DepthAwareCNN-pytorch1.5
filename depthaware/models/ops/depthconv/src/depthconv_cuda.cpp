@@ -272,8 +272,11 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
     //"Invert" weights
     torch::Tensor weight_t = weight.flip({2, 3}).permute({1, 0, 2, 3});
 
+    //Stride is added with padding between matrix elements
+    torch::Tensor gradOutput_padded = pad_within(gradOutput, strideW, strideH);
+    torch::Tensor  = pad_within(input_depth, strideW, strideH);
+
     //Calculate dilated kernel shape for padding
-//    weight_t = pad_within(weight_t, dilationW, dilationH);
     int kt_W = (kW-1)*(dilationW-1) + kW;
     int kt_H = (kH-1)*(dilationH-1) + kH;
 
@@ -281,16 +284,12 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
     int padW = kt_W - 1;
     int padH = kt_H - 1;
     namespace F = torch::nn::functional;
-    torch::Tensor gradOutput_padded = F::pad(gradOutput, F::PadFuncOptions({padW, padW, padH, padH}));
+    gradOutput_padded = F::pad(gradOutput_padded, F::PadFuncOptions({padW, padW, padH, padH}));
 
     //The depth also needs padding
     int depth_padW = (gradOutput_padded.size(2) - input_depth.size(2)) / 2;
     int depth_padH = (gradOutput_padded.size(3) - input_depth.size(3)) / 2;
-    torch::Tensor depth_padded = F::pad(input_depth, F::PadFuncOptions({depth_padW, depth_padW, depth_padH, depth_padH}));
-
-    //Stride is added with padding between matrix elements
-    gradOutput_padded = pad_within(gradOutput_padded, strideW, strideH);
-    depth_padded = pad_within(depth_padded, strideW, strideH);
+    depth_padded = F::pad(depth_padded, F::PadFuncOptions({depth_padW, depth_padW, depth_padH, depth_padH}));
 
     // Allocate memory to build up output representation
     torch::Tensor gradInput = torch::zeros({batchSize, nInputPlane, inputWidth, inputHeight}, torch::kCUDA);
