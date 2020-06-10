@@ -274,8 +274,8 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
 
     //Calculate dilated kernel shape for padding
 //    weight_t = pad_within(weight_t, dilationW, dilationH);
-    int kt_W = kW * dilationW - 1;
-    int kt_H = kH * dilationH - 1;
+    int kt_W = (kW-1)*(dilationW-1) + kW;
+    int kt_H = (kH-1)*(dilationH-1) + kH;
 
     //This is a full convolution, so we need extra padding based on kernel size
     int padW = kt_W - 1;
