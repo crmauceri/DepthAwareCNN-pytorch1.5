@@ -272,14 +272,14 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
     //"Invert" weights
     torch::Tensor weight_t = weight.flip({2, 3}).permute({1, 0, 2, 3});
 
-    //Pre-dialate weight matrix
-    weight_t = pad_within(weight_t, dilationW, dilationH);
-    int kt_W = weight_t.size(2);
-    int kt_H = weight_t.size(3);
+    //Calculate dilated kernel shape for padding
+//    weight_t = pad_within(weight_t, dilationW, dilationH);
+    int kt_W = kW * dilationW - 1;
+    int kt_H = kH * dilationH - 1;
 
     //This is a full convolution, so we need extra padding based on kernel size
-    int padW = weight_t.size(2) - 1;
-    int padH = weight_t.size(3) - 1;
+    int padW = kt_W - 1;
+    int padH = kt_H - 1;
     namespace F = torch::nn::functional;
     torch::Tensor gradOutput_padded = F::pad(gradOutput, F::PadFuncOptions({padW, padW, padH, padH}));
 
@@ -309,8 +309,8 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
         //Reshape input and weight with depth difference
         torch::Tensor columns = depthconv_im2col(gradOutput_n, depth_n, alpha,
                 nOutputPlane, gradOutput_padded.size(2), gradOutput_padded.size(3),
-                kt_W, kt_H,
-                0, 0, 1, 1, 1, 1);
+                kW, kH,
+                0, 0, 1, 1, dilationW, dilationH);
 
         std::cout << string_format("columns dim: %i", columns.ndimension()) << std::endl;
         std::cout << columns << std::endl;
