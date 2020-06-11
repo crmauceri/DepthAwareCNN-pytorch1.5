@@ -63,7 +63,7 @@ if __name__ == '__main__':
     print("Toy weights output:")
     print(weight)
 
-    x_test = DepthconvFunction.forward(input, depth, weight, bias, alpha, stride, padding, dilation)
+    x_test = DepthconvFunction.apply(input, depth, weight, bias, alpha, stride, padding, dilation)
     target = torch.zeros(x_test.shape, device=device)
     loss = TestLoss.apply(x_test, target)
     loss.backward(grad_output)
