@@ -346,9 +346,6 @@ torch::Tensor depthconv_weight_grad(torch::Tensor input, torch::Tensor input_dep
     // Allocate memory to build up output representation
     torch::Tensor gradWeight = torch::zeros({nOutputPlane, nInputPlane, kW, kH}, torch::kCUDA);
 
-    //Trim input to aviod calculations with elements that were not used on the forward pass due to dialation or stride.
-    torch::Tensor input_trimmed = ;
-
     for(int elt=0; elt<batchSize; elt++){
         torch::Tensor gradOutput_n = gradOutput.select(0, elt).reshape({nOutputPlane, gW*gH});
         torch::Tensor depth_n = input_depth.select(0, elt);
