@@ -8,16 +8,21 @@ class DepthconvFunction(Function):
     @staticmethod
     def forward(ctx, input, depth, weight, bias, alpha, stride, padding, dilation):
         # print('forward')
+        if math.mod(weight.size(2), 2) == 0 or math.mod(weight.size(2), 2) == 0:
+            raise ValueError("Function only defined for odd-sized kernels")
+
         if bias is None:
             bias = torch.zeros(weight.shape[0], device=weight.device)
 
         # Crop to compatible size from input
-        #TODO check for completeness 
+        #TODO check for completeness
+        #If stride is even, image width must be even
         if math.mod(input.size(2), 2) == 1 and math.mod(stride[0], 2) == 0:
             input = input[:,:,0:-2,:]
+        #And vice-versa
         elif math.mod(input.size(2), 2) == 0 and math.mod(stride[0], 2) == 1:
             input = input[:, :, 0:-2, :]
-
+        #Do the same for height
         if math.mod(input.size(3), 2) == 1 and math.mod(stride[1], 2) == 0:
             input = input[:,:,:,0:-2]
         elif math.mod(input.size(3), 2) == 0 and math.mod(stride[1], 2) == 1:
