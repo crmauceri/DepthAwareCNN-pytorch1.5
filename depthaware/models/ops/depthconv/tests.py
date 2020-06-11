@@ -49,7 +49,7 @@ if __name__ == '__main__':
     depth = torch.ones((batch_size, 1, w, h), device=device)
     weight_size = (out_channels, 3, kernel_size, kernel_size)
     weight = 0.01 * torch.FloatTensor(range(weight_size[0]*weight_size[1]*weight_size[2]*weight_size[3])).cuda().reshape(weight_size)
-    bias = torch.ones((out_channels, 1), device=device)
+    bias = torch.ones((out_channels), device=device)
     outsize = output_size(input, weight, padding, dilation, stride)
     grad_output = torch.FloatTensor(range(outsize[0]*outsize[1]*outsize[2]*outsize[3])).cuda().reshape(outsize)
     alpha = 1.0
@@ -74,8 +74,7 @@ if __name__ == '__main__':
     conv_layer = torch.nn.Conv2d(out_channels, kernel_size, kernel_size, bias=True, stride=stride, padding=padding,
                                  dilation=dilation, groups=1)
     conv_layer.weight = torch.nn.Parameter(weight.clone(), requires_grad=True)
-    bias = torch.zeros((out_channels, 1), device=device)
-    conv_layer.bias = torch.nn.Parameter(bias.squeeze(1), requires_grad=True)
+    conv_layer.bias = torch.nn.Parameter(bias.clone(), requires_grad=True)
 
     input = input.clone().detach().cuda().requires_grad_(True)
     x = conv_layer(input)
@@ -87,17 +86,17 @@ if __name__ == '__main__':
     print(input.grad.cpu())
 
     print("DepthConv weight gradient:")
-    print(grad_weight)
+    print(weight.grad.cpu())
 
     print("Pytorch weight gradient:")
     print(conv_layer.weight.grad.cpu())
 
     print("DepthConv bias gradient:")
-    print(grad_bias)
+    print(bias.grad.cpu())
 
     print("Pytorch bias gradient:")
     print(conv_layer.bias.grad.cpu())
 
-    np.testing.assert_array_almost_equal(grad_input.cpu().detach().numpy(), input.grad.cpu().detach().numpy())
-    np.testing.assert_array_almost_equal(grad_weight.cpu().detach().numpy(), conv_layer.weight.grad.cpu().detach().numpy())
-    np.testing.assert_array_almost_equal(grad_bias.cpu().detach().numpy(), conv_layer.bias.grad.cpu().detach().numpy())
+    np.testing.assert_array_almost_equal(input.cpu().detach().numpy(), input.grad.cpu().detach().numpy())
+    np.testing.assert_array_almost_equal(weight.grad.cpu().detach().numpy(), conv_layer.weight.grad.cpu().detach().numpy())
+    np.testing.assert_array_almost_equal(bias.cpu().detach().numpy(), conv_layer.bias.grad.cpu().detach().numpy())
