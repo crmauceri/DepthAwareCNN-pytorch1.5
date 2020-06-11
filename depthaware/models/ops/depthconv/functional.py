@@ -2,6 +2,7 @@ import torch
 from torch.autograd import Function
 from torch.nn.modules.utils import _pair
 import depthconv
+import math
 
 class DepthconvFunction(Function):
     @staticmethod
@@ -9,6 +10,18 @@ class DepthconvFunction(Function):
         # print('forward')
         if bias is None:
             bias = torch.zeros(weight.shape[0], device=weight.device)
+
+        # Crop to compatible size from input
+        #TODO check for completeness 
+        if math.mod(input.size(2), 2) == 1 and math.mod(stride[0], 2) == 0:
+            input = input[:,:,0:-2,:]
+        elif math.mod(input.size(2), 2) == 0 and math.mod(stride[0], 2) == 1:
+            input = input[:, :, 0:-2, :]
+
+        if math.mod(input.size(3), 2) == 1 and math.mod(stride[1], 2) == 0:
+            input = input[:,:,:,0:-2]
+        elif math.mod(input.size(3), 2) == 0 and math.mod(stride[1], 2) == 1:
+            input = input[:,:,:,0:-2]
 
         ctx.save_for_backward(input, depth, weight, bias)
         ctx.alpha = alpha
@@ -18,6 +31,9 @@ class DepthconvFunction(Function):
 
         output_size = [int((input.size()[i + 2] + 2 * padding[i] - weight.size()[i + 2]) / stride[i] + 1)
                        for i in range(2)]
+
+
+
 
         if not input.is_cuda:
             raise NotImplementedError
