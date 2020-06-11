@@ -349,9 +349,7 @@ torch::Tensor depthconv_weight_grad(torch::Tensor input, torch::Tensor input_dep
     for(int elt=0; elt<batchSize; elt++){
         torch::Tensor gradOutput_n = gradOutput.select(0, elt).reshape({nOutputPlane, gW*gH});
         torch::Tensor depth_n = input_depth.select(0, elt);
-        torch::Tensor input_n = input_trimmed.select(0, elt);
-
-
+        torch::Tensor input_n = input.select(0, elt)
 
         //Reshape input and gradOutput with depth difference
         //In backward pass of convolution, stride and dilation switch roles
