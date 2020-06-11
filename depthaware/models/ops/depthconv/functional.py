@@ -2,13 +2,12 @@ import torch
 from torch.autograd import Function
 from torch.nn.modules.utils import _pair
 import depthconv
-import math
 
 class DepthconvFunction(Function):
     @staticmethod
     def forward(ctx, input, depth, weight, bias, alpha, stride, padding, dilation):
         # print('forward')
-        if math.mod(weight.size(2), 2) == 0 or math.mod(weight.size(2), 2) == 0:
+        if weight.size(2)% 2 == 0 or weight.size(2) % 2 == 0:
             raise ValueError("Function only defined for odd-sized kernels")
 
         if bias is None:
@@ -17,15 +16,15 @@ class DepthconvFunction(Function):
         # Crop to compatible size from input
         #TODO check for completeness
         #If stride is even, image width must be even
-        if math.mod(input.size(2), 2) == 1 and math.mod(stride[0], 2) == 0:
+        if input.size(2) % 2 == 1 and stride[0] % 2 == 0:
             input = input[:,:,0:-2,:]
         #And vice-versa
-        elif math.mod(input.size(2), 2) == 0 and math.mod(stride[0], 2) == 1:
+        elif input.size(2) % 2 == 0 and stride[0] % 2 == 1:
             input = input[:, :, 0:-2, :]
         #Do the same for height
-        if math.mod(input.size(3), 2) == 1 and math.mod(stride[1], 2) == 0:
+        if input.size(3) % 2 == 1 and stride[1] % 2 == 0:
             input = input[:,:,:,0:-2]
-        elif math.mod(input.size(3), 2) == 0 and math.mod(stride[1], 2) == 1:
+        elif input.size(3) % 2 == 0 and stride[1] % 2 == 1:
             input = input[:,:,:,0:-2]
 
         ctx.save_for_backward(input, depth, weight, bias)
