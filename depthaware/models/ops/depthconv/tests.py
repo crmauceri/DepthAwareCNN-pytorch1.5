@@ -1,6 +1,6 @@
 import torch
 import numpy as np
-import depthconv
+from depthaware.models.ops.depthconv.functional import DepthconvFunction
 
 def output_size(input, weight, padding, dilation, stride):
     channels = weight.size(0)
@@ -49,8 +49,10 @@ if __name__ == '__main__':
     depth = torch.ones((batch_size, 1, w, h), device=device)
     weight_size = (out_channels, 3, kernel_size, kernel_size)
     weight = 0.01 * torch.FloatTensor(range(weight_size[0]*weight_size[1]*weight_size[2]*weight_size[3])).cuda().reshape(weight_size)
+    bias = torch.ones((out_channels, 1), device=device)
     outsize = output_size(input, weight, padding, dilation, stride)
     grad_output = torch.FloatTensor(range(outsize[0]*outsize[1]*outsize[2]*outsize[3])).cuda().reshape(outsize)
+    alpha = 1.0
 
     print("Toy input:")
     print(input)
@@ -61,13 +63,13 @@ if __name__ == '__main__':
     print("Toy weights output:")
     print(weight)
 
-    grad_input, grad_weight, grad_bias = depthconv.backward(
-        input, depth, grad_output, weight, 1.0,
-        weight.size(3), weight.size(2), stride[1], stride[0],
-        padding[1], padding[0], dilation[1], dilation[0], 1.0)
+    x_test = DepthconvFunction(input, depth, weight, bias, alpha, stride, padding, dilation)
+    target = torch.zeros(x_test.shape, device=device)
+    loss = TestLoss.apply(x_test, target)
+    loss.backward(grad_output)
 
     print("DepthConv input gradient:")
-    print(grad_input)
+    print(input.grad.cpu())
 
     conv_layer = torch.nn.Conv2d(out_channels, kernel_size, kernel_size, bias=True, stride=stride, padding=padding,
                                  dilation=dilation, groups=1)
