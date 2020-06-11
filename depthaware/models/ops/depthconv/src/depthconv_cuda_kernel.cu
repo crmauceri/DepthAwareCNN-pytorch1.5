@@ -84,7 +84,7 @@ __global__ void depthconv_im2col_gpu_kernel(
 torch::Tensor depthconv_im2col(
     torch::Tensor data_im,
     torch::Tensor data_depth,
-    const int alpha, //Scaling factor
+    const double alpha, //Scaling factor
     const int channels, const int height, const int width,
     const int ksize_h, const int ksize_w,
     const int pad_h, const int pad_w,

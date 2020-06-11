@@ -173,7 +173,7 @@ void shape_check_gradOutput(torch::Tensor input, torch::Tensor weight, torch::Te
 }
 
 torch::Tensor depthconv_forward_cuda(torch::Tensor input, torch::Tensor input_depth,
-                             torch::Tensor weight, torch::Tensor bias, int alpha,
+                             torch::Tensor weight, torch::Tensor bias, double alpha,
                              int kW, int kH, int strideW, int strideH, int padW, int padH,
                              int dilationH, int dilationW) {
 
