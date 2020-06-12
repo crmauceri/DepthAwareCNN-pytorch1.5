@@ -1,14 +1,28 @@
 import torch
 from torch.autograd import Function
-from torch.nn.modules.utils import _pair
 import depthconv
 
 class DepthconvFunction(Function):
+    @staticmethod
+    def outputSize(input, weight, stride, padding, dilation):
+        weight_size = [(weight.size(i+2)-1)*(dilation[i]-1) + weight.size(i+2) for i in range(2)]
+        out_width_height = [int((input.size()[i + 2] + 2 * padding[i] - weight_size[i]) / stride[i] + 1)
+                       for i in range(2)]
+
+        output_size = [input[0], weight[0], out_width_height[0], out_width_height[1]]
+        if not all(map(lambda s: s > 0, output_size)):
+            raise ValueError(
+                "convolution input is too small (output would be {})".format(
+                    'x'.join(map(str, output_size))))
+
+        return output_size
+
     @staticmethod
     def forward(ctx, input, depth, weight, bias, alpha, stride, padding, dilation):
         # print('forward')
         if weight.size(2)% 2 == 0 or weight.size(2) % 2 == 0:
             raise ValueError("Function only defined for odd-sized kernels")
+        output_size = DepthconvFunction.outputSize(input, weight, stride, padding, dilation)
 
         if bias is None:
             bias = torch.zeros(weight.shape[0], device=weight.device)
@@ -36,12 +50,6 @@ class DepthconvFunction(Function):
         ctx.stride = stride
         ctx.padding = padding
         ctx.dilation = dilation
-
-        output_size = [int((input.size()[i + 2] + 2 * padding[i] - weight.size()[i + 2]) / stride[i] + 1)
-                       for i in range(2)]
-
-
-
 
         if not input.is_cuda:
             raise NotImplementedError

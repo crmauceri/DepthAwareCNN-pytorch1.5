@@ -2,22 +2,6 @@ import torch
 import numpy as np
 from depthaware.models.ops.depthconv.functional import DepthconvFunction
 
-def output_size(input, weight, padding, dilation, stride):
-    channels = weight.size(0)
-
-    output_size = (input.size(0), channels)
-    for d in range(input.dim() - 2):
-        in_size = input.size(d + 2)
-        pad = padding[d]
-        kernel = dilation[d] * (weight.size(d + 2) - 1) + 1
-        stride_x = stride[d]
-        output_size += ((in_size + (2 * pad) - kernel) // stride_x + 1,)
-    if not all(map(lambda s: s > 0, output_size)):
-        raise ValueError(
-            "convolution input is too small (output would be {})".format(
-                'x'.join(map(str, output_size))))
-    return output_size
-
 class TestLoss(torch.autograd.Function):
     @staticmethod
     def forward(ctx, input, target):
@@ -50,7 +34,7 @@ if __name__ == '__main__':
     weight_size = (out_channels, 3, kernel_size, kernel_size)
     weight = 0.01 * torch.FloatTensor(range(weight_size[0]*weight_size[1]*weight_size[2]*weight_size[3])).cuda().reshape(weight_size)
     bias = torch.ones((out_channels), device=device)
-    outsize = output_size(input, weight, padding, dilation, stride)
+    outsize = DepthconvFunction.outputSize(input, weight, padding, dilation, stride)
     grad_output = torch.FloatTensor(range(outsize[0]*outsize[1]*outsize[2]*outsize[3])).cuda().reshape(outsize)
     alpha = 1.0
 
