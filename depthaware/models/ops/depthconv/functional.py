@@ -10,7 +10,7 @@ class DepthconvFunction(Function):
                        for i in range(2)]
 
         output_size = [input[0], weight[0], out_width_height[0], out_width_height[1]]
-        if not all(map(lambda s: s > 0, output_size)):
+        if not all([s > 0 for s in output_size]):
             raise ValueError(
                 "convolution input is too small (output would be {})".format(
                     'x'.join(map(str, output_size))))
