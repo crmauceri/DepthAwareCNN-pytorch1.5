@@ -34,7 +34,7 @@ if __name__ == '__main__':
     weight_size = (out_channels, 3, kernel_size, kernel_size)
     weight = 0.01 * torch.FloatTensor(range(weight_size[0]*weight_size[1]*weight_size[2]*weight_size[3])).cuda().reshape(weight_size)
     bias = torch.ones((out_channels), device=device)
-    outsize = DepthconvFunction.outputSize(input, weight, padding, dilation, stride)
+    outsize = DepthconvFunction.outputSize(input, weight, stride, padding, dilation)
     grad_output = torch.FloatTensor(range(outsize[0]*outsize[1]*outsize[2]*outsize[3])).cuda().reshape(outsize)
     alpha = 1.0
 
