@@ -30,15 +30,15 @@ if __name__ == '__main__':
 
     input_size = (batch_size, 3, w, h)
     input =  0.01 * torch.tensor(range(input_size[0]*input_size[1]*input_size[2]*input_size[3]),
-                                      device=device, requires_grad=True).reshape(input_size)
+                                      dtype=torch.float, device=device, requires_grad=True).reshape(input_size)
     depth = torch.ones((batch_size, 1, w, h), device=device)
     weight_size = (out_channels, 3, kernel_size, kernel_size)
     weight = 0.01 * torch.tensor(range(weight_size[0]*weight_size[1]*weight_size[2]*weight_size[3]),
-                                      device=device, requires_grad=True).reshape(weight_size)
+                                      dtype=torch.float, device=device, requires_grad=True).reshape(weight_size)
     bias = torch.ones((out_channels), device=device, requires_grad=True)
     outsize = DepthconvFunction.outputSize(input, weight, stride, padding, dilation)
     grad_output = torch.tensor(range(outsize[0]*outsize[1]*outsize[2]*outsize[3]),
-                               device=device).reshape(outsize)
+                               dtype=torch.float, device=device).reshape(outsize)
     alpha = 1.0
 
     print("Toy input:")
