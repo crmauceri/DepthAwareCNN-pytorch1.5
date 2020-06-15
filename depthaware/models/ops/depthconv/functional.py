@@ -6,8 +6,8 @@ class DepthconvFunction(Function):
     @staticmethod
     def outputSize(input, weight, stride, padding, dilation):
         weight_size = [(weight.size(i+2)-1)*(dilation[i]-1) + weight.size(i+2) for i in range(2)]
-        width = ((input.size(-2) + 2 * padding[0] - weight_size[0]) / stride[0] + 1)
-        height = ((input.size(-1) + 2 * padding[1] - weight_size[1]) / stride[1] + 1)
+        width = int((input.size(-2) + 2 * padding[0] - weight_size[0]) / stride[0] + 1)
+        height = int((input.size(-1) + 2 * padding[1] - weight_size[1]) / stride[1] + 1)
 
         output_size = [input.size(0), weight.size(0), width, height]
         print(output_size)
