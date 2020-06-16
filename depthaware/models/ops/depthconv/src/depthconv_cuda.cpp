@@ -347,7 +347,10 @@ torch::Tensor depthconv_weight_grad(torch::Tensor input, torch::Tensor input_dep
     torch::Tensor gradWeight = torch::zeros({nOutputPlane, nInputPlane, kW, kH}, torch::kCUDA);
 
     for(int elt=0; elt<batchSize; elt++){
-        torch::Tensor gradOutput_n = gradOutput.select(0, elt).reshape({nOutputPlane, gW*gH});
+        torch::Tensor gradOutput_n = gradOutput.select(0, elt).reshape({1, nOutputPlane, gW,gH});
+        gradOutput_n = gradOutput_n.repeat({nInputPlane, 1, 1, 1});
+        gradOutput_n = gradOutput_n.reshape({nInputPlane, nOutputPlane*gW*gH});
+
         torch::Tensor depth_n = input_depth.select(0, elt);
         torch::Tensor input_n = input.select(0, elt);
 
@@ -360,25 +363,22 @@ torch::Tensor depthconv_weight_grad(torch::Tensor input, torch::Tensor input_dep
                 dilationH, dilationW,
                 strideH, strideW);
 
-//        std::cout << string_format("input_n dim: %i", input_n.ndimension()) << std::endl;
-//        std::cout << input_n << std::endl;
+        std::cout << string_format("input_n dim: %i", input_n.ndimension()) << std::endl;
+        std::cout << input_n << std::endl;
 //
         std::cout << string_format("columns dim: %i", columns.ndimension()) << std::endl;
         std::cout << columns << std::endl;
-//
-//        std::cout << string_format("gH: %i gW: %i",gH, gW) << std::endl;
 //
         std::cout << string_format("gradOutput_n dim: %i", gradOutput_n.ndimension()) << std::endl;
         std::cout << gradOutput_n << std::endl;
 
         //Multiplication with reshaped input is equivalent to 2d convolution
-        gradOutput_n = gradOutput_n.repeat({1, nInputPlane});
         torch::Tensor product = torch::matmul(gradOutput_n, columns);
         gradWeight.add_(product.reshape({nOutputPlane, nInputPlane, kW,  kH}));
     }
 
-//    std::cout << string_format("gradWeight dim: %i", gradWeight.ndimension()) << std::endl;
-//    std::cout << gradWeight << std::endl;
+    std::cout << string_format("gradWeight dim: %i", gradWeight.ndimension()) << std::endl;
+    std::cout << gradWeight << std::endl;
 
     return gradWeight;
 }
