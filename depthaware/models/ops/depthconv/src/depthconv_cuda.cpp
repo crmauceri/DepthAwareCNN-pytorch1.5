@@ -295,7 +295,7 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
     torch::Tensor gradInput = torch::zeros({batchSize, nInputPlane, inputWidth, inputHeight}, torch::kCUDA);
 
     //Flatted weight for matrix multiplication
-    weight_t = weight_t.reshape({weight_t.size(1), weight_t.size(0), weight_t.size(2)*weight_t.size(3)});
+    weight_t = weight_t.reshape({weight_t.size(1), weight_t.size(0)*weight_t.size(2)*weight_t.size(3)});
 
     for(int elt=0; elt<batchSize; elt++){
         torch::Tensor gradOutput_n = gradOutput_padded.select(0, elt);
