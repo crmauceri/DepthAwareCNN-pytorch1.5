@@ -97,13 +97,7 @@ torch::Tensor depthconv_im2col(
     int width_col = (width + 2 * pad_w - (dilation_w * (ksize_w - 1) + 1)) / stride_w + 1;
     int num_kernels = channels * height_col * width_col;
 
-    std::cout << "Grad out channels: " << channels << std::endl;
-    std::cout << "Grad out height: " << height_col << std::endl;
-    std::cout << "Grad out width: " << width_col << std::endl;
-
     torch::Tensor data_col = torch::zeros({channels * ksize_h * ksize_w, height_col * width_col}, torch::kCUDA);
-
-    std::cout << data_col << std::endl;
 
     // Launch
     AT_DISPATCH_FLOATING_TYPES(data_im.scalar_type(), "depthconv_im2col_gpu_kernel", ([&] {
