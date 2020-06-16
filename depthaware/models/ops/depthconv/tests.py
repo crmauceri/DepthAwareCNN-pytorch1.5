@@ -37,7 +37,11 @@ if __name__ == '__main__':
     weight_size = (out_channels, 3, kernel_size, kernel_size)
     weight = 0.01 * torch.tensor(range(weight_size[0]*weight_size[1]*weight_size[2]*weight_size[3]),
                                       dtype=torch.float, device=device, requires_grad=True).reshape(weight_size)
+    weight.retain_grad()
+
     bias = torch.ones((out_channels), device=device, requires_grad=True)
+    bias.retain_grad()
+
     outsize = DepthconvFunction.outputSize(input, weight, stride, padding, dilation)
     grad_output = torch.tensor(range(outsize[0]*outsize[1]*outsize[2]*outsize[3]),
                                dtype=torch.float, device=device).reshape(outsize)
