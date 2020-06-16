@@ -93,4 +93,4 @@ if __name__ == '__main__':
 
     np.testing.assert_array_almost_equal(input.grad.cpu().detach().numpy(), depth_input_grad.numpy(), decimal=4)
     np.testing.assert_array_almost_equal(weight.grad.cpu().detach().numpy(), conv_layer.weight.grad.cpu().detach().numpy(), decimal=4)
-    np.testing.assert_array_almost_equal(bias.cpu().detach().numpy(), conv_layer.bias.grad.cpu().detach().numpy(), decimal=4)
+    np.testing.assert_array_almost_equal(bias.grad.cpu().detach().numpy(), conv_layer.bias.grad.cpu().detach().numpy(), decimal=4)
