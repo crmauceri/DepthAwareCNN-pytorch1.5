@@ -62,7 +62,8 @@ if __name__ == '__main__':
     loss.backward(grad_output)
 
     print("DepthConv input gradient:")
-    print(input.grad.cpu())
+    depth_input_grad = input.grad.cpu()
+    print(depth_input_grad)
 
     conv_layer = torch.nn.Conv2d(out_channels, kernel_size, kernel_size, bias=True, stride=stride, padding=padding,
                                  dilation=dilation, groups=1)
@@ -90,6 +91,6 @@ if __name__ == '__main__':
     print("Pytorch bias gradient:")
     print(conv_layer.bias.grad.cpu())
 
-    np.testing.assert_array_almost_equal(input.cpu().detach().numpy(), input.grad.cpu().detach().numpy(), decimal=3)
+    np.testing.assert_array_almost_equal(input.grad.cpu().detach().numpy(), depth_input_grad.numpy(), decimal=4)
     np.testing.assert_array_almost_equal(weight.grad.cpu().detach().numpy(), conv_layer.weight.grad.cpu().detach().numpy(), decimal=4)
     np.testing.assert_array_almost_equal(bias.cpu().detach().numpy(), conv_layer.bias.grad.cpu().detach().numpy(), decimal=4)
