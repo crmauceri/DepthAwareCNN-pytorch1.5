@@ -99,7 +99,7 @@ if __name__ == '__main__':
     name = ['input grad', 'weight grad', 'bias grad']
     for i, pair in enumerate(pairs):
         #Find the order of magnitude
-        mag = math.power(10, math.floor(math.log10(pair[0].max())))
+        mag = math.pow(10, math.floor(math.log10(pair[0].max())))
         print(mag)
         left = pair[0]/mag
         right = pair[1]/mag
