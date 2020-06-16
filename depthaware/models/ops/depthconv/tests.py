@@ -90,6 +90,6 @@ if __name__ == '__main__':
     print("Pytorch bias gradient:")
     print(conv_layer.bias.grad.cpu())
 
-    np.testing.assert_array_almost_equal(input.cpu().detach().numpy(), input.grad.cpu().detach().numpy())
-    np.testing.assert_array_almost_equal(weight.grad.cpu().detach().numpy(), conv_layer.weight.grad.cpu().detach().numpy())
-    np.testing.assert_array_almost_equal(bias.cpu().detach().numpy(), conv_layer.bias.grad.cpu().detach().numpy())
+    np.testing.assert_array_almost_equal(input.cpu().detach().numpy(), input.grad.cpu().detach().numpy(), decimal=5)
+    np.testing.assert_array_almost_equal(weight.grad.cpu().detach().numpy(), conv_layer.weight.grad.cpu().detach().numpy(), decimal=5)
+    np.testing.assert_array_almost_equal(bias.cpu().detach().numpy(), conv_layer.bias.grad.cpu().detach().numpy(), decimal=5)
