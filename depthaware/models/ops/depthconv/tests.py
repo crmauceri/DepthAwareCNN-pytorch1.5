@@ -13,6 +13,7 @@ class TestLoss(torch.autograd.Function):
 
 
 if __name__ == '__main__':
+    import math
 
     #TODO check dilation and stride
     batch_size = 1
@@ -91,6 +92,16 @@ if __name__ == '__main__':
     print("Pytorch bias gradient:")
     print(conv_layer.bias.grad.cpu())
 
-    np.testing.assert_array_almost_equal(input.grad.cpu().detach().numpy(), depth_input_grad.numpy(), decimal=4)
-    np.testing.assert_array_almost_equal(weight.grad.cpu().detach().numpy(), conv_layer.weight.grad.cpu().detach().numpy(), decimal=4)
-    np.testing.assert_array_almost_equal(bias.grad.cpu().detach().numpy(), conv_layer.bias.grad.cpu().detach().numpy(), decimal=4)
+    # It looks like the values are usually equal for the first 3 sig figs.
+    pairs = [[input.grad.cpu().detach().numpy(), depth_input_grad.numpy()],
+             [conv_layer.weight.grad.cpu().detach().numpy(), weight.grad.cpu().detach().numpy()],
+             [conv_layer.bias.grad.cpu().detach().numpy(), bias.grad.cpu().detach().numpy()]]
+    name = ['input grad', 'weight grad', 'bias grad']
+    for i, pair in enumerate(pairs):
+        #Find the order of magnitude
+        mag = int(math.log10(pair[0].max()))
+        print(mag)
+        left = pair[0]/mag
+        right = pair[1]/mag
+        print('Test ' + name[i])
+        np.testing.assert_array_almost_equal(left, right, decimal=6)
