@@ -360,8 +360,15 @@ torch::Tensor depthconv_weight_grad(torch::Tensor input, torch::Tensor input_dep
     int gradW = (gradOutput.size(2)-1)*strideW + ((kW-1)*dilationW+1);
     int gradH = (gradOutput.size(3)-1)*strideH + ((kH-1)*dilationH+1);
     if(gradW != input.size(2) || gradH != input.size(3)){
-        input = torch::Tensor(input.index({Slice(), Slice(), Slice(0, gradW), Slice(0, gradH)}), torch::kCUDA);
-        input_depth = input.index({Slice(), Slice(), Slice(0, gradW), Slice(0, gradH)}).contiguous();
+//        torch::Tensor input_crop = torch::zeros({input.size(0), input.size(1), gradW, gradH}, torch:kCUDA);
+//        input_crop.index_put_({Ellipsis}, input.index({Slice(), Slice(), Slice(0, gradW), Slice(0, gradH)}));
+//
+//        torch::Tensor input_depth_crop = = torch::zeros({input.size(0), input.size(1), gradW, gradH}, torch:kCUDA);
+        input = input.index({Slice(), Slice(), Slice(0, gradW), Slice(0, gradH)}).contiguous();
+        input_depth = input_depth.index({Slice(), Slice(), Slice(0, gradW), Slice(0, gradH)}).contiguous();
+
+//        input = input_crop;
+//        input_depth = input_depth_crop;
     }
 
     for(int elt=0; elt<batchSize; elt++){
