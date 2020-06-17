@@ -358,6 +358,7 @@ torch::Tensor depthconv_weight_grad(torch::Tensor input, torch::Tensor input_dep
 
     //Calculate whether the kernel fit evenly into input on forward pass
     //TODO Add padding?
+    using namespace torch::indexing;
     int gradW = (gradOutput.size(2)-1)*strideW + ((kW-1)*dilationW+1);
     int gradH = (gradOutput.size(3)-1)*strideH + ((kH-1)*dilationH+1);
     input = input.index({Slice(), Slice(), Slice(0, gradW), Slice(0, gradH)});
