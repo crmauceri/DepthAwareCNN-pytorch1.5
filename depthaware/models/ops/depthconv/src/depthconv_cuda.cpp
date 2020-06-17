@@ -360,8 +360,8 @@ torch::Tensor depthconv_weight_grad(torch::Tensor input, torch::Tensor input_dep
     int gradW = (gradOutput.size(2)-1)*strideW + ((kW-1)*dilationW+1);
     int gradH = (gradOutput.size(3)-1)*strideH + ((kH-1)*dilationH+1);
     if(gradW != input.size(2) || gradH != input.size(3)){
-        input = input.index({Slice(), Slice(), Slice(0, gradW), Slice(0, gradH)});
-        input_depth = input_depth.index({Slice(), Slice(), Slice(0, gradW), Slice(0, gradH)});
+        input = input.index({Slice(), Slice(), Slice(0, gradW), Slice(0, gradH)}).contiguous();
+        input_depth = input_depth.index({Slice(), Slice(), Slice(0, gradW), Slice(0, gradH)}).contiguous();
     }
 
     for(int elt=0; elt<batchSize; elt++){
