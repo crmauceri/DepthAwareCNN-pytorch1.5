@@ -291,7 +291,10 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
     //The depth also needs padding
     int depth_padW = (gradOutput_padded.size(2) - input_depth.size(2)) / 2;
     int depth_padH = (gradOutput_padded.size(3) - input_depth.size(3)) / 2;
-    depth_padded = F::pad(depth_padded, F::PadFuncOptions({depth_padW, depth_padW, depth_padH, depth_padH}));
+    //depth_padded = F::pad(depth_padded, F::PadFuncOptions({depth_padW, depth_padW, depth_padH, depth_padH}));
+
+    //TODO For debugging only
+    depth_padded = torch::ones({gradOutput_padded.size(0), 1, gradOutput_padded.size(2), gradOutput_padded.size(3)}, torch::kCUDA);
 
     // Allocate memory to build up output representation
     torch::Tensor gradInput = torch::zeros({batchSize, nInputPlane, inputWidth, inputHeight}, torch::kCUDA);
