@@ -50,10 +50,9 @@ def compareImplementations(input, depth, weight, bias, alpha,
     for i, pair in enumerate(pairs):
         #Find the order of magnitude
         mag = math.pow(10, math.floor(math.log10(pair[0].max())))
-        left = pair[0]/mag
-        right = pair[1]/mag
-        if not np.allclose(left, right):
-            ret.append({'var_name':name[i], 'tensors':pair})
+        left = np.around(pair[0]/mag, decimals=5)
+        right = np.around(pair[1]/mag, decimals=5)
+        ret.append({'var_name':name[i], 'tensors':pair})
     return ret
 
 class DepthConvTests(unittest.TestCase):
