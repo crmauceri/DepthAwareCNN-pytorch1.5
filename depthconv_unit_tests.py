@@ -52,12 +52,13 @@ def compareImplementations(input, depth, weight, bias, alpha,
         mag = math.pow(10, math.floor(math.log10(pair[0].max())))
         left = np.around(pair[0]/mag, decimals=5)
         right = np.around(pair[1]/mag, decimals=5)
-        ret.append({'var_name':name[i], 'tensors':pair})
+        ret.append({'var_name':name[i], 'tensors':(left, right)})
     return ret
 
 class DepthConvTests(unittest.TestCase):
+
     # Test vanilla configuration, depth is ones, no stride, no dilation
-    def basic_test(self):
+    def test_basic(self):
         batch_size = 1
         w, h = 9, 9
         kernel_size = 3
