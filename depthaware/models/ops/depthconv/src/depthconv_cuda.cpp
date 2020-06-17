@@ -356,6 +356,13 @@ torch::Tensor depthconv_weight_grad(torch::Tensor input, torch::Tensor input_dep
     // Allocate memory to build up output representation
     torch::Tensor gradWeight = torch::zeros({nOutputPlane, nInputPlane, kW, kH}, torch::kCUDA);
 
+    //Calculate whether the kernel fit evenly into input on forward pass
+    //TODO Add padding?
+    int gradW = (gradOutput.size(2)-1)*strideW + ((kW-1)*dilationW+1);
+    int gradH = (gradOutput.size(3)-1)*strideH + ((kH-1)*dilationH+1);
+    input = input.index({Slice(), Slice(), Slice(0, gradW), Slice(0, gradH)});
+    input_depth = input.index({Slice(), Slice(), Slice(0, gradW), Slice(0, gradH)});
+
     for(int elt=0; elt<batchSize; elt++){
         torch::Tensor gradOutput_n = gradOutput.select(0, elt).reshape({nOutputPlane, gW*gH});
         torch::Tensor depth_n = input_depth.select(0, elt);
