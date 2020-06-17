@@ -95,7 +95,9 @@ class DepthConvTests(unittest.TestCase):
 
         for pair in result:
             self.assertTrue(np.allclose(pair['tensors'][0], pair['tensors'][1]),
-                        msg="Variable {} is not equal within 5 sig figs: {} \n {} ".format(pair['var_name'], ))
+                        msg="Variable {} is not equal within 5 sig figs: {} \n {} ".format(pair['var_name'],
+                                                                                           pair['tensors'][0],
+                                                                                           pair['tensors'][1]))
 
 
 
