@@ -376,7 +376,7 @@ torch::Tensor depthconv_weight_grad(torch::Tensor input, torch::Tensor input_dep
             //Reshape input and gradOutput with depth difference
             //In backward pass of convolution, stride and dilation switch roles
             torch::Tensor columns = depthconv_im2col(input_n_c, depth_n, alpha,
-                    1, inputHeight, inputWidth,
+                    1, gradW, gradH,
                     gH, gW,
                     padH, padW,
                     dilationH, dilationW,
