@@ -100,7 +100,6 @@ if __name__ == '__main__':
     for i, pair in enumerate(pairs):
         #Find the order of magnitude
         mag = math.pow(10, math.floor(math.log10(pair[0].max())))
-        print(mag)
         left = pair[0]/mag
         right = pair[1]/mag
         print('Test ' + name[i])
