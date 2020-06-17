@@ -268,6 +268,11 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
     int batchSize = gradOutput.size(0);
     int nOutputPlane = gradOutput.size(1);
 
+    //Calculate whether the kernel fit evenly into input on forward pass
+    //TODO Add padding?
+    int gradW = (gradOutput.size(2)-1)*strideW + ((kW-1)*dilationW+1);
+    int gradH = (gradOutput.size(3)-1)*strideH + ((kH-1)*dilationH+1);
+
     //"Invert" weights
     torch::Tensor weight_t = weight.flip({2, 3}).permute({1, 0, 2, 3});
 
@@ -324,8 +329,8 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
         //Multiplication with reshaped input is equivalent to 2d convolution
         {
         using namespace torch::indexing;
-        columns = torch::matmul(weight_t, columns).reshape({nInputPlane, inputWidth, inputHeight});
-        gradInput_n.index_put_({Ellipsis}, columns); //.index({Ellipsis, Slice(padW, -padW), Slice(padH, -padH)})
+        columns = torch::matmul(weight_t, columns).reshape({nInputPlane, gradW, gradH});
+        gradInput_n.index_put_({nInputPlane, gradW, gradH}, columns); //.index({Ellipsis, Slice(padW, -padW), Slice(padH, -padH)})
         }
     }
 
