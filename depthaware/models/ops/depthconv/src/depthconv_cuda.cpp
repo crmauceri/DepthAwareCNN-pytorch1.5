@@ -25,11 +25,12 @@ std::string string_format( const std::string& format, Args ... args )
 }
 
 torch::Tensor pad_within(torch::Tensor x, int strideX, int strideY){
-    namespace F = torch::nn::functional;
-    torch::Tensor w = torch::zeros({strideX, strideY}, torch::kCUDA);
-    w.index_put_({0, 0}, 1);
-    return F::conv_transpose2d(x, w.expand({x.size(1), 1, strideX, strideY}),
-                               F::ConvTranspose2dFuncOptions().stride({strideX, strideY}).groups(x.size(1)));
+//    namespace F = torch::nn::functional;
+//    return output = F::conv_transpose2d(x,F.pad(torch.ones(1,1,1,1),(1,1,1,1)),stride=stride,padding=1);
+    using namespace torch::indexing;
+    torch::Tensor x_padded = torch::zeros({x.size(0), x.size(1), x.size(2)*strideX, x.size(3)*strideY});
+    x_padded.index_put_({Slice(), Slice(), Slice(None,None,strideX), Slice(None,None,strideX)}, x);
+    return x_padded;
 }
 
 void shape_check_forward(torch::Tensor input, torch::Tensor input_depth, torch::Tensor weight,
