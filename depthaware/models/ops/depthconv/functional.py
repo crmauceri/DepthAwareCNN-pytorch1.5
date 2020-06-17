@@ -23,28 +23,9 @@ class DepthconvFunction(Function):
         # print('forward')
         if weight.size(2)% 2 == 0 or weight.size(2) % 2 == 0:
             raise ValueError("Function only defined for odd-sized kernels")
-        output_size = DepthconvFunction.outputSize(input, weight, stride, padding, dilation)
 
         if bias is None:
             bias = torch.zeros(weight.shape[0], device=weight.device)
-
-        # Crop to compatible size from input
-        #TODO check for completeness
-        #If stride is even, image width must be even
-        # if input.size(2) % 2 == 1 and stride[0] % 2 == 0:
-        #     input = input[:,:,0:-2,:].contiguous()
-        #     depth = depth[:, :, 0:-2, :].contiguous()
-        # #And vice-versa
-        # elif input.size(2) % 2 == 0 and stride[0] % 2 == 1:
-        #     input = input[:, :, 0:-2, :].contiguous()
-        #     depth = depth[:, :, 0:-2, :].contiguous()
-        # #Do the same for height
-        # if input.size(3) % 2 == 1 and stride[1] % 2 == 0:
-        #     input = input[:,:,:,0:-2].contiguous()
-        #     depth = depth[:, :, :, 0:-2].contiguous()
-        # elif input.size(3) % 2 == 0 and stride[1] % 2 == 1:
-        #     input = input[:,:,:,0:-2].contiguous()
-        #     depth = depth[:, :, :, 0:-2].contiguous()
 
         ctx.save_for_backward(input, depth, weight, bias)
         ctx.alpha = alpha
