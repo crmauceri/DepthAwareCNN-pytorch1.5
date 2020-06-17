@@ -28,7 +28,7 @@ torch::Tensor pad_within(torch::Tensor x, int strideX, int strideY){
 //    namespace F = torch::nn::functional;
 //    return output = F::conv_transpose2d(x,F.pad(torch.ones(1,1,1,1),(1,1,1,1)),stride=stride,padding=1);
     using namespace torch::indexing;
-    torch::Tensor x_padded = torch::zeros({x.size(0), x.size(1), x.size(2)*strideX, x.size(3)*strideY});
+    torch::Tensor x_padded = torch::zeros({x.size(0), x.size(1), (x.size(2)-1)*strideX+1, (x.size(3)-1)*strideY}+1);
     x_padded.index_put_({Slice(), Slice(), Slice(None,None,strideX), Slice(None,None,strideX)}, x);
     return x_padded;
 }
