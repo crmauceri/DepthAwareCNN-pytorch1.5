@@ -275,8 +275,8 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
     torch::Tensor gradOutput_padded = pad_within(gradOutput, strideW, strideH);
     torch::Tensor depth_padded = pad_within(input_depth, strideW, strideH);
 
-    std::cout << string_format("gradOutput_padded dim: %i", gradOutput_padded.ndimension()) << std::endl;
-    std::cout << gradOutput_padded << std::endl;
+//    std::cout << string_format("gradOutput_padded dim: %i", gradOutput_padded.ndimension()) << std::endl;
+//    std::cout << gradOutput_padded << std::endl;
 
     //Calculate dilated kernel shape for padding
     int kt_W = (kW-1)*(dilationW-1) + kW;
@@ -436,18 +436,18 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
         throw std::invalid_argument("invalid batch size of input depth");
     }
 
-//    std::cout << "Do input grad" << std::endl;
+    std::cout << "Do input grad" << std::endl;
     torch::Tensor gradInput = depthconv_input_grad(input_depth, gradOutput, weight, alpha,
                                                    nInputPlane, inputWidth, inputHeight,
                                                    kW, kH, strideW, strideH,
                                                    dilationW, dilationH);
 
-//    std::cout << "Do weight grad" << std::endl;
+    std::cout << "Do weight grad" << std::endl;
     torch::Tensor gradWeight = depthconv_weight_grad(input, input_depth, gradOutput, alpha,
                                                     kW, kH, strideW, strideH,
                                                     padW, padH, dilationH, dilationW);
 
-//    std::cout << "Do bias grad" << std::endl;
+    std::cout << "Do bias grad" << std::endl;
     torch::Tensor gradBias = depthconv_bias_grad(gradOutput, scale);
 
     if (batch == 0) {

@@ -54,7 +54,7 @@ if __name__ == '__main__':
     print("Toy grad output:")
     print(grad_output)
 
-    print("Toy weights output:")
+    print("Toy weights:")
     print(weight)
 
     x_test = DepthconvFunction.apply(input, depth, weight, bias, alpha, stride, padding, dilation)
