@@ -276,6 +276,9 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
     torch::Tensor gradOutput_padded = pad_within(gradOutput, strideW, strideH);
     torch::Tensor depth_padded = pad_within(input_depth, strideW, strideH);
 
+    std::cout << string_format("gradOutput_padded dim: %i", gradOutput_padded.ndimension()) << std::endl;
+    std::cout << gradOutput_padded << std::endl;
+
     //Calculate dilated kernel shape for padding
     int kt_W = (kW-1)*(dilationW-1) + kW;
     int kt_H = (kH-1)*(dilationH-1) + kH;
