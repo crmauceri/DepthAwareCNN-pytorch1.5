@@ -346,8 +346,6 @@ torch::Tensor depthconv_weight_grad(torch::Tensor input, torch::Tensor input_dep
 
     int batchSize = input.size(0);
     int nInputPlane = input.size(1);
-    int inputWidth = input.size(2);
-    int inputHeight = input.size(3);
     int nOutputPlane = gradOutput.size(1);
 
     int gW = gradOutput.size(2);
@@ -361,8 +359,10 @@ torch::Tensor depthconv_weight_grad(torch::Tensor input, torch::Tensor input_dep
     using namespace torch::indexing;
     int gradW = (gradOutput.size(2)-1)*strideW + ((kW-1)*dilationW+1);
     int gradH = (gradOutput.size(3)-1)*strideH + ((kH-1)*dilationH+1);
-    input = input.index({Slice(), Slice(), Slice(0, gradW), Slice(0, gradH)});
-    input_depth = input.index({Slice(), Slice(), Slice(0, gradW), Slice(0, gradH)});
+    if(gradW != input.size(2) || gradH != input.size(3)){
+        input = input.index({Slice(), Slice(), Slice(0, gradW), Slice(0, gradH)}).continuous();
+        input_depth = input.index({Slice(), Slice(), Slice(0, gradW), Slice(0, gradH)}).continuous();
+    }
 
     for(int elt=0; elt<batchSize; elt++){
         torch::Tensor gradOutput_n = gradOutput.select(0, elt).reshape({nOutputPlane, gW*gH});
