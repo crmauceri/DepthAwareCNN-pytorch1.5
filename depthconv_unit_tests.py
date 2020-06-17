@@ -94,7 +94,7 @@ class DepthConvTests(unittest.TestCase):
                            target, grad_output)
 
         for pair in result:
-            self.assertTrue(all(pair['tensors'][0] == pair['tensors'][1]),
+            self.assertTrue(all(pair['tensors'][0].equal(pair['tensors'][1])),
                         msg="Variable {} is not equal within 5 sig figs".format(pair['var_name']))
 
 
