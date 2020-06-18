@@ -59,11 +59,11 @@ class DepthConvTests(unittest.TestCase):
 
     # Test vanilla configuration, depth is ones, no stride, no dilation
     def test_basic(self):
-        batch_size = 1
+        batch_size = 5
         w, h = 9, 9
         kernel_size = 3
-        out_channels = 1
-        stride = [2, 2]
+        out_channels = 2
+        stride = [1, 1]
         padding = [0, 0]
         dilation = [1, 1]
         alpha = 1.0
@@ -99,11 +99,13 @@ class DepthConvTests(unittest.TestCase):
                                                                                            pair['tensors'][0],
                                                                                            pair['tensors'][1]))
 
+    # TODO Test stride
+    def test_stride(self):
+        return
 
-
-    # Test stride
-
-    # Test dilation
+    # TODO Test dilation
+    def test_dilation(self):
+        return
 
 
 if __name__ == '__main__':
