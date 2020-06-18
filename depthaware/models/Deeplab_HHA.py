@@ -98,7 +98,7 @@ class Deeplab_HHA_Solver(BaseModel):
 
         self.segpred = 0.5*self.segpred_rgb +0.5*self.segpred_HHA#
 
-        self.segpred = nn.functional.upsample(self.segpred, size=(input_size[2], input_size[3]), mode='bilinear')
+        self.segpred = nn.functional.upsample(self.segpred, size=(input_size[2], input_size[3]), mode='bilinear', align_corners=True)
 
 
         if isTrain:
