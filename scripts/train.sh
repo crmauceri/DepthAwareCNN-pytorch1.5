@@ -1,4 +1,4 @@
-python train.py \
+python depthaware/train.py \
 --name cityscapes_VGGdeeplab_depthconv \
 --dataset_mode cityscapes \
 --flip --scale --crop --colorjitter \
