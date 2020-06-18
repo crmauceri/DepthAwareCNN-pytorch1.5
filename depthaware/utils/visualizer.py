@@ -1,9 +1,5 @@
 import os
 import ntpath
-<<<<<<< HEAD:depthaware/utils/visualizer.py
-=======
-import time
->>>>>>> attempt_cuda_update:depthaware/utils/visualizer.py
 from depthaware.utils import util
 from depthaware.utils import html
 import scipy.misc

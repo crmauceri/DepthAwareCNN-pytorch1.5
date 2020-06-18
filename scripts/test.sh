@@ -1,7 +1,7 @@
 python test.py \
 --gpu_ids 2 \
---name nyuv2_VGGdeeplab_depthconv \
---dataset_mode nyuv2 \
+--name cityscapes_VGGdeeplab_depthconv \
+--dataset_mode cityscapes \
 --depthconv \
---list dataset/lists/nyuv2/test.lst \
+--list dataset/cityscapes/leftImg8bit/test \
 --how_many 0
