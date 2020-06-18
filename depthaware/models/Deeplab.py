@@ -1,12 +1,12 @@
+
 import torch.nn as nn
-from depthaware.models.base_model import BaseModel
-import depthaware.models.losses
-from depthaware.utils.util import *
 from torch.autograd import Variable
 from collections import OrderedDict
 from tensorboardX import SummaryWriter
-import os
+
 import depthaware.models.VGG_Deeplab as VGG_Deeplab
+from depthaware.models.base_model import BaseModel
+from depthaware.utils.util import *
 
 class Deeplab_VGG(nn.Module):
     def __init__(self, num_classes, depthconv=False):

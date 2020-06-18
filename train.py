@@ -4,7 +4,6 @@ from depthaware.models.models import create_model
 from depthaware import utils as util
 from depthaware.utils.visualizer import Visualizer
 from tqdm import tqdm
-
 import os
 import numpy as np
 import time

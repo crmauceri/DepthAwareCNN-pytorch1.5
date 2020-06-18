@@ -1,5 +1,4 @@
 import os
-
 from depthaware.utils import util
 import torch
 
@@ -135,7 +134,7 @@ class BaseModel():
                     print(sorted(not_initialized))
                     network.load_state_dict(model_dict)                  
 
-    def update_learning_rate():
+    def update_learning_rate(self):
         pass
 
 

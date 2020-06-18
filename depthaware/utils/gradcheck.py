@@ -158,7 +158,7 @@ def gradcheck(func, inputs, eps=1e-6, atol=1e-5, rtol=1e-3):
     for i, o in enumerate(output):
         if not o.requires_grad:
             continue
-        print 'i:',i,o
+        print('i:',i,o)
 
         def fn(input):
             return _as_tuple(func(*input))[i].data
@@ -180,7 +180,7 @@ def gradcheck(func, inputs, eps=1e-6, atol=1e-5, rtol=1e-3):
 
         for a, n in zip(analytical, numerical):
             if not ((a - n).abs() <= (atol + rtol * n.abs())).all():
-                print a.sum(),n.sum()
+                print(a.sum(),n.sum())
                 print('1111')
                 return False
         # --------------------------

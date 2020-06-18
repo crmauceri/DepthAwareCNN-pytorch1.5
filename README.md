@@ -1,12 +1,37 @@
 ### Depth-aware CNN for RGB-D Segmentation [<a href="https://arxiv.org/pdf/1803.06791.pdf">Arxiv</a>]
 
+This fork is compatible with pytorch version 1.5. CUDA is required.
+
 ### Installation
 
-Dependancies scipy, h5py, opencv, 
+Install <a href="http://pytorch.org/">Pytorch</a>, <a href="https://github.com/Knio/dominate">dominate</a>, <a href="https://github.com/lanpa/tensorboard-pytorch">TensorBoardX</a> iin a new conda environment.
 
-Install <a href="http://pytorch.org/">Pytorch</a>, <a href="https://github.com/Knio/dominate">dominate</a>, <a href="https://github.com/lanpa/tensorboard-pytorch">TensorBoardX</a>.
+```bash
+conda create -n depthcnn python=3.8
+conda activate depthcnn
+conda install pytorch torchvision cudatoolkit=10.2 -c pytorch
+conda install tqdm
+pip install tensorboardX
+pip install dominate
+```
 
-The depth-aware convolution and depth-aware average pooling operations are under folder `models/ops`, to build them, simply use `sh make.sh` to compile.
+The depth-aware convolution and depth-aware average pooling operations are under folder `models/ops/`, to build them, simply use `python setup.py install` to compile.
+
+```bash
+cd models/ops/depthconv/
+python setup.py install
+
+cd ../depthavgpooling/
+pythono setup.py install
+
+cd ../../..
+```
+
+Then install the whole module
+
+```bash
+pip install -e .
+```
 
 ### Training
 
@@ -20,7 +45,7 @@ python train.py \
 --list dataset/lists/nyuv2/train.lst \
 --vallist dataset/lists/nyuv2/val.lst
 ```
-Pretrained Model can be found <a href="https://drive.google.com/file/d/1Umr1oG5oBiSePkg4uCe9QrWpZ2rzF7cU/view?usp=sharing">here</a>.
+
 ### Testing 
 
 ```bash

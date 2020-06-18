@@ -1,10 +1,11 @@
 from depthaware.models.model_utils import *
+from depthaware.models.ops.depthconv.module import DepthConv
+from depthaware.models.ops.depthavgpooling.module import DepthAvgPooling
+
+import torch
 import torch.nn as nn
 import torch.utils.model_zoo as model_zoo
 import math
-from depthaware.models.ops.depth_layers import DepthAvgPooling, DepthConv
-import torch
-import torchvision
 
 __all__ = [
     'VGG', 'vgg11', 'vgg11_bn', 'vgg13', 'vgg13_bn', 'vgg16', 'vgg16_bn',

@@ -1,4 +1,8 @@
 import torch
+<<<<<<< HEAD:depthaware/data/nyuv2_dataset_crop.py
+=======
+import h5py
+>>>>>>> attempt_cuda_update:depthaware/data/nyuv2_dataset_crop.py
 from depthaware.data.base_dataset import *
 from PIL import Image
 import time

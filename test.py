@@ -1,9 +1,8 @@
 import os, time
 import numpy as np
-
 from depthaware.options.test_options import TestOptions
 from depthaware.data.data_loader import CreateDataLoader
-from depthaware.models import create_model
+from depthaware.models.models import create_model
 from depthaware import utils as util
 from depthaware.utils.visualizer import Visualizer, html
 
