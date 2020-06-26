@@ -4,16 +4,26 @@ This fork is compatible with pytorch version 1.5. CUDA is required.
 
 ### Installation
 
-Install <a href="http://pytorch.org/">Pytorch</a>, <a href="https://github.com/Knio/dominate">dominate</a>, <a href="https://github.com/lanpa/tensorboard-pytorch">TensorBoardX</a> iin a new conda environment.
+#### Dependancies:
+ 
+ - <a href="http://pytorch.org/">Pytorch</a>, 
+ - <a href="https://github.com/Knio/dominate">dominate</a>, 
+ - <a href="https://github.com/lanpa/tensorboard-pytorch">TensorBoardX</a> 
+ - tqdm
+ - scipy
+
+Code snippet creates new conda environment and installs dependancies
 
 ```bash
 conda create -n depthcnn python=3.8
 conda activate depthcnn
 conda install pytorch torchvision cudatoolkit=10.2 -c pytorch
-conda install tqdm
+conda install tqdm scipy
 pip install tensorboardX
 pip install dominate
 ```
+
+#### Compile CUDA code
 
 The depth-aware convolution and depth-aware average pooling operations are under folder `models/ops/`, to build them, simply use `python setup.py install` to compile.
 
@@ -27,7 +37,7 @@ pythono setup.py install
 cd ../../..
 ```
 
-Then install the whole module
+#### Finally, install the whole module
 
 ```bash
 pip install -e .
