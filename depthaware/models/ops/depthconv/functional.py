@@ -33,19 +33,13 @@ class DepthconvFunction(Function):
         ctx.padding = padding
         ctx.dilation = dilation
 
-        print("Conv: kernel:{}, stride:{}, padding:{}, dilation:{}".format(weight.shape, stride, padding,
-                                                                                    dilation))
         if not input.is_cuda:
             raise NotImplementedError
         else:
-            try:
-                return depthconv.forward(
-                        input, depth, weight, bias, alpha,
-                        weight.size(3), weight.size(2), stride[1], stride[0],
-                        padding[1], padding[0], dilation[1], dilation[0])
-            except RuntimeError as e:
-                print("Error in Conv: kernel:{}, stride:{}, padding:{}, dilation:{}".format(weight.shape, stride, padding, dilation))
-                raise e
+            return depthconv.forward(
+                    input, depth, weight, bias, alpha,
+                    weight.size(3), weight.size(2), stride[1], stride[0],
+                    padding[1], padding[0], dilation[1], dilation[0])
 
         return output
 
@@ -55,6 +49,8 @@ class DepthconvFunction(Function):
         input, depth, weight, bias = ctx.saved_tensors
 
         grad_input = grad_weight = grad_bias = None
+        print("Conv: kernel:{}, stride:{}, padding:{}, dilation:{}".format(weight.shape, ctx.stride, ctx.padding,
+                                                                           ctx.dilation))
 
         if not grad_output.is_cuda:
             raise NotImplementedError
@@ -62,9 +58,13 @@ class DepthconvFunction(Function):
             if not isinstance(grad_output, torch.cuda.FloatTensor):
                 raise NotImplementedError
 
-            grad_input, grad_weight, grad_bias = depthconv.backward(
-                input, depth, grad_output, weight, ctx.alpha,
-                weight.size(3), weight.size(2), ctx.stride[1], ctx.stride[0],
-                ctx.padding[1], ctx.padding[0], ctx.dilation[1], ctx.dilation[0], 1.0)
+            try:
+                grad_input, grad_weight, grad_bias = depthconv.backward(
+                    input, depth, grad_output, weight, ctx.alpha,
+                    weight.size(3), weight.size(2), ctx.stride[1], ctx.stride[0],
+                    ctx.padding[1], ctx.padding[0], ctx.dilation[1], ctx.dilation[0], 1.0)
+            except RuntimeError as e:
+                print("Error in Conv: kernel:{}, stride:{}, padding:{}, dilation:{}".format(weight.shape, ctx.stride, ctx.padding, ctx.dilation))
+                raise e
 
         return grad_input, None, grad_weight, grad_bias, None, None, None, None
