@@ -36,10 +36,14 @@ class DepthconvFunction(Function):
         if not input.is_cuda:
             raise NotImplementedError
         else:
-            return depthconv.forward(
-                    input, depth, weight, bias, alpha,
-                    weight.size(3), weight.size(2), stride[1], stride[0],
-                    padding[1], padding[0], dilation[1], dilation[0])
+            try:
+                return depthconv.forward(
+                        input, depth, weight, bias, alpha,
+                        weight.size(3), weight.size(2), stride[1], stride[0],
+                        padding[1], padding[0], dilation[1], dilation[0])
+            except RuntimeError as e:
+                print("Error in Conv: kernel:{}, stride:{}, padding:{}, dilation:{}".format(weight.shape, stride, padding, dilation))
+                raise e
 
         return output
 

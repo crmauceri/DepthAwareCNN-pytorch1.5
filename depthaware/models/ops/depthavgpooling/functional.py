@@ -25,8 +25,12 @@ class DepthavgpoolingFunction(Function):
         if not grad_output.is_cuda:
             raise NotImplementedError
         else:
-            grad_input = depthavgpooling.backward(
-                input, depth, ctx.depthweightcount, grad_output,
-                kernel_size[1], kernel_size[0], stride[1], stride[0],
-                padding[1], padding[0])
+            try:
+                grad_input = depthavgpooling.backward(
+                    input, depth, ctx.depthweightcount, grad_output,
+                    kernel_size[1], kernel_size[0], stride[1], stride[0],
+                    padding[1], padding[0])
+            except RuntimeError as e:
+                print("Error in AvgPooling: kernel:{}, stride:{}, padding:{}".format(kernel_size, stride, padding))
+                raise e
         return grad_input, None, None, None, None
