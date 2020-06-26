@@ -330,11 +330,13 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
         {
         using namespace torch::indexing;
         columns = torch::matmul(weight_t, columns).reshape({nInputPlane, gradW, gradH});
+        std::cout << "Columns" << gradW << "," << gradH << std::endl;
+        std::cout << "GradInput" << inputWidth << "," << inputHeight << std::endl;
         gradInput_n.index_put_({Ellipsis, Slice(0,gradW), Slice(0,gradH)}, columns); //.index({Ellipsis, Slice(padW, -padW), Slice(padH, -padH)})
         }
     }
 //
-//    std::cout << string_format("gradInput dim: %i", gradInput.ndimension()) << std::endl;
+    std::cout << string_format("gradInput dim: %i", gradInput.ndimension()) << std::endl;
 //    std::cout << gradInput << std::endl;
 
     return gradInput;
