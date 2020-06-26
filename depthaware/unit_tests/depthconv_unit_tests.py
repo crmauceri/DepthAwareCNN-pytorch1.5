@@ -55,6 +55,29 @@ def compareImplementations(input, depth, weight, bias, alpha,
         ret.append({'var_name':name[i], 'tensors':(left, right)})
     return ret
 
+def toy_data(batch_size, in_channels, w, h, out_channels, kernel_size, stride, padding, dilation, device):
+    input_size = (batch_size, in_channels, w, h)
+    input = 0.01 * torch.tensor(range(input_size[0] * input_size[1] * input_size[2] * input_size[3]),
+                                dtype=torch.float, device=device, requires_grad=True).reshape(input_size)
+    input.retain_grad()
+
+    depth = torch.ones((batch_size, 1, w, h), device=device)
+    weight_size = (out_channels, in_channels, kernel_size, kernel_size)
+    weight = 0.01 * torch.tensor(range(weight_size[0] * weight_size[1] * weight_size[2] * weight_size[3]),
+                                 dtype=torch.float, device=device, requires_grad=True).reshape(weight_size)
+    weight.retain_grad()
+
+    bias = torch.ones((out_channels), device=device, requires_grad=True)
+    bias.retain_grad()
+
+    outsize = DepthconvFunction.outputSize(input, weight, stride, padding, dilation)
+    grad_output = torch.tensor(range(outsize[0] * outsize[1] * outsize[2] * outsize[3]),
+                               dtype=torch.float, device=device).reshape(outsize)
+
+    target = torch.zeros(outsize, device=device)
+
+    return input, depth, weight, bias, grad_output, target
+
 class DepthConvTests(unittest.TestCase):
 
     # Test vanilla configuration, depth is ones, no stride, no dilation
@@ -69,26 +92,8 @@ class DepthConvTests(unittest.TestCase):
         alpha = 1.0
         device = torch.device('cuda')
 
+        input, depth, weight, bias, grad_output, target = toy_data(batch_size, 3, w, h, out_channels, kernel_size, stride, padding, dilation, device)
 
-        input_size = (batch_size, 3, w, h)
-        input = 0.01 * torch.tensor(range(input_size[0] * input_size[1] * input_size[2] * input_size[3]),
-                                    dtype=torch.float, device=device, requires_grad=True).reshape(input_size)
-        input.retain_grad()
-
-        depth = torch.ones((batch_size, 1, w, h), device=device)
-        weight_size = (out_channels, 3, kernel_size, kernel_size)
-        weight = 0.01 * torch.tensor(range(weight_size[0] * weight_size[1] * weight_size[2] * weight_size[3]),
-                                     dtype=torch.float, device=device, requires_grad=True).reshape(weight_size)
-        weight.retain_grad()
-
-        bias = torch.ones((out_channels), device=device, requires_grad=True)
-        bias.retain_grad()
-
-        outsize = DepthconvFunction.outputSize(input, weight, stride, padding, dilation)
-        grad_output = torch.tensor(range(outsize[0] * outsize[1] * outsize[2] * outsize[3]),
-                                   dtype=torch.float, device=device).reshape(outsize)
-
-        target = torch.zeros(outsize, device=device)
         result = compareImplementations(input, depth, weight, bias, alpha,
                            stride, padding, dilation,
                            target, grad_output)
@@ -99,49 +104,39 @@ class DepthConvTests(unittest.TestCase):
                                                                                            pair['tensors'][0],
                                                                                            pair['tensors'][1]))
     def test_dimentions_VGG(self):
-        # input: torch.Size([1, 512, 93, 185]), kernel: torch.Size([1024, 512, 3, 3]), stride: (1, 1), padding: (
-        # 12, 12), dilation: (12, 12)
         batch_size = 1
-        w, h = 512, 93
         kernel_size = 3
-        out_channels = 1024
-        in_channels = 512
         stride = [1, 1]
-        padding = [12, 12]
-        dilation = [12, 12]
         alpha = 1.0
         device = torch.device('cuda')
 
-        input_size = (batch_size, in_channels, w, h)
-        input = 0.01 * torch.tensor(range(input_size[0] * input_size[1] * input_size[2] * input_size[3]),
-                                   dtype=torch.float, device=device, requires_grad=True).reshape(input_size)
-        input.retain_grad()
+        widths = [810, 405, 203, 102, 102, 102]
+        heights = [1617, 809, 405, 203, 203, 203]
+        channels = [3, 64, 128,  512, 512, 1024]
+        padding = [(1,1), (1,1), (1,1), (2,2), (12,12)]
+        dilation = [(1, 1), (1, 1), (1, 1), (2, 2), (12, 12)]
 
-        depth = torch.ones((batch_size, 1, w, h), device=device)
-        weight_size = (out_channels, in_channels, kernel_size, kernel_size)
-        weight = 0.01 * torch.tensor(range(weight_size[0] * weight_size[1] * weight_size[2] * weight_size[3]),
-                                    dtype=torch.float, device=device, requires_grad=True).reshape(weight_size)
-        weight.retain_grad()
+        for i in range(5):
+            w = widths[i]
+            h = heights[i]
+            out_c= channels[i+1]
+            in_c= channels[i]
+            p = padding[i]
+            d = dilation[i]
 
-        bias = torch.ones((out_channels), device=device, requires_grad=True)
-        bias.retain_grad()
+            input, depth, weight, bias, grad_output, target = toy_data(batch_size, in_c, w, h, out_c, kernel_size,
+                                                                       stride, p, d, device)
 
-        outsize = DepthconvFunction.outputSize(input, weight, stride, padding, dilation)
-        grad_output = torch.tensor(range(outsize[0] * outsize[1] * outsize[2] * outsize[3]),
-                                  dtype=torch.float, device=device).reshape(outsize)
-
-        target = torch.zeros(outsize, device=device)
-
-        passes = True
-        message = ""
-        try:
-            x_test = DepthconvFunction.apply(input, depth, weight, bias, alpha, stride, padding, dilation)
-            loss = SimpleLoss.apply(x_test, target)
-            loss.backward(grad_output)
-        except RuntimeError as e:
-            passes = False
-            message = e
-        self.assertTrue(passes, msg=message)
+            passes = True
+            message = "Failed at layer {} in VGG".format(i)
+            try:
+                x_test = DepthconvFunction.apply(input, depth, weight, bias, alpha, stride, p, d)
+                loss = SimpleLoss.apply(x_test, target)
+                loss.backward(grad_output)
+            except RuntimeError as e:
+                passes = False
+                print(e)
+            self.assertTrue(passes, msg=message)
 
 
     # TODO Test stride
