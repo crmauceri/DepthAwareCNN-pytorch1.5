@@ -78,7 +78,7 @@ class SUNRGBDDataset_val(BaseDataset):
     def __init__(self, opt):
         self.opt = opt
         np.random.seed(8964)
-        self.paths_dict = make_dataset_fromlst(opt.vallist)
+        self.paths_dict = make_dataset_fromlst(opt.dataroot, opt.vallist)
         self.len = len(self.paths_dict['images'])
 
     def __getitem__(self, index):
