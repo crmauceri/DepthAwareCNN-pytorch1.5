@@ -49,7 +49,7 @@ class DepthconvFunction(Function):
         input, depth, weight, bias = ctx.saved_tensors
 
         grad_input = grad_weight = grad_bias = None
-        print("Conv: input:{}, kernel:{}, stride:{}, padding:{}, dilation:{}".format(input.shape, weight.shape, ctx.stride, ctx.padding,
+        print("Conv: input:{}, depth:{}, kernel:{}, stride:{}, padding:{}, dilation:{}".format(input.shape, depth.shape, weight.shape, ctx.stride, ctx.padding,
                                                                            ctx.dilation))
 
         if not grad_output.is_cuda:

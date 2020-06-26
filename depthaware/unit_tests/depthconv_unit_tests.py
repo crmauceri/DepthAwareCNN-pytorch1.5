@@ -98,6 +98,51 @@ class DepthConvTests(unittest.TestCase):
                         msg="Variable {} is not equal within 5 sig figs: {} \n {} ".format(pair['var_name'],
                                                                                            pair['tensors'][0],
                                                                                            pair['tensors'][1]))
+    def test_dimentions_VGG(self):
+        # input: torch.Size([1, 512, 93, 185]), kernel: torch.Size([1024, 512, 3, 3]), stride: (1, 1), padding: (
+        # 12, 12), dilation: (12, 12)
+        batch_size = 1
+        w, h = 512, 93
+        kernel_size = 3
+        out_channels = 1024
+        in_channels = 512
+        stride = [1, 1]
+        padding = [12, 12]
+        dilation = [12, 12]
+        alpha = 1.0
+        device = torch.device('cuda')
+
+        input_size = (batch_size, in_channels, w, h)
+        input = 0.01 * torch.tensor(range(input_size[0] * input_size[1] * input_size[2] * input_size[3]),
+                                   dtype=torch.float, device=device, requires_grad=True).reshape(input_size)
+        input.retain_grad()
+
+        depth = torch.ones((batch_size, 1, w, h), device=device)
+        weight_size = (out_channels, in_channels, kernel_size, kernel_size)
+        weight = 0.01 * torch.tensor(range(weight_size[0] * weight_size[1] * weight_size[2] * weight_size[3]),
+                                    dtype=torch.float, device=device, requires_grad=True).reshape(weight_size)
+        weight.retain_grad()
+
+        bias = torch.ones((out_channels), device=device, requires_grad=True)
+        bias.retain_grad()
+
+        outsize = DepthconvFunction.outputSize(input, weight, stride, padding, dilation)
+        grad_output = torch.tensor(range(outsize[0] * outsize[1] * outsize[2] * outsize[3]),
+                                  dtype=torch.float, device=device).reshape(outsize)
+
+        target = torch.zeros(outsize, device=device)
+
+        passes = True
+        message = ""
+        try:
+            x_test = DepthconvFunction.apply(input, depth, weight, bias, alpha, stride, padding, dilation)
+            loss = SimpleLoss.apply(x_test, target)
+            loss.backward(grad_output)
+        except RuntimeError as e:
+            passes = False
+            message = e
+        self.assertTrue(passes, msg=message)
+
 
     # TODO Test stride
     def test_stride(self):
