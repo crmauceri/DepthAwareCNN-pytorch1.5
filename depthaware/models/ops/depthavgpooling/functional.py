@@ -22,6 +22,8 @@ class DepthavgpoolingFunction(Function):
         input, depth = ctx.saved_tensors
         grad_input = None
 
+        print("AvgPooling: kernel:{}, stride:{}, padding:{}".format(kernel_size, stride, padding))
+
         if not grad_output.is_cuda:
             raise NotImplementedError
         else:
