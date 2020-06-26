@@ -1,12 +1,4 @@
 import os.path
-<<<<<<< HEAD:depthaware/data/sunrgbd_dataset.py
-=======
-import numpy as np
-import torchvision
-import torchvision.transforms as transforms
-import torch
-import h5py
->>>>>>> attempt_cuda_update:depthaware/data/sunrgbd_dataset.py
 from depthaware.data.base_dataset import *
 from PIL import Image
 import time
