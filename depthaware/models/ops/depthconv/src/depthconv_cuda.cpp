@@ -263,7 +263,7 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
     torch::Tensor weight, double alpha,
     int nInputPlane, int inputWidth, int inputHeight,
     int kW, int kH, int strideW, int strideH,
-    int dilationW, int dilationH){
+    int dilationW, int dilationH, int paddingW, int paddingH){
 
     int batchSize = gradOutput.size(0);
     int nOutputPlane = gradOutput.size(1);
@@ -332,7 +332,7 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
         columns = torch::matmul(weight_t, columns).reshape({nInputPlane, gradW, gradH});
         std::cout << "Columns" << gradW << "," << gradH << std::endl;
         std::cout << "GradInput" << inputWidth << "," << inputHeight << std::endl;
-        gradInput_n.index_put_({Ellipsis, Slice(0,gradW), Slice(0,gradH)}, columns); //.index({Ellipsis, Slice(padW, -padW), Slice(padH, -padH)})
+        gradInput_n.index_put_({Ellipsis, Slice(0,gradW), Slice(0,gradH)}, columns.index({Ellipsis, Slice(paddingW, -paddingW), Slice(paddingH, -paddingH)});
         }
     }
 //
@@ -455,7 +455,7 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
     torch::Tensor gradInput = depthconv_input_grad(input_depth, gradOutput, weight, alpha,
                                                    nInputPlane, inputWidth, inputHeight,
                                                    kW, kH, strideW, strideH,
-                                                   dilationW, dilationH);
+                                                   dilationW, dilationH, padW, padH);
 
     std::cout << "Do weight grad" << std::endl;
     torch::Tensor gradWeight = depthconv_weight_grad(input, input_depth, gradOutput, alpha,
