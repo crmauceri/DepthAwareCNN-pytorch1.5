@@ -437,8 +437,8 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
 
     int batchSize = input.size(0);
     int nInputPlane = input.size(1);
-    int inputHeight = input.size(2);
-    int inputWidth = input.size(3);
+    int inputWidth = input.size(2);
+    int inputHeight = input.size(3);
 
     int nOutputPlane = weight.size(0);
 
