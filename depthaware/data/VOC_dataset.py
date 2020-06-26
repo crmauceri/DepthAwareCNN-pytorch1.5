@@ -1,13 +1,3 @@
-<<<<<<< HEAD:depthaware/data/VOC_dataset.py
-=======
-import os.path
-import numpy as np
-import torchvision
-import torchvision.transforms as transforms
-import torch
-import h5py
-import time
->>>>>>> attempt_cuda_update:depthaware/data/VOC_dataset.py
 from depthaware.data.base_dataset import *
 from PIL import Image
 
