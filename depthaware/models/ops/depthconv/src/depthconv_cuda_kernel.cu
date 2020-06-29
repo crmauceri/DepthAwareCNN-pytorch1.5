@@ -97,7 +97,8 @@ torch::Tensor depthconv_im2col(
     int width_col = (width + 2 * pad_w - (dilation_w * (ksize_w - 1) + 1)) / stride_w + 1;
     int num_kernels = channels * height_col * width_col;
 
-    std::cout << width << ", " << pad_w << ", " dilation_w << ", " << ksize_w << ", " << stride_w <<  std::endl;
+    std::cout << height << ", " << pad_h << ", " dilation_h << ", " << ksize_h << ", " << stride_h << std::endl;
+    std::cout << width << ", " << pad_w << ", " dilation_w << ", " << ksize_w << ", " << stride_w << std::endl;
     std::cout << "Create column matrix: " << channels * ksize_h * ksize_w << "x" << height_col * width_col << std::endl;
     torch::Tensor data_col = torch::zeros({channels * ksize_h * ksize_w, height_col * width_col}, torch::kCUDA);
 
