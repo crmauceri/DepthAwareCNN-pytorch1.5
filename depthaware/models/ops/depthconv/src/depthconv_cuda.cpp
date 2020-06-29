@@ -312,8 +312,8 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
         torch::Tensor depth_n = depth_padded.select(0, elt);
         torch::Tensor gradInput_n = gradInput.select(0, elt);
 
-//        std::cout << string_format("gradOutput_n dim: %i", gradOutput_n.ndimension()) << std::endl;
-//        std::cout << gradOutput_n << std::endl;
+        std::cout << string_format("gradOutput_n dim: %i", gradOutput_n.ndimension()) << std::endl;
+        std::cout << gradOutput_n << std::endl;
 
         //Reshape input and weight with depth difference
         torch::Tensor columns = depthconv_im2col(gradOutput_n, depth_n, alpha,
@@ -321,10 +321,10 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
                 kW, kH,
                 0, 0, 1, 1, dilationW, dilationH);
 
-//        std::cout << string_format("columns dim: %i", columns.ndimension()) << std::endl;
-//        std::cout << columns << std::endl;
-//        std::cout << string_format("weight_t dim: %i", weight_t.ndimension()) << std::endl;
-//        std::cout << weight_t << std::endl;
+        std::cout << string_format("columns dim: %i", columns.ndimension()) << std::endl;
+        std::cout << columns << std::endl;
+        std::cout << string_format("weight_t dim: %i", weight_t.ndimension()) << std::endl;
+        std::cout << weight_t << std::endl;
 
         //Multiplication with reshaped input is equivalent to 2d convolution
         {
