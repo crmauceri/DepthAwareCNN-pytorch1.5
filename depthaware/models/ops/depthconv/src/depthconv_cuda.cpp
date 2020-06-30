@@ -384,14 +384,14 @@ torch::Tensor depthconv_weight_grad(torch::Tensor input, torch::Tensor input_dep
                     dilationH, dilationW,
                     strideH, strideW);
 
-            std::cout << string_format("input_n_c dim: %i", input_n_c.ndimension()) << std::endl;
-            std::cout << input_n_c.size(0) << "x" << input_n_c.size(1) << std::endl;
-    //
-            std::cout << string_format("columns dim: %i", columns.ndimension()) << std::endl;
-            std::cout << columns.size(0) << "x" << columns.size(1) << std::endl;
-    //
-            std::cout << string_format("gradOutput_n dim: %i", gradOutput_n.ndimension()) << std::endl;
-            std::cout << gradOutput_n.size(0) << "x" << gradOutput_n.size(1) << std::endl;
+//            std::cout << string_format("input_n_c dim: %i", input_n_c.ndimension()) << std::endl;
+//            std::cout << input_n_c.size(0) << "x" << input_n_c.size(1) << std::endl;
+//    //
+//            std::cout << string_format("columns dim: %i", columns.ndimension()) << std::endl;
+//            std::cout << columns.size(0) << "x" << columns.size(1) << std::endl;
+//    //
+//            std::cout << string_format("gradOutput_n dim: %i", gradOutput_n.ndimension()) << std::endl;
+//            std::cout << gradOutput_n.size(0) << "x" << gradOutput_n.size(1) << std::endl;
 
             //Multiplication with reshaped input is equivalent to 2d convolution
             torch::Tensor product = torch::matmul(gradOutput_n, columns);
