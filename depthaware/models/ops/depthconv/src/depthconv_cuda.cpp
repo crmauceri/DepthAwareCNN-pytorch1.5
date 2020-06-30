@@ -400,8 +400,8 @@ torch::Tensor depthconv_weight_grad(torch::Tensor input, torch::Tensor input_dep
         }
     }
 
-    std::cout << string_format("gradWeight dim: %i", gradWeight.ndimension()) << std::endl;
-    std::cout << gradWeight << std::endl;
+//    std::cout << string_format("gradWeight dim: %i", gradWeight.ndimension()) << std::endl;
+//    std::cout << gradWeight << std::endl;
 
     return gradWeight;
 }
