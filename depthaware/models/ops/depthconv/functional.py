@@ -68,5 +68,5 @@ class DepthconvFunction(Function):
                 raise e
 
         print(grad_input.shape)
-        
+
         return grad_input, None, grad_weight, grad_bias, None, None, None, None

@@ -451,7 +451,7 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
         throw std::invalid_argument("invalid batch size of input depth");
     }
 
-    std::cout << "Do input grad" << std::endl;
+    std::cout << "Do input grad" << inputWidth << "x" << inputHeight << std::endl;
     torch::Tensor gradInput = depthconv_input_grad(input_depth, gradOutput, weight, alpha,
                                                    nInputPlane, inputWidth, inputHeight,
                                                    kW, kH, strideW, strideH,
