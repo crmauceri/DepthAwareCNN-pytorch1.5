@@ -136,6 +136,7 @@ class DepthConvTests(unittest.TestCase):
             except RuntimeError as e:
                 passes = False
                 print(e)
+            self.assertEqual(input.grad.shape, input.shape)
             self.assertTrue(passes, msg=message)
 
 
