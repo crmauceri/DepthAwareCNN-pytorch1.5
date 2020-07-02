@@ -33,6 +33,14 @@ class DepthconvFunction(Function):
         ctx.padding = padding
         ctx.dilation = dilation
 
+        print(
+            "Conv: input:{}, depth:{}, kernel:{}, stride:{}, padding:{}, dilation:{}".format(input.shape,
+                                                                                                            depth.shape,
+                                                                                                            weight.shape,
+                                                                                                            ctx.stride,
+                                                                                                            ctx.padding,
+                                                                                                            ctx.dilation))
+
         if not input.is_cuda:
             raise NotImplementedError
         else:
@@ -41,15 +49,13 @@ class DepthconvFunction(Function):
                     weight.size(3), weight.size(2), stride[1], stride[0],
                     padding[1], padding[0], dilation[1], dilation[0])
 
-        return output
-
     @staticmethod
     def backward(ctx, grad_output):
         # print('backward')
         input, depth, weight, bias = ctx.saved_tensors
 
         grad_input = grad_weight = grad_bias = None
-        print("Conv: input:{}, depth:{}, kernel:{}, stride:{}, padding:{}, dilation:{}, gradOutput:{}".format(input.shape, depth.shape, weight.shape, ctx.stride, ctx.padding,
+        print("Backward Conv: input:{}, depth:{}, kernel:{}, stride:{}, padding:{}, dilation:{}, gradOutput:{}".format(input.shape, depth.shape, weight.shape, ctx.stride, ctx.padding,
                                                                            ctx.dilation, grad_output.shape))
 
         if not grad_output.is_cuda:
