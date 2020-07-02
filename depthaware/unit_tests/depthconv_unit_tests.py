@@ -158,7 +158,7 @@ class DepthConvTests(unittest.TestCase):
 
         depth = torch.ones((batch_size, 1, w, h), device=device)
 
-        target = torch.ones((batch_size, 102,203), device=device)
+        target = torch.ones((batch_size, 102,203), device=device, type=torch.long)
 
         pred = model(input, depth)
         loss = criterionSeg(pred, target)
