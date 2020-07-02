@@ -144,7 +144,7 @@ class DepthConvTests(unittest.TestCase):
         w = 810
         h = 1617
         device = torch.device('cuda')
-        
+
         import depthaware.models.VGG_Deeplab as VGG_Deeplab
         model = VGG_Deeplab.vgg16(num_classes=1024,depthconv=True)
         model.cuda()
@@ -158,7 +158,7 @@ class DepthConvTests(unittest.TestCase):
 
         depth = torch.ones((batch_size, 1, w, h), device=device)
 
-        target = torch.ones((batch_size, 102,203))
+        target = torch.ones((batch_size, 102,203), device=device)
 
         pred = model(input, depth)
         loss = criterionSeg(pred, target)
