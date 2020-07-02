@@ -139,6 +139,35 @@ class DepthConvTests(unittest.TestCase):
             self.assertEqual(input.grad.shape, input.shape)
             self.assertTrue(passes, msg=message)
 
+    def test_VGG(self):
+        batch_size = 1
+        w = 810
+        h = 1617
+        device = torch.device('cuda')
+        
+        import depthaware.models.VGG_Deeplab as VGG_Deeplab
+        model = VGG_Deeplab.vgg16(num_classes=1024,depthconv=True)
+        model.cuda()
+
+        criterionSeg = torch.nn.CrossEntropyLoss(ignore_index=255).cuda()
+
+        input_size = (batch_size, 3, w, h)
+        input = 0.01 * torch.tensor(range(input_size[0] * input_size[1] * input_size[2] * input_size[3]),
+                                    dtype=torch.float, device=device, requires_grad=True).reshape(input_size)
+        input.retain_grad()
+
+        depth = torch.ones((batch_size, 1, w, h), device=device)
+
+        target = torch.ones((batch_size, 102,203))
+
+        pred = model(input, depth)
+        loss = criterionSeg(pred, target)
+
+        loss.backward()
+        self.assertTrue(True, msg="This should be impossible to trigger")
+
+
+
 
     # TODO Test stride
     def test_stride(self):
