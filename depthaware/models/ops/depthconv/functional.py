@@ -10,7 +10,7 @@ class DepthconvFunction(Function):
         height = int((input.size(-1) + 2 * padding[1] - weight_size[1]) / stride[1] + 1)
 
         output_size = [input.size(0), weight.size(0), width, height]
-        print(output_size)
+        # print(output_size)
         if not all([s > 0 for s in output_size]):
             raise ValueError(
                 "convolution input is too small (output would be {})".format(
@@ -34,13 +34,13 @@ class DepthconvFunction(Function):
         ctx.dilation = dilation
         ctx.useDepth = useDepth
 
-        print(
-            "Conv: input:{}, depth:{}, kernel:{}, stride:{}, padding:{}, dilation:{}".format(input.shape,
-                                                                                                            depth.shape,
-                                                                                                            weight.shape,
-                                                                                                            ctx.stride,
-                                                                                                            ctx.padding,
-                                                                                                            ctx.dilation))
+        # print(
+        #     "Conv: input:{}, depth:{}, kernel:{}, stride:{}, padding:{}, dilation:{}".format(input.shape,
+        #                                                                                                     depth.shape,
+        #                                                                                                     weight.shape,
+        #                                                                                                     ctx.stride,
+        #                                                                                                     ctx.padding,
+        #                                                                                                     ctx.dilation))
 
         if not input.is_cuda:
             raise NotImplementedError
@@ -56,8 +56,8 @@ class DepthconvFunction(Function):
         input, depth, weight, bias = ctx.saved_tensors
 
         grad_input = grad_weight = grad_bias = None
-        print("Backward Conv: input:{}, depth:{}, kernel:{}, stride:{}, padding:{}, dilation:{}, gradOutput:{}".format(input.shape, depth.shape, weight.shape, ctx.stride, ctx.padding,
-                                                                           ctx.dilation, grad_output.shape))
+        # print("Backward Conv: input:{}, depth:{}, kernel:{}, stride:{}, padding:{}, dilation:{}, gradOutput:{}".format(input.shape, depth.shape, weight.shape, ctx.stride, ctx.padding,
+        #                                                                    ctx.dilation, grad_output.shape))
 
         if not grad_output.is_cuda:
             raise NotImplementedError
@@ -74,6 +74,6 @@ class DepthconvFunction(Function):
                 print("Error in Conv: kernel:{}, stride:{}, padding:{}, dilation:{}".format(weight.shape, ctx.stride, ctx.padding, ctx.dilation))
                 raise e
 
-        print(grad_input.shape)
+        # print(grad_input.shape)
 
         return grad_input, None, grad_weight, grad_bias, None, None, None, None, None

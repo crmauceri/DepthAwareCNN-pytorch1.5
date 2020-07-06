@@ -454,18 +454,18 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
         throw std::invalid_argument("invalid batch size of input depth");
     }
 
-    std::cout << "Do input grad" << inputWidth << "x" << inputHeight << std::endl;
+//    std::cout << "Do input grad" << inputWidth << "x" << inputHeight << std::endl;
     torch::Tensor gradInput = depthconv_input_grad(input_depth, gradOutput, weight, alpha,
                                                    nInputPlane, inputWidth, inputHeight,
                                                    kW, kH, strideW, strideH,
                                                    dilationW, dilationH, padW, padH, useDepth);
 
-    std::cout << "Do weight grad" << std::endl;
+//    std::cout << "Do weight grad" << std::endl;
     torch::Tensor gradWeight = depthconv_weight_grad(input, input_depth, gradOutput, alpha,
                                                     kW, kH, strideW, strideH,
                                                     padW, padH, dilationH, dilationW, useDepth);
 
-    std::cout << "Do bias grad" << std::endl;
+//    std::cout << "Do bias grad" << std::endl;
     torch::Tensor gradBias = depthconv_bias_grad(gradOutput, scale);
 
     if (batch == 0) {
