@@ -185,7 +185,7 @@ class DepthConvTests(unittest.TestCase):
         out_channels = 2
         stride = [1, 1]
         padding = [1, 1]
-        dilation = [0, 0]
+        dilation = [1, 1]
         alpha = 1.0
         device = torch.device('cuda')
 
@@ -209,7 +209,7 @@ class DepthConvTests(unittest.TestCase):
         out_channels = 2
         stride = [1, 1]
         padding = [0, 0]
-        dilation = [1, 1]
+        dilation = [2, 2]
         alpha = 1.0
         device = torch.device('cuda')
 
@@ -233,7 +233,7 @@ class DepthConvTests(unittest.TestCase):
         out_channels = 2
         stride = [2, 2]
         padding = [0, 0]
-        dilation = [0, 0]
+        dilation = [1, 1]
         alpha = 1.0
         device = torch.device('cuda')
 
