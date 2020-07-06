@@ -178,15 +178,77 @@ class DepthConvTests(unittest.TestCase):
         self.assertTrue(True, msg="This should be impossible to trigger")
 
 
+    def test_padding(self):
+        batch_size = 1
+        w, h = 3, 3
+        kernel_size = 3
+        out_channels = 2
+        stride = [1, 1]
+        padding = [1, 1]
+        dilation = [0, 0]
+        alpha = 1.0
+        device = torch.device('cuda')
 
+        input, depth, weight, bias, grad_output, target = toy_data(batch_size, 3, w, h, out_channels, kernel_size,
+                                                                   stride, padding, dilation, device)
 
-    # TODO Test stride
-    def test_stride(self):
-        return
+        result = compareImplementations(input, depth, weight, bias, alpha,
+                                        stride, padding, dilation,
+                                        target, grad_output, useDepth=False)
 
-    # TODO Test dilation
+        for pair in result:
+            self.assertTrue(np.allclose(pair['tensors'][0], pair['tensors'][1]),
+                            msg="Variable {} is not equal within 5 sig figs: {} \n {} ".format(pair['var_name'],
+                                                                                               pair['tensors'][0],
+                                                                                               pair['tensors'][1]))
+
     def test_dilation(self):
-        return
+        batch_size = 1
+        w, h = 6, 6
+        kernel_size = 3
+        out_channels = 2
+        stride = [1, 1]
+        padding = [0, 0]
+        dilation = [1, 1]
+        alpha = 1.0
+        device = torch.device('cuda')
+
+        input, depth, weight, bias, grad_output, target = toy_data(batch_size, 3, w, h, out_channels, kernel_size,
+                                                                   stride, padding, dilation, device)
+
+        result = compareImplementations(input, depth, weight, bias, alpha,
+                                        stride, padding, dilation,
+                                        target, grad_output, useDepth=False)
+
+        for pair in result:
+            self.assertTrue(np.allclose(pair['tensors'][0], pair['tensors'][1]),
+                            msg="Variable {} is not equal within 5 sig figs: {} \n {} ".format(pair['var_name'],
+                                                                                               pair['tensors'][0],
+                                                                                               pair['tensors'][1]))
+
+    def test_stride(self):
+        batch_size = 1
+        w, h = 5, 5
+        kernel_size = 3
+        out_channels = 2
+        stride = [2, 2]
+        padding = [0, 0]
+        dilation = [0, 0]
+        alpha = 1.0
+        device = torch.device('cuda')
+
+        input, depth, weight, bias, grad_output, target = toy_data(batch_size, 3, w, h, out_channels, kernel_size,
+                                                                   stride, padding, dilation, device)
+
+        result = compareImplementations(input, depth, weight, bias, alpha,
+                                        stride, padding, dilation,
+                                        target, grad_output, useDepth=False)
+
+        for pair in result:
+            self.assertTrue(np.allclose(pair['tensors'][0], pair['tensors'][1]),
+                            msg="Variable {} is not equal within 5 sig figs: {} \n {} ".format(pair['var_name'],
+                                                                                               pair['tensors'][0],
+                                                                                               pair['tensors'][1]))
 
 
 if __name__ == '__main__':
