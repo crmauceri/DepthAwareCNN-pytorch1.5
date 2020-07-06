@@ -116,6 +116,9 @@ class DepthConvTests(unittest.TestCase):
         padding = [(1,1), (1,1), (1,1), (2,2), (12,12)]
         dilation = [(1, 1), (1, 1), (1, 1), (2, 2), (12, 12)]
 
+        error = False
+        msg_list = []
+
         for i in range(5):
             w = widths[i]
             h = heights[i]
@@ -131,24 +134,14 @@ class DepthConvTests(unittest.TestCase):
                                             stride, p, d,
                                             target, grad_output, useDepth=False)
 
-            for pair in result:
-                self.assertTrue(np.allclose(pair['tensors'][0], pair['tensors'][1]),
-                                msg="Failed at layer {} in VGG. Variable {} is not equal within 5 sig figs: {} \n {} ".format(i,
-                                                                                                   pair['var_name'],
-                                                                                                   pair['tensors'][0],
-                                                                                                   pair['tensors'][1]))
 
-            # passes = True
-            # message = "Failed at layer {} in VGG".format(i)
-            # try:
-            #     x_test = DepthconvFunction.apply(input, depth, weight, bias, alpha, stride, p, d)
-            #     loss = SimpleLoss.apply(x_test, target)
-            #     loss.backward(grad_output)
-            # except RuntimeError as e:
-            #     passes = False
-            #     print(e)
-            # self.assertEqual(input.grad.shape, input.shape)
-            # self.assertTrue(passes, msg=message)
+            for pair in result:
+                if(not np.allclose(pair['tensors'][0], pair['tensors'][1])):
+                    error = True
+                    msg_list.append("VGG Layer {} {}: input:{}, depth:{}, kernel:{}, stride:{}, padding:{}, dilation:{}".format(i, pair['var_name'],
+                                                                                    input.shape, depth.shape, weight.shape, stride, p, d))
+        self.assertFalse(error, "\n".join(msg_list))
+
 
     def test_VGG(self):
         batch_size = 1
