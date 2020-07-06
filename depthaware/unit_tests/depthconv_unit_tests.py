@@ -128,7 +128,7 @@ class DepthConvTests(unittest.TestCase):
                                                                        stride, p, d, device)
 
             result = compareImplementations(input, depth, weight, bias, alpha,
-                                            stride, padding, dilation,
+                                            stride, p, d,
                                             target, grad_output, useDepth=False)
 
             for pair in result:
