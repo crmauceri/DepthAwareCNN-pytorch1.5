@@ -19,10 +19,10 @@ class SimpleLoss(torch.autograd.Function):
 
 def compareImplementations(input, depth, weight, bias, alpha,
                            stride, padding, dilation,
-                           target, grad_output):
+                           target, grad_output, useDepth=True):
 
     #Depth CNN Implementation
-    x_test = DepthconvFunction.apply(input, depth, weight, bias, alpha, stride, padding, dilation)
+    x_test = DepthconvFunction.apply(input, depth, weight, bias, alpha, stride, padding, dilation, useDepth)
     loss = SimpleLoss.apply(x_test, target)
     loss.backward(grad_output)
 
@@ -127,22 +127,33 @@ class DepthConvTests(unittest.TestCase):
             input, depth, weight, bias, grad_output, target = toy_data(batch_size, in_c, w, h, out_c, kernel_size,
                                                                        stride, p, d, device)
 
-            passes = True
-            message = "Failed at layer {} in VGG".format(i)
-            try:
-                x_test = DepthconvFunction.apply(input, depth, weight, bias, alpha, stride, p, d)
-                loss = SimpleLoss.apply(x_test, target)
-                loss.backward(grad_output)
-            except RuntimeError as e:
-                passes = False
-                print(e)
-            self.assertEqual(input.grad.shape, input.shape)
-            self.assertTrue(passes, msg=message)
+            result = compareImplementations(input, depth, weight, bias, alpha,
+                                            stride, padding, dilation,
+                                            target, grad_output, useDepth=False)
+
+            for pair in result:
+                self.assertTrue(np.allclose(pair['tensors'][0], pair['tensors'][1]),
+                                msg="Failed at layer {} in VGG. Variable {} is not equal within 5 sig figs: {} \n {} ".format(i,
+                                                                                                   pair['var_name'],
+                                                                                                   pair['tensors'][0],
+                                                                                                   pair['tensors'][1]))
+
+            # passes = True
+            # message = "Failed at layer {} in VGG".format(i)
+            # try:
+            #     x_test = DepthconvFunction.apply(input, depth, weight, bias, alpha, stride, p, d)
+            #     loss = SimpleLoss.apply(x_test, target)
+            #     loss.backward(grad_output)
+            # except RuntimeError as e:
+            #     passes = False
+            #     print(e)
+            # self.assertEqual(input.grad.shape, input.shape)
+            # self.assertTrue(passes, msg=message)
 
     def test_VGG(self):
         batch_size = 1
-        w = 810
-        h = 1617
+        w = 1065
+        h = 2137
         device = torch.device('cuda')
 
         import depthaware.models.VGG_Deeplab as VGG_Deeplab
@@ -158,7 +169,7 @@ class DepthConvTests(unittest.TestCase):
 
         depth = torch.ones((batch_size, 1, w, h), device=device)
 
-        target = torch.ones((batch_size, 102,203), device=device, dtype=torch.long)
+        target = torch.ones((batch_size, 134, 268), device=device, dtype=torch.long)
 
         pred = model(input, depth)
         loss = criterionSeg(pred, target)

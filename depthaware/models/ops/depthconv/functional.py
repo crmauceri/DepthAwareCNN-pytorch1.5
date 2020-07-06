@@ -19,7 +19,7 @@ class DepthconvFunction(Function):
         return output_size
 
     @staticmethod
-    def forward(ctx, input, depth, weight, bias, alpha, stride, padding, dilation):
+    def forward(ctx, input, depth, weight, bias, alpha, stride, padding, dilation, useDepth=True):
         # print('forward')
         if weight.size(2)% 2 == 0 or weight.size(2) % 2 == 0:
             raise ValueError("Function only defined for odd-sized kernels")
@@ -32,6 +32,7 @@ class DepthconvFunction(Function):
         ctx.stride = stride
         ctx.padding = padding
         ctx.dilation = dilation
+        ctx.useDepth = useDepth
 
         print(
             "Conv: input:{}, depth:{}, kernel:{}, stride:{}, padding:{}, dilation:{}".format(input.shape,
@@ -47,7 +48,7 @@ class DepthconvFunction(Function):
             return depthconv.forward(
                     input, depth, weight, bias, alpha,
                     weight.size(3), weight.size(2), stride[1], stride[0],
-                    padding[1], padding[0], dilation[1], dilation[0])
+                    padding[1], padding[0], dilation[1], dilation[0], useDepth)
 
     @staticmethod
     def backward(ctx, grad_output):
@@ -68,7 +69,7 @@ class DepthconvFunction(Function):
                 grad_input, grad_weight, grad_bias = depthconv.backward(
                     input, depth, grad_output, weight, ctx.alpha,
                     weight.size(3), weight.size(2), ctx.stride[1], ctx.stride[0],
-                    ctx.padding[1], ctx.padding[0], ctx.dilation[1], ctx.dilation[0], 1.0)
+                    ctx.padding[1], ctx.padding[0], ctx.dilation[1], ctx.dilation[0], 1.0, ctx.useDepth)
             except RuntimeError as e:
                 print("Error in Conv: kernel:{}, stride:{}, padding:{}, dilation:{}".format(weight.shape, ctx.stride, ctx.padding, ctx.dilation))
                 raise e
