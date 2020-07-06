@@ -366,8 +366,8 @@ torch::Tensor depthconv_weight_grad(torch::Tensor input, torch::Tensor input_dep
     if(!useDepth)
         input_depth = torch::ones({input_depth.size(0), 1, input_depth.size(2), input_depth.size(3)}, torch::kCUDA);
 
-    std::cout << string_format("input dim: %i", input.ndimension()) << std::endl;
-            std::cout << input << std::endl;
+//    std::cout << string_format("input dim: %i", input.ndimension()) << std::endl;
+//            std::cout << input << std::endl;
 
     for(int elt=0; elt<batchSize; elt++){
         torch::Tensor gradOutput_n = gradOutput.select(0, elt).reshape({nOutputPlane, gW*gH});
