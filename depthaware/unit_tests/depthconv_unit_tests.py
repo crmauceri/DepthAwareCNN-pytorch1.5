@@ -140,6 +140,8 @@ class DepthConvTests(unittest.TestCase):
                     error = True
                     msg_list.append("VGG Layer {} {}: input:{}, depth:{}, kernel:{}, stride:{}, padding:{}, dilation:{}".format(i, pair['var_name'],
                                                                                     input.shape, depth.shape, weight.shape, stride, p, d))
+                else:
+                    print("Passed VGG Layer {} {}".format(i, pair['var_name']))
         self.assertFalse(error, "\n".join(msg_list))
 
 
