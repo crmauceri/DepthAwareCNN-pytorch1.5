@@ -372,7 +372,7 @@ torch::Tensor depthconv_weight_grad(torch::Tensor input, torch::Tensor input_dep
         torch::Tensor input_n = input.select(0, elt);
 
         for(int channel=0; channel<nInputPlane; channel++){
-            torch::Tensor input_n_c = input_n.select(0, channel);
+            torch::Tensor input_n_c = input_n.select(0, channel).contiguous();
             torch::Tensor gradWeight_c = gradWeight.select(1, channel);
 
             //Reshape input and gradOutput with depth difference
