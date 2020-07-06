@@ -380,7 +380,7 @@ torch::Tensor depthconv_weight_grad(torch::Tensor input, torch::Tensor input_dep
             torch::Tensor columns = depthconv_im2col(input_n_c, depth_n, alpha,
                     1, gradW, gradH,
                     gW, gH,
-                    0, 0,
+                    padH, padW,
                     dilationH, dilationW,
                     strideH, strideW);
 
