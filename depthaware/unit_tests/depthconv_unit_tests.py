@@ -110,10 +110,10 @@ class DepthConvTests(unittest.TestCase):
         alpha = 1.0
         device = torch.device('cuda')
 
-        # widths = [810, 405, 203, 102, 102, 102]
-        # heights = [1617, 809, 405, 203, 203, 203]
-        widths = [15, 15, 15, 15, 15, 15]
-        heights = [15, 15, 15, 15, 15, 15]
+        widths = [810, 405, 203, 102, 102, 102]
+        heights = [1617, 809, 405, 203, 203, 203]
+        # widths = [15, 15, 15, 15, 15, 15]
+        # heights = [15, 15, 15, 15, 15, 15]
         channels = [3, 64, 128,  512, 512, 1024]
         padding = [(1,1), (1,1), (1,1), (2,2), (12,12)]
         dilation = [(1, 1), (1, 1), (1, 1), (2, 2), (12, 12)]
@@ -143,9 +143,9 @@ class DepthConvTests(unittest.TestCase):
                     msg_list.append("VGG Layer {} {}: input:{}, depth:{}, kernel:{}, stride:{}, padding:{}, dilation:{}".format(i, pair['var_name'],
                                                                                     input.shape, depth.shape, weight.shape, stride, p, d))
                     print("Pytorch")
-                    print(pair['tensors'][0])
+                    print(pair['tensors'][0].shape)
                     print("Depth Conv")
-                    print(pair['tensors'][1])
+                    print(pair['tensors'][1].shape)
                 else:
                     print("Passed VGG Layer {} {}".format(i, pair['var_name']))
         self.assertFalse(error, "\n".join(msg_list))
