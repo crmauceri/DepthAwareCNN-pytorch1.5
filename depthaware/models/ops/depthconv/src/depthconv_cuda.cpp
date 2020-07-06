@@ -366,13 +366,16 @@ torch::Tensor depthconv_weight_grad(torch::Tensor input, torch::Tensor input_dep
     if(!useDepth)
         input_depth = torch::ones({input_depth.size(0), 1, input_depth.size(2), input_depth.size(3)}, torch::kCUDA);
 
+    std::cout << string_format("input dim: %i", input.ndimension()) << std::endl;
+            std::cout << input << std::endl;
+
     for(int elt=0; elt<batchSize; elt++){
         torch::Tensor gradOutput_n = gradOutput.select(0, elt).reshape({nOutputPlane, gW*gH});
         torch::Tensor depth_n = input_depth.select(0, elt);
         torch::Tensor input_n = input.select(0, elt);
 
         for(int channel=0; channel<nInputPlane; channel++){
-            torch::Tensor input_n_c = input_n.select(0, channel).contiguous();
+            torch::Tensor input_n_c = input_n.select(0, channel);
             torch::Tensor gradWeight_c = gradWeight.select(1, channel);
 
             //Reshape input and gradOutput with depth difference
