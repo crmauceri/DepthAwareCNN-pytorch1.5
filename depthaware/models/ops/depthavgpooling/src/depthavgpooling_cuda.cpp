@@ -171,7 +171,8 @@ torch::Tensor depthavgpooling_forward_cuda(
     torch::Tensor depthweightcount,
     int kW, int kH,
     int dW, int dH,
-    int padW, int padH) {
+    int padW, int padH,
+    bool useDepth) {
 
     CHECK_INPUT(input);
     CHECK_INPUT(input_depth);
@@ -256,7 +257,8 @@ torch::Tensor depthavgpooling_backward_cuda(
     torch::Tensor gradOutput,
     int kW, int kH,
     int dW, int dH,
-    int padW, int padH) {
+    int padW, int padH,
+    bool useDepth) {
 
     CHECK_INPUT(input);
     CHECK_INPUT(input_depth);
