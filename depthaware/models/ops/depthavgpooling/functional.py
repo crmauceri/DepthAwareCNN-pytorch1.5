@@ -28,7 +28,7 @@ class DepthavgpoolingFunction(Function):
         ctx.alpha = alpha
         ctx.useDepth = useDepth
 
-        print("AvgPooling: input: {}, kernel:{}, stride:{}, padding:{}".format(input.shape, ctx.kernel_size, ctx.stride, ctx.padding))
+        # print("AvgPooling: input: {}, kernel:{}, stride:{}, padding:{}".format(input.shape, ctx.kernel_size, ctx.stride, ctx.padding))
 
         if not input.is_cuda:
             raise NotImplementedError
@@ -43,7 +43,7 @@ class DepthavgpoolingFunction(Function):
         input, depth = ctx.saved_tensors
         grad_input = None
 
-        print("AvgPooling Backward: kernel:{}, stride:{}, padding:{}".format(ctx.kernel_size, ctx.stride, ctx.padding))
+        # print("AvgPooling Backward: kernel:{}, stride:{}, padding:{}".format(ctx.kernel_size, ctx.stride, ctx.padding))
 
         if not grad_output.is_cuda:
             raise NotImplementedError
