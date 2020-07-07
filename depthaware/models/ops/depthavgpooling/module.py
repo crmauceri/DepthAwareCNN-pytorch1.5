@@ -9,15 +9,17 @@ from depthaware.models.ops.depthavgpooling.functional import DepthavgpoolingFunc
 class DepthAvgPooling(Module):
     def __init__(self,
                  kernel_size,
+                 alpha=1,
                  stride=1,
                  padding=0):
         super(DepthAvgPooling, self).__init__()
         self.kernel_size = _pair(kernel_size)
+        self.alpha = alpha
         self.stride = _pair(stride)
         self.padding = _pair(padding)
 
     def forward(self, input, depth):
-        return DepthavgpoolingFunction.apply(input, depth, self.kernel_size, self.stride, self.padding)
+        return DepthavgpoolingFunction.apply(input, depth, self.kernel_size, self.alpha, self.stride, self.padding)
 
 if __name__ == '__main__':
     import numpy as np

@@ -219,7 +219,7 @@ class VGG_layer(nn.Module):
         self.conv5_3 = ConvModule(512, 512, bn=batch_norm, dilation=2, padding=2,
                                   maxpool=True, pool_kernel=3, pool_stride=1, pool_pad=1)
         self.pool5a = nn.AvgPool2d(kernel_size=3, stride=1,padding=1)
-        self.pool5a_d = DepthAvgPooling(kernel_size=3, stride=1,padding=1)
+        self.pool5a_d = DepthAvgPooling(kernel_size=3, stride=1, padding=1)
 
     def forward(self, x, depth=None):
         # print x.size()
