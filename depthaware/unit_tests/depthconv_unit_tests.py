@@ -110,8 +110,8 @@ class DepthConvTests(unittest.TestCase):
         alpha = 1.0
         device = torch.device('cuda')
 
-        widths = [203, 203, 203, 203, 51, 25]
-        heights = [405, 405, 405, 405, 51, 25]
+        widths = [203, 203, 203, 203, 203, 203]
+        heights = [203, 203, 203, 203, 203, 203]
         channels = [3, 64, 128,  512, 512, 1024]
         padding = [(1,1), (1,1), (1,1), (2,2), (12,12)]
         dilation = [(1, 1), (1, 1), (1, 1), (2, 2), (12, 12)]
