@@ -110,8 +110,6 @@ class DepthConvTests(unittest.TestCase):
         alpha = 1.0
         device = torch.device('cuda')
 
-        widths = [203, 203, 203, 203, 203, 203]
-        heights = [203, 203, 203, 203, 203, 203]
         channels = [3, 64, 128,  512, 512, 1024]
         padding = [(1,1), (1,1), (1,1), (2,2), (12,12)]
         dilation = [(1, 1), (1, 1), (1, 1), (2, 2), (12, 12)]
@@ -120,32 +118,29 @@ class DepthConvTests(unittest.TestCase):
         msg_list = []
 
         for i in range(5):
-            w = widths[i]
-            h = heights[i]
-            out_c= channels[i+1]
-            in_c= channels[i]
-            p = padding[i]
-            d = dilation[i]
+            for w in range(200):
+                h = w
+                out_c= channels[i+1]
+                in_c= channels[i]
+                p = padding[i]
+                d = dilation[i]
 
-            input, depth, weight, bias, grad_output, target = toy_data(batch_size, in_c, w, h, out_c, kernel_size,
-                                                                       stride, p, d, device)
+                input, depth, weight, bias, grad_output, target = toy_data(batch_size, in_c, w, h, out_c, kernel_size,
+                                                                           stride, p, d, device)
 
-            result = compareImplementations(input, depth, weight, bias, alpha,
-                                            stride, p, d,
-                                            target, grad_output, useDepth=False)
+                result = compareImplementations(input, depth, weight, bias, alpha,
+                                                stride, p, d,
+                                                target, grad_output, useDepth=False)
 
 
-            for pair in result:
-                if(not np.allclose(pair['tensors'][0], pair['tensors'][1])):
-                    error = True
-                    msg_list.append("VGG Layer {} {}: input:{}, depth:{}, kernel:{}, stride:{}, padding:{}, dilation:{}".format(i, pair['var_name'],
-                                                                                    input.shape, depth.shape, weight.shape, stride, p, d))
-                    print("Pytorch")
-                    print(pair['tensors'][0].shape)
-                    print("Depth Conv")
-                    print(pair['tensors'][1].shape)
-                else:
-                    print("Passed VGG Layer {} {}".format(i, pair['var_name']))
+                for pair in result:
+                    if(not np.allclose(pair['tensors'][0], pair['tensors'][1])):
+                        error = True
+                        msg_list.append("VGG Layer {} {}: input:{}, depth:{}, kernel:{}, stride:{}, padding:{}, dilation:{}".format(i, pair['var_name'],
+                                                                                        input.shape, depth.shape, weight.shape, stride, p, d))
+                        print("Failed VGG Layer {} {} {}x{}".format(i, pair['var_name'], w, h))
+                    else:
+                        print("Passed VGG Layer {} {} {}x{}".format(i, pair['var_name'], w, h))
         self.assertFalse(error, "\n".join(msg_list))
 
 
