@@ -118,7 +118,7 @@ class DepthConvTests(unittest.TestCase):
         msg_list = []
 
         for i in range(5):
-            for w in range(1, 200):
+            for w in range(3, 200):
                 h = w
                 out_c= channels[i+1]
                 in_c= channels[i]
