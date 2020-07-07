@@ -117,7 +117,7 @@ class DepthConvTests(unittest.TestCase):
         error = False
         msg_list = []
 
-        for i in range(5):
+        for i in range(3, 5):
             for w in range(200, 500, 3):
                 h = w
                 out_c= channels[i+1]
