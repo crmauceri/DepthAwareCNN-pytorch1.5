@@ -5,7 +5,6 @@ import depthavgpooling
 class DepthavgpoolingFunction(Function):
     @staticmethod
     def outputSize(input, kernel_size, stride, padding):
-        assert(kernel_size[1] == input.size(0))
         width = int((input.size(-2) + 2 * padding[0] - kernel_size[0]) / stride[0] + 1)
         height = int((input.size(-1) + 2 * padding[1] - kernel_size[1]) / stride[1] + 1)
 
