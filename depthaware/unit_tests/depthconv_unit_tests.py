@@ -135,7 +135,7 @@ class DepthConvTests(unittest.TestCase):
 
 
             for pair in result:
-                if(not np.allclose(pair['tensors'][0], pair['tensors'][1])):
+                if(not np.allclose(pair['tensors'][0], pair['tensors'][1], decimal=5)):
                     error = True
                     msg_list.append("VGG Layer {} {}: input:{}, depth:{}, kernel:{}, stride:{}, padding:{}, dilation:{}".format(i, pair['var_name'],
                                                                                     input.shape, depth.shape, weight.shape, stride, p, d))
