@@ -8,7 +8,7 @@ class DepthavgpoolingFunction(Function):
         width = int((input.size(-2) + 2 * padding[0] - kernel_size[0]) / stride[0] + 1)
         height = int((input.size(-1) + 2 * padding[1] - kernel_size[1]) / stride[1] + 1)
 
-        output_size = [input.size(0), kernel_size.size(0), width, height]
+        output_size = [input.size(0), kernel_size[0], width, height]
         # print(output_size)
         if not all([s > 0 for s in output_size]):
             raise ValueError(
