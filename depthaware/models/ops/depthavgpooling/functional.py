@@ -26,6 +26,7 @@ class DepthavgpoolingFunction(Function):
         ctx.padding = padding
         ctx.kernel_size = kernel_size
         ctx.alpha = alpha
+        ctx.useDepth = useDepth
 
         if not input.is_cuda:
             raise NotImplementedError
