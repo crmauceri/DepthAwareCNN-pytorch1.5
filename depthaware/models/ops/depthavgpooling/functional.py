@@ -54,4 +54,4 @@ class DepthavgpoolingFunction(Function):
             except RuntimeError as e:
                 print("Error in AvgPooling: kernel:{}, stride:{}, padding:{}".format(ctx.kernel_size, ctx.stride, ctx.padding))
                 raise e
-        return grad_input, None, None, None, None, None
+        return grad_input, None, None, None, None, None, None
