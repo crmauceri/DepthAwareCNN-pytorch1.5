@@ -32,7 +32,7 @@ def compareImplementations(input, depth, alpha, kernel_size,
     loss.backward(grad_output)
     end_backward = time.time()
 
-    print("DepthAvgPool forward {}s, backward {}s".format(end_foward-start_forward, end_backward, start_backward))
+    print("DepthAvgPool forward {}s, backward {}s".format(end_foward-start_forward, end_backward- start_backward))
 
     depth_input_grad = input.grad.cpu()
 
@@ -49,7 +49,7 @@ def compareImplementations(input, depth, alpha, kernel_size,
     loss.backward(grad_output)
     end_backward = time.time()
 
-    print("AvgPool2d forward {}s, backward {}s".format(end_foward - start_forward, end_backward, start_backward))
+    print("AvgPool2d forward {}s, backward {}s".format(end_foward - start_forward, end_backward - start_backward))
 
     # Check that the values are equal for the first 5 sig figs.
     pairs = [[input.grad.cpu().detach().numpy(), depth_input_grad.numpy()]]

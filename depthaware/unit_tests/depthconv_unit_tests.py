@@ -28,12 +28,12 @@ def compareImplementations(input, depth, weight, bias, alpha,
     end_foward = time.time()
 
     loss = SimpleLoss.apply(x_test, target)
-    
+
     start_backward = time.time()
     loss.backward(grad_output)
     end_backward = time.time()
 
-    print("DepthConv forward {}s, backward {}s".format(end_foward - start_forward, end_backward, start_backward))
+    print("DepthConv forward {}s, backward {}s".format(end_foward - start_forward, end_backward - start_backward))
 
 
     depth_input_grad = input.grad.cpu()
@@ -57,7 +57,7 @@ def compareImplementations(input, depth, weight, bias, alpha,
     loss.backward(grad_output)
     end_backward = time.time()
 
-    print("Conv2d forward {}s, backward {}s".format(end_foward - start_forward, end_backward, start_backward))
+    print("Conv2d forward {}s, backward {}s".format(end_foward - start_forward, end_backward - start_backward))
 
 
     # Check that the values are equal for the first 5 sig figs.
