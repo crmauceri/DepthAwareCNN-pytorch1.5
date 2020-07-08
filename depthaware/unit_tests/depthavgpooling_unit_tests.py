@@ -2,6 +2,7 @@ import torch
 import numpy as np
 import unittest
 import math
+import time
 
 from depthaware.models.ops.depthavgpooling.functional import DepthavgpoolingFunction
 
@@ -22,9 +23,16 @@ def compareImplementations(input, depth, alpha, kernel_size,
                            target, grad_output, useDepth=True):
 
     #Depth CNN Implementation
+    start_forward = time.time()
     x_test = DepthavgpoolingFunction.apply(input, depth, kernel_size, alpha, stride, padding, useDepth)
+    end_foward = time.time()
     loss = SimpleLoss.apply(x_test, target)
+
+    start_backward = time.time()
     loss.backward(grad_output)
+    end_backward = time.time()
+
+    print("DepthAvgPool forward {}s, backward {}s".format(end_foward-start_forward, end_backward, start_backward))
 
     depth_input_grad = input.grad.cpu()
 
@@ -32,10 +40,16 @@ def compareImplementations(input, depth, alpha, kernel_size,
 
     #Pytorch CNN Implementation
     input = input.clone().detach().cuda().requires_grad_(True)
+    start_forward = time.time()
     x = pool_layer(input)
+    end_foward = time.time()
     target = target.clone().detach().cuda()
     loss = SimpleLoss.apply(x, target)
+    start_backward = time.time()
     loss.backward(grad_output)
+    end_backward = time.time()
+
+    print("AvgPool2d forward {}s, backward {}s".format(end_foward - start_forward, end_backward, start_backward))
 
     # Check that the values are equal for the first 5 sig figs.
     pairs = [[input.grad.cpu().detach().numpy(), depth_input_grad.numpy()]]
