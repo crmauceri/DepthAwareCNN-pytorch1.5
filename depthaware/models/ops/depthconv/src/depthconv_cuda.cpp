@@ -382,11 +382,13 @@ torch::Tensor depthconv_weight_grad(torch::Tensor input, torch::Tensor input_dep
             //Reshape input and gradOutput with depth difference
             //In backward pass of convolution, stride and dilation switch roles
             torch::Tensor columns = depthconv_im2col(input_n, depth_n, alpha,
-                    nInputPlane, gradW, gradH,
+                    nOutputPlane, gradW, gradH,
                     gW, gH,
                     padH, padW,
                     dilationH, dilationW,
                     strideH, strideW);
+
+            columns = columns.repeat({1, nInputPlane});
 
 //            std::cout << string_format("input_n dim: %i", input_n.ndimension()) << std::endl;
 //            std::cout << input_n << std::endl;
