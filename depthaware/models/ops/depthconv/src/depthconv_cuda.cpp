@@ -363,7 +363,7 @@ torch::Tensor depthconv_weight_grad(torch::Tensor input, torch::Tensor input_dep
         input_depth = torch::ones({input_depth.size(0), 1, input_depth.size(2), input_depth.size(3)}, torch::kCUDA);
 
     std::cout << string_format("gradOutput: %i x %i x %i x %i ", batchSize, nOutputPlane, gW, gH) +
-                 string_format("input: %i x %i x %i x %i ", batchSize, nInputPlane, input.size(2), input.size(3)) +
+                 string_format("input: %i x %i x %i x %i ", batchSize, nInputPlane, gradW, gradH) +
                  string_format("gradWeight: %i x %i x %i x %i", nOutputPlane, nInputPlane, kW, kH) << std::endl;
 
     for(int elt=0; elt<batchSize; elt++){
@@ -374,8 +374,8 @@ torch::Tensor depthconv_weight_grad(torch::Tensor input, torch::Tensor input_dep
         //Reshape input and gradOutput with depth difference
         //In backward pass of convolution, stride and dilation switch roles
         torch::Tensor columns = depthconv_im2col(input_n, depth_n, alpha,
-                nInputPlane, gW, gH,
-                gradW, gradH,
+                nInputPlane, gradW, gradH,
+                gW, gH,
                 padH, padW,
                 dilationH, dilationW,
                 strideH, strideW);
