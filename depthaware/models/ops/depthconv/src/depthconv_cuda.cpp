@@ -371,7 +371,7 @@ torch::Tensor depthconv_weight_grad(torch::Tensor input, torch::Tensor input_dep
                  string_format("gradWeight: %i x %i x %i x %i", nOutputPlane, nInputPlane, kW, kH) << std::endl;
 
     for(int elt=0; elt<batchSize; elt++){
-        torch::Tensor gradOutput_n = gradOutput.select(0, elt).repeat({1, 1, 1, nInputPlane}).reshape({nOutputPlane*nInputPlane, gW*gH});
+        torch::Tensor gradOutput_n = gradOutput.select(0, elt).repeat({1, 1, 1, nInputPlane}).reshape({nOutputPlane, gW*gH*nInputPlane});
         torch::Tensor depth_n = input_depth.select(0, elt);
         torch::Tensor input_n = input.select(0, elt);
 
@@ -387,6 +387,8 @@ torch::Tensor depthconv_weight_grad(torch::Tensor input, torch::Tensor input_dep
                     padH, padW,
                     dilationH, dilationW,
                     strideH, strideW);
+
+            columns = columns.repeat({1, nOutputPlane});
 
 //            std::cout << string_format("input_n dim: %i", input_n.ndimension()) << std::endl;
 //            std::cout << input_n << std::endl;
