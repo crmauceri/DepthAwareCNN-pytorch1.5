@@ -388,8 +388,6 @@ torch::Tensor depthconv_weight_grad(torch::Tensor input, torch::Tensor input_dep
                     dilationH, dilationW,
                     strideH, strideW);
 
-            columns = columns.repeat({1, nOutputPlane});
-
 //            std::cout << string_format("input_n dim: %i", input_n.ndimension()) << std::endl;
 //            std::cout << input_n << std::endl;
     //
