@@ -387,8 +387,8 @@ torch::Tensor depthconv_weight_grad(torch::Tensor input, torch::Tensor input_dep
                     dilationH, dilationW,
                     strideH, strideW);
 
-            std::cout << string_format("input_n_c dim: %i", input_n_c.ndimension()) << std::endl;
-            std::cout << input_n_c << std::endl;
+            std::cout << string_format("input_n dim: %i", input_n.ndimension()) << std::endl;
+            std::cout << input_n << std::endl;
     //
             std::cout << string_format("columns dim: %i", columns.ndimension()) << std::endl;
             std::cout << columns << std::endl;
