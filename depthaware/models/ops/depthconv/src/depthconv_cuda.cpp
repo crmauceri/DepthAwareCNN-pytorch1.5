@@ -391,13 +391,13 @@ torch::Tensor depthconv_weight_grad(torch::Tensor input, torch::Tensor input_dep
             columns = columns.repeat({1, nInputPlane});
 
 //            std::cout << string_format("input_n dim: %i", input_n.ndimension()) << std::endl;
-//            std::cout << input_n << std::endl;
+            std::cout << input_n << std::endl;
     //
             std::cout << string_format("columns dim: %i x %i", columns.size(0), columns.size(1)) << std::endl;
-//            std::cout << columns << std::endl;
+            std::cout << columns << std::endl;
     //
             std::cout << string_format("gradOutput_n %i x %i", gradOutput_n.size(0), gradOutput_n.size(1)) << std::endl;
-//            std::cout << gradOutput_n << std::endl;
+            std::cout << gradOutput_n << std::endl;
 
             //Multiplication with reshaped input is equivalent to 2d convolution
             torch::Tensor product = torch::matmul(gradOutput_n, columns);
