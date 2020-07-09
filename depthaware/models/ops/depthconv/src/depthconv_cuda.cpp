@@ -362,8 +362,8 @@ torch::Tensor depthconv_weight_grad(torch::Tensor input, torch::Tensor input_dep
     if(!useDepth)
         input_depth = torch::ones({input_depth.size(0), 1, input_depth.size(2), input_depth.size(3)}, torch::kCUDA);
 
-    std::cout << string_format("gradOutput: %i x %i x %i x %i", batchSize, nOutputPlane, gW, gH) +
-                 string_format("input: %i x %i x %i x %i", batchSize, nInputPlane, input.size(2), input.size(3)) +
+    std::cout << string_format("gradOutput: %i x %i x %i x %i ", batchSize, nOutputPlane, gW, gH) +
+                 string_format("input: %i x %i x %i x %i ", batchSize, nInputPlane, input.size(2), input.size(3)) +
                  string_format("gradWeight: %i x %i x %i x %i", nOutputPlane, nInputPlane, kW, kH) << std::endl;
 
     for(int elt=0; elt<batchSize; elt++){
@@ -379,6 +379,10 @@ torch::Tensor depthconv_weight_grad(torch::Tensor input, torch::Tensor input_dep
                 padH, padW,
                 dilationH, dilationW,
                 strideH, strideW);
+
+        std::cout << string_format("columns: %i x %i ", columns.size(0), columns.size(1)) +
+                 string_format("gradOutput: %i x %i ", gradOutput_n.size(0), gradOutput_n.size(1)) << std::endl;
+
 
         //Multiplication with reshaped input is equivalent to 2d convolution
         torch::Tensor product = torch::matmul(gradOutput_n, columns.permute({1, 0}));
