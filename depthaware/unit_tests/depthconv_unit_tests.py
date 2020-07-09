@@ -101,8 +101,8 @@ class DepthConvTests(unittest.TestCase):
 
     # Test vanilla configuration, depth is ones, no stride, no dilation
     def test_basic(self):
-        batch_size = 1
-        w, h = 5, 5
+        batch_size = 5
+        w, h = 9, 9
         kernel_size = 3
         out_channels = 2
         stride = [1, 1]
