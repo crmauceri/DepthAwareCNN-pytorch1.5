@@ -353,7 +353,6 @@ torch::Tensor depthconv_weight_grad(torch::Tensor input, torch::Tensor input_dep
     torch::Tensor gradWeight = torch::zeros({nOutputPlane, nInputPlane, kW, kH}, torch::kCUDA);
 
     //Calculate whether the kernel fit evenly into input on forward pass
-    //TODO Add padding?
     using namespace torch::indexing;
     int gradW = (gradOutput.size(2)-1)*strideW + ((kW-1)*dilationW+1) - 2*padW;
     int gradH = (gradOutput.size(3)-1)*strideH + ((kH-1)*dilationH+1) - 2*padH;
@@ -366,9 +365,9 @@ torch::Tensor depthconv_weight_grad(torch::Tensor input, torch::Tensor input_dep
     if(!useDepth)
         input_depth = torch::ones({input_depth.size(0), 1, input_depth.size(2), input_depth.size(3)}, torch::kCUDA);
 
-//    std::cout << string_format("gradOutput: %i x %i x %i x %i", batchSize, nOutputPlane, gW, gH) +
-//                 string_format("input: %i x %i x %i x %i", batchSize, nInputPlane, input.size(2), input.size(3)) +
-//                 string_format("gradWeight: %i x %i x %i x %i", nOutputPlane, nInputPlane, kW, kH) << std::endl;
+    std::cout << string_format("gradOutput: %i x %i x %i x %i", batchSize, nOutputPlane, gW, gH) +
+                 string_format("input: %i x %i x %i x %i", batchSize, nInputPlane, input.size(2), input.size(3)) +
+                 string_format("gradWeight: %i x %i x %i x %i", nOutputPlane, nInputPlane, kW, kH) << std::endl;
 
     for(int elt=0; elt<batchSize; elt++){
         torch::Tensor gradOutput_n = gradOutput.select(0, elt).reshape({nOutputPlane, gW*gH});
