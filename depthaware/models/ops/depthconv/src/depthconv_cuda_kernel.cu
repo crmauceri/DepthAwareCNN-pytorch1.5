@@ -114,37 +114,3 @@ torch::Tensor depthconv_im2col(
 
     return data_col;
 }
-
-torch::Tensor depthconv_gradOut2col(
-    torch::Tensor data_im,
-    torch::Tensor data_depth,
-    const double alpha, //Scaling factor
-    const int channels, const int height, const int width,
-    const int ksize_h, const int ksize_w,
-    const int pad_h, const int pad_w,
-    const int stride_h, const int stride_w,
-    const int dilation_h, const int dilation_w) {
-
-    // We are going to launch channels * height_col * width_col kernels, each
-    // kernel responsible for copying a single-channel grid.
-    int height_col = (height + 2 * pad_h - (dilation_h * (ksize_h - 1) + 1)) / stride_h + 1;
-    int width_col = (width + 2 * pad_w - (dilation_w * (ksize_w - 1) + 1)) / stride_w + 1;
-    int num_kernels = height_col * width_col;
-
-    std::cout << height << ", " << pad_h << ", " << dilation_h << ", " << ksize_h << ", " << stride_h << std::endl;
-    std::cout << width << ", " << pad_w << ", " << dilation_w << ", " << ksize_w << ", " << stride_w << std::endl;
-    std::cout << "Create column matrix: " << ksize_h * ksize_w << "x" << channels * height_col * width_col << std::endl;
-
-    torch::Tensor data_col = torch::zeros({ksize_h * ksize_w, channels * height_col * width_col}, torch::kCUDA);
-
-    // Launch
-    AT_DISPATCH_FLOATING_TYPES(data_im.scalar_type(), "depthconv_im2col_gpu_kernel", ([&] {
-        depthconv_im2col_gpu_kernel<scalar_t><<<GET_BLOCKS(num_kernels), CUDA_NUM_THREADS>>>(
-            num_kernels, data_im.data_ptr<scalar_t>(), data_depth.data_ptr<scalar_t>(), alpha,
-            height, width, ksize_h, ksize_w, pad_h, pad_w,
-            stride_h, stride_w, dilation_h, dilation_w, height_col, width_col,
-            data_col.data_ptr<scalar_t>() );
-        }));
-
-    return data_col;
-}
