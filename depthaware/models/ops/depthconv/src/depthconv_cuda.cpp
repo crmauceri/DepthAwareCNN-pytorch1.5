@@ -384,7 +384,7 @@ torch::Tensor depthconv_weight_grad(torch::Tensor input, torch::Tensor input_dep
                  string_format("gradOutput: %i x %i ", gradOutput_n.size(0), gradOutput_n.size(1)) << std::endl;
 
         std::cout << columns << std::endl;
-        columns = columns.reshape({gradOutput_n.size(1), gW, gH, nInputPlane});
+        columns = columns.reshape({gW, gH, kW, kH, nInputPlane});
         std::cout << columns << std::endl;
 
         std::cout << gradOutput_n << std::endl;
