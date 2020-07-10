@@ -392,7 +392,7 @@ torch::Tensor depthconv_weight_grad(torch::Tensor input, torch::Tensor input_dep
             offset.index_put_({0, 0, j}, gradW*gradH*j);
         }
 
-        offset = offset.repeat({columns.size(0), columns.size(1)/nInputPlane, 1}).reshape({columns.size(0), columns.size(1)});
+        offset = offset.repeat({columns.size(1)/nInputPlane, columns.size(0),  1}).reshape({columns.size(0), columns.size(1)});
         columns = columns + offset;
         std::cout << offset << std::endl;
         std::cout << columns << std::endl;
