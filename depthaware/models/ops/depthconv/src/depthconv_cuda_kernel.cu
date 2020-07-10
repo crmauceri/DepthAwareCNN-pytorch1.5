@@ -129,7 +129,7 @@ torch::Tensor depthconv_gradOut2col(
     // kernel responsible for copying a single-channel grid.
     int height_col = (height + 2 * pad_h - (dilation_h * (ksize_h - 1) + 1)) / stride_h + 1;
     int width_col = (width + 2 * pad_w - (dilation_w * (ksize_w - 1) + 1)) / stride_w + 1;
-    int num_kernels = height_col * width_col;
+    int num_kernels = channels * height_col * width_col;
 
     //std::cout << height << ", " << pad_h << ", " << dilation_h << ", " << ksize_h << ", " << stride_h << std::endl;
     //std::cout << width << ", " << pad_w << ", " << dilation_w << ", " << ksize_w << ", " << stride_w << std::endl;
