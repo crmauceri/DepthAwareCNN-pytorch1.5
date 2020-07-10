@@ -384,7 +384,7 @@ torch::Tensor depthconv_weight_grad(torch::Tensor input, torch::Tensor input_dep
                  string_format("gradOutput: %i x %i ", gradOutput_n.size(0), gradOutput_n.size(1)) << std::endl;
 
         columns = columns.repeat({nInputPlane, 1}).permute({1, 0});
-        torch::Tensor offset = torch::zeros({1, nInputPlane});
+        torch::Tensor offset = torch::zeros({1, nInputPlane}, torch::kCUDA);
 
         for(int j=1; j<nInputPlane; j++){
             offset.index_put_({0, j}, gradW*gradH);
