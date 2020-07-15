@@ -76,10 +76,14 @@ class Deeplab_Solver(BaseModel):
             self.seggt = None
 
         if self.useCuda:
-            self.depth = self.depth.cuda()
-            self.image = self.image.cuda()
-            if self.seggt is not None:
-                self.seggt = self.seggt.cuda()
+            try:
+                self.depth = self.depth.cuda()
+                self.image = self.image.cuda()
+                if self.seggt is not None:
+                    self.seggt = self.seggt.cuda()
+            except RuntimeError as e:
+                print(self.depth)
+                raise e
 
         input_size = self.image.size()
 

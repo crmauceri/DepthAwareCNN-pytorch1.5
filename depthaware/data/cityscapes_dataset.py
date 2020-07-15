@@ -73,6 +73,7 @@ class CityscapesDataset(BaseDataset):
             HHA_tensor_tranformed = transform(HHA, params, istrain=self.opt.isTrain, option=2)
 
         print(img_tensor_tranformed.shape)
+        print(depth_tensor_tranformed.shape)
         return {'image':img_tensor_tranformed,
                 'depth':depth_tensor_tranformed,
                 'seg': seg_tensor_tranformed,
