@@ -447,37 +447,42 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
 
     torch::Tensor gradInput, gradWeight, gradBias;
     try{
-//    std::cout << "Do input grad" << inputWidth << "x" << inputHeight << std::endl;
-    gradInput = depthconv_input_grad(input_depth, gradOutput, weight, alpha,
-                                                   nInputPlane, inputWidth, inputHeight,
-                                                   kW, kH, strideW, strideH,
-                                                   dilationW, dilationH, padW, padH, useDepth);
-   }catch(thrust::system_error &e){
-    std::cerr << "CUDA error in gradInput calculation: " << e.what() << std::endl;
+    //    std::cout << "Do input grad" << inputWidth << "x" << inputHeight << std::endl;
+        gradInput = depthconv_input_grad(input_depth, gradOutput, weight, alpha,
+                                                       nInputPlane, inputWidth, inputHeight,
+                                                       kW, kH, strideW, strideH,
+                                                       dilationW, dilationH, padW, padH, useDepth);
+    }catch(thrust::system_error &e){
+        std::cerr << "CUDA error in gradInput calculation: " << e.what() << std::endl;
+        std::cerr << string_format("input_depth: %i x %i x %i x %i ", batchSize, 1, inputWidth, inputHeight) +
+                     string_format("gradOutput: %i x %i x %i x %i ", batchSize, nOutputPlane, outputWidth, outputHeight) +
+                     string_format("weight: %i x %i x %i x %i ", nOutputPlane, nInputPlane, kW, kH) +
+                     string_format("stride: %i x %i dilation: %i x %i padding: %i x %i", strideW, strideH, dilationW, dilationH, padW, padH) << std::endl;
+        throw e;
+    }
 
-    throw e;
-   }
-
-try{
-//    std::cout << "Do weight grad" << std::endl;
-    gradWeight = depthconv_weight_grad(input, input_depth, gradOutput, alpha,
+    try{
+    //    std::cout << "Do weight grad" << std::endl;
+        gradWeight = depthconv_weight_grad(input, input_depth, gradOutput, alpha,
                                                     kW, kH, strideW, strideH,
                                                     padW, padH, dilationH, dilationW, useDepth);
-}catch(thrust::system_error &e){
-std::cerr << "CUDA error in gradWeight calculation: " << e.what() << std::endl;
-
-    throw e;
-   }
+    }catch(thrust::system_error &e){
+        std::cerr << "CUDA error in gradWeight calculation: " << e.what() << std::endl;
+        std::cerr << string_format("input: %i x %i x %i x %i ", batchSize, nInputPlane, inputWidth, inputHeight) +
+                     string_format("gradOutput: %i x %i x %i x %i ", batchSize, nOutputPlane, outputWidth, outputHeight) +
+                     string_format("stride: %i x %i dilation: %i x %i padding: %i x %i", strideW, strideH, dilationW, dilationH, padW, padH) << std::endl;
+        throw e;
+    }
 
    try{
 //    std::cout << "Do bias grad" << std::endl;
-    gradBias = depthconv_bias_grad(gradOutput, scale);
+        gradBias = depthconv_bias_grad(gradOutput, scale);
 
     }catch(thrust::system_error &e){
-    std::cerr << "CUDA error in gradBias calculation: " << e.what() << std::endl;
-
-    throw e;
-   }
+        std::cerr << "CUDA error in gradBias calculation: " << e.what() << std::endl;
+        std::cerr << string_format("gradOutput: %i x %i x %i x %i ", batchSize, nOutputPlane, outputWidth, outputHeight)  << std::endl;
+        throw e;
+    }
 
     if (batch == 0) {
         gradOutput = gradOutput.view({nOutputPlane, outputHeight, outputWidth});
