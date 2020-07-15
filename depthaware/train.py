@@ -52,6 +52,7 @@ if __name__ == '__main__':
 
             ############## Forward and Backward Pass ######################
             print("Memory check forward: {}, {}".format(torch.cuda.memory_allocated(), torch.cuda.max_memory_allocated()))
+            print("Image size: {}".format(data['image'].shape))
             model.forward(data)
             print("Memory check backward: {}, {}".format(torch.cuda.memory_allocated(), torch.cuda.max_memory_allocated()))
             model.backward(total_steps, opt.nepochs * dataset.__len__() * opt.batchSize + 1)
