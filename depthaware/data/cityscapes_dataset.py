@@ -99,6 +99,7 @@ class CityscapesDataset_val(BaseDataset):
         seg = np.asarray(Image.open(self.paths_dict['segs'][index])).astype(np.uint8)
 
         params = get_params(self.opt, seg.shape, test=True)
+        print(params)
         depth_tensor_tranformed = transform(depth, params, normalize=False,istrain=self.opt.isTrain)
         seg_tensor_tranformed = transform(seg, params, normalize=False,method='nearest',istrain=self.opt.isTrain)
         # HHA_tensor_tranformed = transform(HHA, params,istrain=self.opt.isTrain)
