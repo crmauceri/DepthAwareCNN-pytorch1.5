@@ -52,13 +52,19 @@ if __name__ == '__main__':
 
             ############## Forward and Backward Pass ######################
             try:
-                print("\nMemory check forward: {}, {}".format(torch.cuda.memory_allocated(), torch.cuda.max_memory_allocated()))
+                # print("\nMemory check forward: {}, {}".format(torch.cuda.memory_allocated(), torch.cuda.max_memory_allocated()))
                 #print("Image size: {}".format(data['image'].shape))
                 model.forward(data)
-                print("Memory check backward: {}, {}".format(torch.cuda.memory_allocated(), torch.cuda.max_memory_allocated()))
+            except RuntimeError as e:
+                print("Error on forward iteration {} : {}".format(i, e))
+                exit()
+
+            try:
+                # print("Memory check backward: {}, {}".format(torch.cuda.memory_allocated(), torch.cuda.max_memory_allocated()))
                 model.backward(total_steps, opt.nepochs * dataset.__len__() * opt.batchSize + 1)
             except RuntimeError as e:
-                print("Error on iteration {} : {}".format(i, e))
+                print("Error on backward iteration {} : {}".format(i, e))
+                exit()
 
             ############## update tensorboard and web images ######################
             if total_steps % opt.display_freq == 0:
