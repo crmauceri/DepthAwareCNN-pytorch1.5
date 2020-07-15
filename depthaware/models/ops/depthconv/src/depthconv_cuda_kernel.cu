@@ -5,6 +5,11 @@
 #include <vector>
 #include <cstdio>
 
+#include <thrust/system_error.h>
+#include <thrust/system/cuda/error.h>
+#include <sstream>
+
+
 #define CUDA_KERNEL_LOOP(i, n)                                                 \
 for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < (n);                 \
     i += blockDim.x * gridDim.x)
@@ -13,6 +18,18 @@ const int CUDA_NUM_THREADS = 1024;
 
 inline int GET_BLOCKS(const int N) {
     return (N + CUDA_NUM_THREADS - 1) / CUDA_NUM_THREADS;
+}
+
+void throw_on_cuda_error(cudaError_t code, const char *file, int line)
+{
+  if(code != cudaSuccess)
+  {
+    std::stringstream ss;
+    ss << file << "(" << line << ")";
+    std::string file_and_line;
+    ss >> file_and_line;
+    throw thrust::system_error(code, thrust::cuda_category(), file_and_line);
+  }
 }
 
 // Fills data_col((khxkwxC)x(HxW)) with the depth difference weighted image values
@@ -111,6 +128,9 @@ torch::Tensor depthconv_im2col(
             stride_h, stride_w, dilation_h, dilation_w, height_col, width_col,
             data_col.data_ptr<scalar_t>() );
         }));
+
+    throw_on_cuda_error( cudaPeekAtLastError() );
+    throw_on_cuda_error( cudaDeviceSynchronize() );
 
     return data_col;
 }
@@ -211,6 +231,9 @@ torch::Tensor depthconv_gradOut2col(
             stride_h, stride_w, dilation_h, dilation_w, height_col, width_col, channels,
             data_col.data_ptr<scalar_t>() );
         }));
+
+    throw_on_cuda_error( cudaPeekAtLastError() );
+    throw_on_cuda_error( cudaDeviceSynchronize() );
 
     return data_col;
 }

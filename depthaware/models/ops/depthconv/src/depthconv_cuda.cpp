@@ -6,6 +6,11 @@
 #include <memory>
 #include <string>
 
+#include <thrust/system_error.h>
+#include <thrust/system/cuda/error.h>
+#include <sstream>
+#include <iostream>
+
 extern THCState *state;
 
 // C++ interface
@@ -440,19 +445,38 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
         throw std::invalid_argument("invalid batch size of input depth");
     }
 
+    try{
 //    std::cout << "Do input grad" << inputWidth << "x" << inputHeight << std::endl;
     torch::Tensor gradInput = depthconv_input_grad(input_depth, gradOutput, weight, alpha,
                                                    nInputPlane, inputWidth, inputHeight,
                                                    kW, kH, strideW, strideH,
                                                    dilationW, dilationH, padW, padH, useDepth);
+   }catch(thrust::system_error &e){
+    std::cerr << "CUDA error in gradInput calculation: " << e.what() << std::endl;
 
+    throw e;
+   }
+
+try{
 //    std::cout << "Do weight grad" << std::endl;
     torch::Tensor gradWeight = depthconv_weight_grad(input, input_depth, gradOutput, alpha,
                                                     kW, kH, strideW, strideH,
                                                     padW, padH, dilationH, dilationW, useDepth);
+}catch(thrust::system_error &e){
+std::cerr << "CUDA error in gradWeight calculation: " << e.what() << std::endl;
 
+    throw e;
+   }
+
+   try{
 //    std::cout << "Do bias grad" << std::endl;
     torch::Tensor gradBias = depthconv_bias_grad(gradOutput, scale);
+
+    }catch(thrust::system_error &e){
+    std::cerr << "CUDA error in gradBias calculation: " << e.what() << std::endl;
+
+    throw e;
+   }
 
     if (batch == 0) {
         gradOutput = gradOutput.view({nOutputPlane, outputHeight, outputWidth});
