@@ -62,7 +62,7 @@ class CityscapesDataset(BaseDataset):
         seg = np.asarray(Image.open(self.paths_dict['segs'][index])).astype(np.uint8)
 
         params = get_params(self.opt, seg.shape)
-        print(params)
+        # print(params)
         depth_tensor_tranformed = transform(depth, params, normalize=False,istrain=self.opt.isTrain)
         seg_tensor_tranformed = transform(seg, params, normalize=False,method='nearest',istrain=self.opt.isTrain)
         if self.opt.inputmode == 'bgr-mean':
@@ -72,8 +72,8 @@ class CityscapesDataset(BaseDataset):
             img_tensor_tranformed = transform(img, params, istrain=self.opt.isTrain, option=1)
             HHA_tensor_tranformed = transform(HHA, params, istrain=self.opt.isTrain, option=2)
 
-        print(img_tensor_tranformed.shape)
-        print(depth_tensor_tranformed.shape)
+        # print(img_tensor_tranformed.shape)
+        # print(depth_tensor_tranformed.shape)
         return {'image':img_tensor_tranformed,
                 'depth':depth_tensor_tranformed,
                 'seg': seg_tensor_tranformed,
