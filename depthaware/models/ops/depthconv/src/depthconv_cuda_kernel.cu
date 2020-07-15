@@ -108,6 +108,9 @@ torch::Tensor depthconv_im2col(
     const int stride_h, const int stride_w,
     const int dilation_h, const int dilation_w) {
 
+    throw_on_cuda_error( cudaPeekAtLastError(), "depthconv_cuda_kernel", 111 );
+    throw_on_cuda_error( cudaDeviceSynchronize(), "depthconv_cuda_kernel", 112 );
+
     // We are going to launch channels * height_col * width_col kernels, each
     // kernel responsible for copying a single-channel grid.
     int height_col = (height + 2 * pad_h - (dilation_h * (ksize_h - 1) + 1)) / stride_h + 1;
