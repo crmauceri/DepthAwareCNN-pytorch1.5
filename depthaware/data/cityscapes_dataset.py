@@ -62,6 +62,7 @@ class CityscapesDataset(BaseDataset):
         seg = np.asarray(Image.open(self.paths_dict['segs'][index])).astype(np.uint8)
 
         params = get_params(self.opt, seg.shape)
+        print(params)
         depth_tensor_tranformed = transform(depth, params, normalize=False,istrain=self.opt.isTrain)
         seg_tensor_tranformed = transform(seg, params, normalize=False,method='nearest',istrain=self.opt.isTrain)
         if self.opt.inputmode == 'bgr-mean':
@@ -83,44 +84,12 @@ class CityscapesDataset(BaseDataset):
     def name(self):
         return 'CityscapesDataset'
 
-class CityscapesDataset_val(BaseDataset):
+class CityscapesDataset_val(CityscapesDataset):
     def __init__(self, opt):
         self.opt = opt
         np.random.seed(8964)
         self.paths_dict = make_dataset_frombasedir(opt.vallist)
         self.len = len(self.paths_dict['images'])
-
-    def __getitem__(self, index):
-        #self.paths['images'][index]
-        img = np.asarray(Image.open(self.paths_dict['images'][index]))#.astype(np.uint8)
-        # print (img)
-        depth = np.asarray(Image.open(self.paths_dict['depths'][index])).astype(np.float32)/120. # 1/5 * depth
-        HHA = np.asarray(Image.open(self.paths_dict['HHAs'][index]))
-        seg = np.asarray(Image.open(self.paths_dict['segs'][index])).astype(np.uint8)
-
-        params = get_params(self.opt, seg.shape, test=True)
-        print(params)
-        depth_tensor_tranformed = transform(depth, params, normalize=False,istrain=self.opt.isTrain)
-        seg_tensor_tranformed = transform(seg, params, normalize=False,method='nearest',istrain=self.opt.isTrain)
-        # HHA_tensor_tranformed = transform(HHA, params,istrain=self.opt.isTrain)
-        if self.opt.inputmode == 'bgr-mean':
-            img_tensor_tranformed = transform(img, params, normalize=False, istrain=self.opt.isTrain, option=1)
-            HHA_tensor_tranformed = transform(HHA, params, normalize=False, istrain=self.opt.isTrain, option=2)
-        else:
-            img_tensor_tranformed = transform(img, params, istrain=self.opt.isTrain, option=1)
-            HHA_tensor_tranformed = transform(HHA, params, istrain=self.opt.isTrain, option=2)
-
-        return {'image':img_tensor_tranformed,
-                'depth':depth_tensor_tranformed,
-                'seg': seg_tensor_tranformed,
-                'HHA': HHA_tensor_tranformed,
-                'imgpath': self.paths_dict['segs'][index]}
-
-    def __len__(self):
-        return self.len
-
-    def name(self):
-        return 'CityscapesDataset'
 
 
 if __name__ == '__main__':
