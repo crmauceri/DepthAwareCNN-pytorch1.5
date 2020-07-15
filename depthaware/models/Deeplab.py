@@ -95,6 +95,7 @@ class Deeplab_Solver(BaseModel):
 
 
     def backward(self, step, total_step):
+        print(self.loss)
         self.loss.backward()
         self.optimizer.step()
         # print self.model.Scale.classifier.fc6_2.weight.grad.mean().data.cpu().numpy()
