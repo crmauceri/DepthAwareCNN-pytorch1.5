@@ -127,7 +127,7 @@ __global__ void depthconv_grad2col_gpu_kernel(
     const int height_col, const int width_col, const int channels,
     scalar_t* data_col) {
 
-    // CxHxW --> (khxkw)x(CxHxW)
+    // CxHxW --> (khxkwxC)x(HxW)
     CUDA_KERNEL_LOOP(index, n) {
         const int w_col = index % width_col;
         const int h_col = (index / width_col) % height_col;
