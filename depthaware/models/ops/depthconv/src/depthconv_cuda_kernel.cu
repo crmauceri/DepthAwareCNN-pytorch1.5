@@ -129,8 +129,8 @@ torch::Tensor depthconv_im2col(
             data_col.data_ptr<scalar_t>() );
         }));
 
-    throw_on_cuda_error( cudaPeekAtLastError() );
-    throw_on_cuda_error( cudaDeviceSynchronize() );
+    throw_on_cuda_error( cudaPeekAtLastError(), "depthconv_cuda_kernel", 132 );
+    throw_on_cuda_error( cudaDeviceSynchronize(), "depthconv_cuda_kernel", 133 );
 
     return data_col;
 }
@@ -232,8 +232,8 @@ torch::Tensor depthconv_gradOut2col(
             data_col.data_ptr<scalar_t>() );
         }));
 
-    throw_on_cuda_error( cudaPeekAtLastError() );
-    throw_on_cuda_error( cudaDeviceSynchronize() );
+    throw_on_cuda_error( cudaPeekAtLastError() , "depthconv_cuda_kernel", 235);
+    throw_on_cuda_error( cudaDeviceSynchronize(), "depthconv_cuda_kernel", 236 );
 
     return data_col;
 }
