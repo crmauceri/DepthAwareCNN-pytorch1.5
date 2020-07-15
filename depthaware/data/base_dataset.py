@@ -97,8 +97,8 @@ def get_params_sunrgbd(opt, size, test=False, maxcrop=0.8, maxscale=1.75):
             cropsizew = 421#(cropsizeh * new_w // new_h)
         else:
             cropscale = random.uniform(0.6,maxcrop)
-            cropsizeh = int (new_h * cropscale)
-            cropsizew = int (new_w * cropscale)
+            cropsizeh = min(int (new_h * cropscale), 1000)
+            cropsizew = min(int (new_w * cropscale), 3000)
             # print cropsizeh,cropsizew,new_h,new_w
         x1 = random.randint(0, np.maximum(0, new_w - cropsizew))
         y1 = random.randint(0, np.maximum(0, new_h - cropsizeh))
