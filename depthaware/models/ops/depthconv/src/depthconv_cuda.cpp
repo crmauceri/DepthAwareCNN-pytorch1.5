@@ -445,9 +445,10 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
         throw std::invalid_argument("invalid batch size of input depth");
     }
 
+    torch::Tensor gradInput, gradWeight, gradBias;
     try{
 //    std::cout << "Do input grad" << inputWidth << "x" << inputHeight << std::endl;
-    torch::Tensor gradInput = depthconv_input_grad(input_depth, gradOutput, weight, alpha,
+    gradInput = depthconv_input_grad(input_depth, gradOutput, weight, alpha,
                                                    nInputPlane, inputWidth, inputHeight,
                                                    kW, kH, strideW, strideH,
                                                    dilationW, dilationH, padW, padH, useDepth);
@@ -459,7 +460,7 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
 
 try{
 //    std::cout << "Do weight grad" << std::endl;
-    torch::Tensor gradWeight = depthconv_weight_grad(input, input_depth, gradOutput, alpha,
+    gradWeight = depthconv_weight_grad(input, input_depth, gradOutput, alpha,
                                                     kW, kH, strideW, strideH,
                                                     padW, padH, dilationH, dilationW, useDepth);
 }catch(thrust::system_error &e){
@@ -470,7 +471,7 @@ std::cerr << "CUDA error in gradWeight calculation: " << e.what() << std::endl;
 
    try{
 //    std::cout << "Do bias grad" << std::endl;
-    torch::Tensor gradBias = depthconv_bias_grad(gradOutput, scale);
+    gradBias = depthconv_bias_grad(gradOutput, scale);
 
     }catch(thrust::system_error &e){
     std::cerr << "CUDA error in gradBias calculation: " << e.what() << std::endl;
