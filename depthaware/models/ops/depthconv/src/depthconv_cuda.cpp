@@ -313,11 +313,17 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
 //        std::cout << string_format("gradOutput_n dim: %i", gradOutput_n.ndimension()) << std::endl;
 //        std::cout << gradOutput_n.size(0) << "x" << gradOutput_n.size(1) << std::endl;
 
+        torch::Tensor columns;
         //Reshape input and weight with depth difference
-        torch::Tensor columns = depthconv_im2col(gradOutput_n, depth_n, alpha,
+        try{
+        columns = depthconv_im2col(gradOutput_n, depth_n, alpha,
                 nOutputPlane, gradOutput_padded.size(2), gradOutput_padded.size(3),
                 kW, kH,
                 0, 0, 1, 1, dilationW, dilationH);
+        } catch(thrust::system_error &e){
+            std::cout << "Error in column construction" << std::endl;
+            throw e;
+        }
 
 //        std::cout << string_format("columns dim: %i", columns.ndimension()) << std::endl;
 //        std::cout << columns.size(0) << "x" << columns.size(1)  << std::endl;
@@ -327,15 +333,8 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
         //Multiplication with reshaped input is equivalent to 2d convolution
         {
         using namespace torch::indexing;
-        try{
-            columns = torch::matmul(weight_t, columns).reshape({nInputPlane, gradW, gradH});
-        } catch(thrust::system_error &e){
-            std::cout << string_format("columns dim: %i", columns.ndimension()) << std::endl;
-            std::cout << columns.size(0) << "x" << columns.size(1)  << std::endl;
-            std::cout << string_format("weight_t dim: %i", weight_t.ndimension()) << std::endl;
-            std::cout << weight_t.size(0) << "x" << weight_t.size(1) << std::endl;
-            throw e;
-        }
+
+        columns = torch::matmul(weight_t, columns).reshape({nInputPlane, gradW, gradH});
 
         //        std::cout << "Columns" << gradW << "," << gradH << std::endl;
         //        std::cout << "GradInput" << inputWidth << "," << inputHeight << std::endl;
