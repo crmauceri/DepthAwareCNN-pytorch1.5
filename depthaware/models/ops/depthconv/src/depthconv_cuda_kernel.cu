@@ -9,6 +9,8 @@
 #include <thrust/system/cuda/error.h>
 #include <sstream>
 
+#include <assert.h> 
+
 
 #define CUDA_KERNEL_LOOP(i, n)                                                 \
 for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < (n);                 \
@@ -36,7 +38,7 @@ void throw_on_cuda_error(cudaError_t code, const char *file, int line)
 template <typename scalar_t>
 __global__ void depthconv_im2col_gpu_kernel(
     const int n, const scalar_t* data_im, const scalar_t* data_depth, const int alpha,
-    const int height, const int width,
+    const int height, const int width, const int channels,
     const int kernel_h, const int kernel_w,
     const int pad_h, const int pad_w,
     const int stride_h, const int stride_w,
@@ -53,6 +55,10 @@ __global__ void depthconv_im2col_gpu_kernel(
 
         const int h_in = h_col * stride_h - pad_h;
         const int w_in = w_col * stride_w - pad_w;
+
+        assert(((c_col * height_col + h_col) * width_col + w_col)< width_col*height_col*c_col);
+        assert(((c_im * height + h_in) * width + w_in) < width*height*channels);
+
         scalar_t* data_col_ptr = data_col + (c_col * height_col + h_col) * width_col + w_col;
         const scalar_t* data_im_ptr = data_im + (c_im * height + h_in) * width + w_in;
         const scalar_t* data_depth_ptr = data_depth + h_in * width + w_in;
@@ -78,6 +84,8 @@ __global__ void depthconv_im2col_gpu_kernel(
                 if (h_im >= 0 && w_im >= 0 && h_im < height && w_im < width) {
                     const int map_h = i * dilation_h;
                     const int map_w = j * dilation_w;
+
+                    assert(((c_im * height + h_in) * width + w_in) + (map_h * width + map_w) < width*height*channels);
                     val = data_im_ptr[map_h * width + map_w];
 
                     if (valid)
@@ -92,6 +100,8 @@ __global__ void depthconv_im2col_gpu_kernel(
                     val *= exp(-alpha * abs(Di - Dval));
                 }
                 *data_col_ptr = val;
+
+                assert(((data_col_ptr + height_col * width_col) - data_col)< width_col*height_col*c_col);
                 data_col_ptr += height_col * width_col;
             }
         }
@@ -127,7 +137,7 @@ torch::Tensor depthconv_im2col(
     AT_DISPATCH_FLOATING_TYPES(data_im.scalar_type(), "depthconv_im2col_gpu_kernel", ([&] {
         depthconv_im2col_gpu_kernel<scalar_t><<<GET_BLOCKS(num_kernels), CUDA_NUM_THREADS>>>(
             num_kernels, data_im.data_ptr<scalar_t>(), data_depth.data_ptr<scalar_t>(), alpha,
-            height, width, ksize_h, ksize_w, pad_h, pad_w,
+            height, width, channels, ksize_h, ksize_w, pad_h, pad_w,
             stride_h, stride_w, dilation_h, dilation_w, height_col, width_col,
             data_col.data_ptr<scalar_t>() );
         }));

@@ -322,6 +322,9 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
                 0, 0, 1, 1, dilationW, dilationH);
         } catch(thrust::system_error &e){
             std::cout << "Error in column construction" << std::endl;
+            std::cout << "GradOutput_N " << gradOutput_n.size(0) << "x" << gradOutput_n.size(1) x  gradOutput_n.size(2) << std::endl;
+            std::cout << "Dimensions " << nOutputPlane << "x" << gradOutput_padded.size(2) << "x" << gradOutput_padded.size(3) << std::endl;
+
             throw e;
         }
 
