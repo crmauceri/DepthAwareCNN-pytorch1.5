@@ -327,9 +327,18 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
         //Multiplication with reshaped input is equivalent to 2d convolution
         {
         using namespace torch::indexing;
-        columns = torch::matmul(weight_t, columns).reshape({nInputPlane, gradW, gradH});
-//        std::cout << "Columns" << gradW << "," << gradH << std::endl;
-//        std::cout << "GradInput" << inputWidth << "," << inputHeight << std::endl;
+        try{
+            columns = torch::matmul(weight_t, columns).reshape({nInputPlane, gradW, gradH});
+        } catch(thrust::system_error &e){
+            std::cout << string_format("columns dim: %i", columns.ndimension()) << std::endl;
+            std::cout << columns.size(0) << "x" << columns.size(1)  << std::endl;
+            std::cout << string_format("weight_t dim: %i", weight_t.ndimension()) << std::endl;
+            std::cout << weight_t.size(0) << "x" << weight_t.size(1) << std::endl;
+            throw e;
+        }
+
+        //        std::cout << "Columns" << gradW << "," << gradH << std::endl;
+        //        std::cout << "GradInput" << inputWidth << "," << inputHeight << std::endl;
         gradInput_n.index_put_({Ellipsis, Slice(0,gradW-paddingW*2), Slice(0,gradH-paddingH*2)}, columns.index({Ellipsis, Slice(paddingW, gradW-paddingW), Slice(paddingH, gradH-paddingH)}));
         }
     }
