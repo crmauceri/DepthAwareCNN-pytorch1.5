@@ -54,11 +54,6 @@ __global__ void depthconv_im2col_gpu_kernel(
         const int h_in = h_col * stride_h - pad_h;
         const int w_in = w_col * stride_w - pad_w;
 
-        if(((c_col * height_col + h_col) * width_col + w_col)< width_col*height_col*c_col)
-            std::cout << "Line 58" std::endl;
-        if(((c_im * height + h_in) * width + w_in) < width*height*channels)
-            std::cout << "Line 60" std::endl;
-
         scalar_t* data_col_ptr = data_col + (c_col * height_col + h_col) * width_col + w_col;
         const scalar_t* data_im_ptr = data_im + (c_im * height + h_in) * width + w_in;
         const scalar_t* data_depth_ptr = data_depth + h_in * width + w_in;
@@ -85,8 +80,6 @@ __global__ void depthconv_im2col_gpu_kernel(
                     const int map_h = i * dilation_h;
                     const int map_w = j * dilation_w;
 
-                    if (((c_im * height + h_in) * width + w_in) + (map_h * width + map_w) < width*height*channels)
-                        std::cout << "Line 87" std::endl;
                     val = data_im_ptr[map_h * width + map_w];
 
                     if (valid)
@@ -102,8 +95,6 @@ __global__ void depthconv_im2col_gpu_kernel(
                 }
                 *data_col_ptr = val;
 
-                if (((data_col_ptr + height_col * width_col) - data_col)< width_col*height_col*c_col)
-                    std::cout << "Line 104" std::endl;
                 data_col_ptr += height_col * width_col;
             }
         }
