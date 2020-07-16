@@ -9,7 +9,7 @@
 #include <thrust/system/cuda/error.h>
 #include <sstream>
 
-#include <assert.h> 
+#include <assert.h>
 
 
 #define CUDA_KERNEL_LOOP(i, n)                                                 \
