@@ -9,6 +9,12 @@ import numpy as np
 import time
 import torch
 
+DEBUG = True
+if DEBUG:
+    np.random.seed(1)
+else:
+    np.random.seed(int(time.time()))
+
 if __name__ == '__main__':
     torch.multiprocessing.freeze_support()
 

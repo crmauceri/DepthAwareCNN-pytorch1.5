@@ -1,6 +1,6 @@
 ### Depth-aware CNN for RGB-D Segmentation [<a href="https://arxiv.org/pdf/1803.06791.pdf">Arxiv</a>]
 
-This fork is compatible with pytorch version 1.5. CUDA is required.
+This fork is compatible with pytorch version 1.5.1 CUDA is required.
 
 ### Installation
 
@@ -21,6 +21,7 @@ conda install pytorch torchvision cudatoolkit=10.2 -c pytorch
 conda install tqdm scipy
 pip install tensorboardX
 pip install dominate
+pip install opencv-python
 ```
 
 #### Compile CUDA code

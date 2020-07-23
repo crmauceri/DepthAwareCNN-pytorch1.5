@@ -48,7 +48,6 @@ def recursive_glob(rootdir='.', suffix=''):
 class CityscapesDataset(BaseDataset):
     def __init__(self, opt):
         self.opt = opt
-        np.random.seed(int(time.time()))
         self.paths_dict = make_dataset_frombasedir(opt.dataroot)
         self.len = len(self.paths_dict['images'])
 
@@ -89,7 +88,6 @@ class CityscapesDataset(BaseDataset):
 class CityscapesDataset_val(CityscapesDataset):
     def __init__(self, opt):
         self.opt = opt
-        np.random.seed(8964)
         self.paths_dict = make_dataset_frombasedir(opt.vallist)
         self.len = len(self.paths_dict['images'])
 
