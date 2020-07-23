@@ -1,7 +1,7 @@
 from depthaware.options.train_options import TrainOptions
 from depthaware.data.data_loader import CreateDataLoader
 from depthaware.models.models import create_model
-from depthaware import utils as util
+from depthaware.utils import util
 from depthaware.utils.visualizer import Visualizer
 from tqdm import tqdm
 import os
