@@ -9,7 +9,7 @@ import numpy as np
 import time
 import torch
 
-DEBUG = True
+DEBUG = False
 if DEBUG:
     np.random.seed(1)
     torch.manual_seed(0)
