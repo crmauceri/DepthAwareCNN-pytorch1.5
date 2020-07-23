@@ -12,6 +12,7 @@ import torch
 DEBUG = True
 if DEBUG:
     np.random.seed(1)
+    torch.manual_seed(0)
 else:
     np.random.seed(int(time.time()))
 
