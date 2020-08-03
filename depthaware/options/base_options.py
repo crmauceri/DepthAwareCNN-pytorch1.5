@@ -39,6 +39,8 @@ class BaseOptions():
                                  help='chooses how datasets are loaded. [nyuv2]')
         self.parser.add_argument('--dataset_mode', type=str, default='nyuv2',
                                  help='chooses how datasets are loaded. [nyuv2]')
+        self.parser.add_argument('--use_fine_labels', type=bool, default=False,
+                                 help='granularity of labels for cityscapes. [gtCoarse]')
         self.parser.add_argument('--list', type=str, default='', help='image and seg mask list file')
         self.parser.add_argument('--vallist', type=str, default='', help='image and seg mask list file')
 
