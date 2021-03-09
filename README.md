@@ -29,13 +29,13 @@ pip install opencv-python
 The depth-aware convolution and depth-aware average pooling operations are under folder `models/ops/`, to build them, simply use `python setup.py install` to compile.
 
 ```bash
-cd models/ops/depthconv/
+cd depthaware/models/ops/depthconv/
 python setup.py install
 
 cd ../depthavgpooling/
-pythono setup.py install
+python setup.py install
 
-cd ../../..
+cd ../../../../
 ```
 
 #### Finally, install the whole module
