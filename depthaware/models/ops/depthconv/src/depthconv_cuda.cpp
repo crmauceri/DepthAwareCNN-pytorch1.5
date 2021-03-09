@@ -23,7 +23,7 @@ template<typename ... Args>
 std::string string_format( const std::string& format, Args ... args )
 {
     size_t size = snprintf( nullptr, 0, format.c_str(), args ... ) + 1; // Extra space for '\0'
-    if( size <= 0 ){ throw std::runtime_error( "Error during formatting." ); }
+    if( size <= 0 ){ throw std::runtime_error( "depthconv: Error during formatting." ); }
     std::unique_ptr<char[]> buf( new char[ size ] );
     snprintf( buf.get(), size, format.c_str(), args ... );
     return std::string( buf.get(), buf.get() + size - 1 ); // We don't want the '\0' inside
@@ -40,26 +40,26 @@ void shape_check_forward(torch::Tensor input, torch::Tensor input_depth, torch::
     int kH, int kW, int dH, int dW, int padH, int padW, int dilationH, int dilationW) {
 
     if(weight.ndimension() != 4){
-        throw std::invalid_argument(string_format("4D weight tensor (nOutputPlane,nInputPlane,kH,kW) expected, "
+        throw std::invalid_argument(string_format("depthconv: 4D weight tensor (nOutputPlane,nInputPlane,kH,kW) expected, "
             "but got: %s", weight.ndimension()));
     }
 
     if(kW <= 0 || kH <= 0){
-        throw std::invalid_argument(string_format("kernel size should be greater than zero, but got kH: %d kW: %d",
+        throw std::invalid_argument(string_format("depthconv: kernel size should be greater than zero, but got kH: %d kW: %d",
             kH, kW));
     }
 
     if(!(weight.size(2) == kH && weight.size(3) == kW)){
-        throw std::invalid_argument(string_format("kernel size should be consistent with weight, but got kH: %d kW: %d weight.size(2): %d, weight.size(3): %d", kH,
+        throw std::invalid_argument(string_format("depthconv: kernel size should be consistent with weight, but got kH: %d kW: %d weight.size(2): %d, weight.size(3): %d", kH,
             kW, weight.size(2), weight.size(3)));
     }
 
     if(dW <= 0 || dH <= 0){
-        throw std::invalid_argument(string_format("stride should be greater than zero, but got dH: %d dW: %d", dH, dW));
+        throw std::invalid_argument(string_format("depthconv: stride should be greater than zero, but got dH: %d dW: %d", dH, dW));
     }
 
     if(dilationW <= 0 || dilationH <= 0){
-        throw std::invalid_argument(string_format("dilation should be greater than 0, but got dilationH: %d dilationW: %d",
+        throw std::invalid_argument(string_format("depthconv: dilation should be greater than 0, but got dilationH: %d dilationW: %d",
             dilationH, dilationW));
     }
 
@@ -77,7 +77,7 @@ void shape_check_forward(torch::Tensor input, torch::Tensor input_depth, torch::
     }
 
     if(ndim != 3 && ndim != 4){
-        throw std::invalid_argument(string_format("3D or 4D input tensor expected but got: %s", ndim));
+        throw std::invalid_argument(string_format("depthconv: 3D or 4D input tensor expected but got: %s", ndim));
     }
 
     long nInputPlane = weight.size(1);
@@ -90,14 +90,14 @@ void shape_check_forward(torch::Tensor input, torch::Tensor input_depth, torch::
 
     if (outputWidth < 1 || outputHeight < 1){
         throw std::invalid_argument(string_format(
-            "Given input size: (%ld x %ld x %ld). "
+            "depthconv: Given input size: (%ld x %ld x %ld). "
             "Calculated output size: (%ld x %ld x %ld). Output size is too small",
             nInputPlane, inputHeight, inputWidth, nOutputPlane, outputHeight,
             outputWidth));
     }
 
     if(!(inputHeight >= kH && inputWidth >= kW)){
-        throw std::invalid_argument("input image is smaller than kernel");
+        throw std::invalid_argument("depthconv: input image is smaller than kernel");
     }
 
 /////////check depth map shape /////////
@@ -114,29 +114,31 @@ void shape_check_forward(torch::Tensor input, torch::Tensor input_depth, torch::
     }
 
     if(ndim_depth != 3 && ndim_depth != 4){
-        throw std::invalid_argument(string_format("3D input depth tensor expected but got: %s", ndim));
+        throw std::invalid_argument(string_format("depthconv: 3D input depth tensor expected but got: %s", ndim));
     }
 
     long inputHeight_depth = input_depth.size(dimh_depth);
     long inputWidth_depth = input_depth.size(dimw_depth);
 
     if(input_depth.size(1) != 1){
-        throw std::invalid_argument("input depth should have only 1 channel");
+        throw std::invalid_argument("depthconv: input depth should have only 1 channel");
     }
 
     if(!(inputHeight == inputHeight_depth && inputWidth == inputWidth_depth)){
-        throw std::invalid_argument("input image and input depth should be the same size");
+        throw std::invalid_argument(
+            string_format("depthconv: input image and input depth should be the same size, but got: image(%d,%d), depth(%d,%d)",
+                inputHeight, inputWidth, inputHeight_depth, inputWidth_depth));
     }
 }
 
 void shape_check_bias(torch::Tensor weight, torch::Tensor bias){
     //////////// check bias //////////////////
     if(bias.ndimension() != 1){
-        throw std::invalid_argument(string_format("Need bias of dimension %d but got %d", 1, bias.ndimension()));
+        throw std::invalid_argument(string_format("depthconv: Need bias of dimension %d but got %d", 1, bias.ndimension()));
     }
 
     if(bias.size(0) != weight.size(0)){
-        throw std::invalid_argument(string_format("Need bias of size %d but got %d",
+        throw std::invalid_argument(string_format("depthconv: Need bias of size %d but got %d",
             weight.size(0), bias.size(0)));
     }
 }
@@ -164,12 +166,12 @@ void shape_check_gradOutput(torch::Tensor input, torch::Tensor weight, torch::Te
 
 //////////////////////////////////////////
     if(gradOutput.size(dimf) != nOutputPlane){
-        throw std::invalid_argument(string_format("invalid number of gradOutput planes, expected: %d, but got: %d",
+        throw std::invalid_argument(string_format("depthconv: invalid number of gradOutput planes, expected: %d, but got: %d",
             nOutputPlane, gradOutput.size(dimf)));
     }
 
     if(!(gradOutput.size(dimh) == outputHeight && gradOutput.size(dimw) == outputWidth)){
-        throw std::invalid_argument(string_format("invalid size of gradOutput, expected height: %d width: %d , but got height: %d width: %d",
+        throw std::invalid_argument(string_format("depthconv: invalid size of gradOutput, expected height: %d width: %d , but got height: %d width: %d",
             outputHeight, outputWidth, gradOutput.size(dimh), gradOutput.size(dimw)));
     }
 }
@@ -321,7 +323,7 @@ torch::Tensor depthconv_input_grad(torch::Tensor input_depth, torch::Tensor grad
                 kW, kH,
                 0, 0, 1, 1, dilationW, dilationH);
         } catch(thrust::system_error &e){
-            std::cout << "Error in column construction" << std::endl;
+            std::cout << "depthconv: Error in column construction" << std::endl;
             std::cout << "GradOutput_N " << gradOutput_n.size(0) << "x" << gradOutput_n.size(1) << "x" <<  gradOutput_n.size(2) << std::endl;
             std::cout << "Dimensions " << nOutputPlane << "x" << gradOutput_padded.size(2) << "x" << gradOutput_padded.size(3) << std::endl;
 
@@ -464,7 +466,7 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
                                                        kW, kH, strideW, strideH,
                                                        dilationW, dilationH, padW, padH, useDepth);
     }catch(thrust::system_error &e){
-        std::cerr << "CUDA error in gradInput calculation: " << e.what() << std::endl;
+        std::cerr << "depthconv: CUDA error in gradInput calculation: " << e.what() << std::endl;
         std::cerr << string_format("input_depth: %i x %i x %i x %i ", batchSize, 1, inputWidth, inputHeight) +
                      string_format("gradOutput: %i x %i x %i x %i ", batchSize, nOutputPlane, outputWidth, outputHeight) +
                      string_format("weight: %i x %i x %i x %i ", nOutputPlane, nInputPlane, kW, kH) +
@@ -478,7 +480,7 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
                                                     kW, kH, strideW, strideH,
                                                     padW, padH, dilationH, dilationW, useDepth);
     }catch(thrust::system_error &e){
-        std::cerr << "CUDA error in gradWeight calculation: " << e.what() << std::endl;
+        std::cerr << "depthconv: CUDA error in gradWeight calculation: " << e.what() << std::endl;
         std::cerr << string_format("input: %i x %i x %i x %i ", batchSize, nInputPlane, inputWidth, inputHeight) +
                      string_format("gradOutput: %i x %i x %i x %i ", batchSize, nOutputPlane, outputWidth, outputHeight) +
                      string_format("stride: %i x %i dilation: %i x %i padding: %i x %i", strideW, strideH, dilationW, dilationH, padW, padH) << std::endl;
@@ -490,7 +492,7 @@ std::vector<torch::Tensor> depthconv_backward_cuda(
         gradBias = depthconv_bias_grad(gradOutput, scale);
 
     }catch(thrust::system_error &e){
-        std::cerr << "CUDA error in gradBias calculation: " << e.what() << std::endl;
+        std::cerr << "depthconv: CUDA error in gradBias calculation: " << e.what() << std::endl;
         std::cerr << string_format("gradOutput: %i x %i x %i x %i ", batchSize, nOutputPlane, outputWidth, outputHeight)  << std::endl;
         throw e;
     }

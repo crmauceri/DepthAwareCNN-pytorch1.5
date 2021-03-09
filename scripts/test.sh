@@ -1,5 +1,5 @@
 python depthaware/test.py \
---gpu_ids 2 \
+--gpu_ids 0 \
 --name cityscapes_VGGdeeplab_depthconv \
 --dataset_mode cityscapes \
 --depthconv \

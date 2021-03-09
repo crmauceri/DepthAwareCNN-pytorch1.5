@@ -6,4 +6,4 @@ python depthaware/train.py \
 --dataroot ./datasets/cityscapes/leftImg8bit/train_extra/ \
 --vallist ./datasets/cityscapes/leftImg8bit/val/ \
 --continue_train \
---gpu_ids 0,1
+--gpu_ids 0

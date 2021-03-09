@@ -1,6 +1,8 @@
 import torch
 from torch.autograd import Function
-import depthavgpooling
+
+if torch.cuda.is_available():
+    import depthavgpooling
 
 class DepthavgpoolingFunction(Function):
     @staticmethod

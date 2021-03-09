@@ -16,7 +16,7 @@ template<typename ... Args>
 std::string string_format( const std::string& format, Args ... args )
 {
     size_t size = snprintf( nullptr, 0, format.c_str(), args ... ) + 1; // Extra space for '\0'
-    if( size <= 0 ){ throw std::runtime_error( "Error during formatting." ); }
+    if( size <= 0 ){ throw std::runtime_error( "depthavgpool: Error during formatting." ); }
     std::unique_ptr<char[]> buf( new char[ size ] );
     snprintf( buf.get(), size, format.c_str(), args ... );
     return std::string( buf.get(), buf.get() + size - 1 ); // We don't want the '\0' inside
@@ -27,11 +27,11 @@ void shape_check_forward(
     int kH, int kW, int dH, int dW, int padH, int padW) {
 
     if (kW <= 0 || kH <= 0 ) {
-        throw std::invalid_argument(string_format("kernel size should be greater than zero, but got kH: %d kW: %d", kH, kW));
+        throw std::invalid_argument(string_format("depthavgpool: kernel size should be greater than zero, but got kH: %d kW: %d", kH, kW));
     }
 
     if (dW <= 0 || dH <= 0) {
-        throw std::invalid_argument(string_format("stride should be greater than zero, but got dH: %d dW: %d", dH, dW));
+        throw std::invalid_argument(string_format("depthavgpool: stride should be greater than zero, but got dH: %d dW: %d", dH, dW));
     }
 
     int ndim = input.ndimension();
@@ -46,7 +46,7 @@ void shape_check_forward(
     }
 
     if (ndim != 3 && ndim != 4){
-        throw std::invalid_argument("3D or 4D input tensor expected but got: " + std::to_string(ndim));
+        throw std::invalid_argument("depthavgpool: 3D or 4D input tensor expected but got: " + std::to_string(ndim));
     }
 
     long nInputRows = input.size(dimh);
@@ -66,20 +66,20 @@ void shape_check_forward(
     }
 
     if(ndim_depth != 3 && ndim_depth != 4) {
-         throw std::invalid_argument("3D input depth tensor expected but got: " + std::to_string(ndim));
+         throw std::invalid_argument("depthavgpool: 3D input depth tensor expected but got: " + std::to_string(ndim));
     }
 
     long inputHeight_depth = input_depth.size(dimh_depth);
     long inputWidth_depth = input_depth.size(dimw_depth);
 
     if (input_depth.size(1) != 1){
-         throw std::invalid_argument("input depth should have only 1 channel");
+         throw std::invalid_argument("depthavgpool: input depth should have only 1 channel");
     }
 
     if (!(nInputRows == inputHeight_depth && nInputCols == inputWidth_depth)){
         throw std::invalid_argument(
-            string_format("input image and input depth should be the same size, but got: weightcount(%d,%d), depth(%d,%d)",
-                nInputRows, inputHeight_depth, nInputCols, inputWidth_depth));
+            string_format("depthavgpool: input image and input depth should be the same size, but got: image(%d,%d), depth(%d,%d)",
+                nInputRows, nInputCols, inputHeight_depth, inputWidth_depth));
     }
 }
 
@@ -90,7 +90,7 @@ void shape_check(torch::Tensor input, torch::Tensor input_depth,
     shape_check_forward(input, input_depth, kH, kW, dH, dW, padH, padW);
 
     if(depthweightcount.size(1) != 1){
-        throw std::invalid_argument("input depth should have only 1 channel");
+        throw std::invalid_argument("depthavgpool: input depth should have only 1 channel");
     }
 
     int ndim = input.ndimension();
@@ -125,7 +125,7 @@ void shape_check(torch::Tensor input, torch::Tensor input_depth,
 
     if(!(inputHeight_depth == depthweightcount.size(2) && inputWidth_depth == depthweightcount.size(3))){
         throw std::invalid_argument(
-            string_format("input depth and input depthweightcount should be the same size, but got: weightcount(%d,%d), depth(%d,%d)",
+            string_format("depthavgpool: input depth and input depthweightcount should be the same size, but got: weightcount(%d,%d), depth(%d,%d)",
                 depthweightcount.size(dimh_depth), depthweightcount.size(dimw_depth), inputHeight_depth, inputWidth_depth));
     }
 
@@ -147,19 +147,19 @@ void shape_check(torch::Tensor input, torch::Tensor input_depth,
 
     if (nOutputCols < 1 || nOutputRows < 1)
         throw std::invalid_argument(
-            string_format("Given input size: (%dx%dx%d). "
+            string_format("depthavgpool: Given input size: (%dx%dx%d). "
                 "Calculated output size: (%dx%dx%d). Output size is too small",
                 nInputPlane,nInputRows,nInputCols,nInputPlane,nOutputRows,nOutputCols));
 
     if(gradOutput.size(dimf) != nOutputPlane) {
         throw std::invalid_argument(
-            string_format("invalid number of gradOutput planes, expected: %d, but got: %d",
+            string_format("depthavgpool: invalid number of gradOutput planes, expected: %d, but got: %d",
                 nOutputPlane, gradOutput.size(dimf)));
     }
 
     if(!(gradOutput.size(dimh) == nOutputRows && gradOutput.size(dimw) == nOutputCols)){
         throw std::invalid_argument(
-            string_format("invalid size of gradOutput, expected height: %d width: %d , but got height: %d width: %d",
+            string_format("depthavgpool: invalid size of gradOutput, expected height: %d width: %d , but got height: %d width: %d",
                 nOutputRows, nOutputCols, gradOutput.size(dimh), gradOutput.size(dimw)));
     }
 }
@@ -304,7 +304,7 @@ torch::Tensor depthavgpooling_backward_cuda(
     //  THCUNN_check_dim_size(state, gradOutput, input->nDimension, dimCol, nOutputCols);
 
     if(input_depth.size(0) != batchSize){
-        throw std::invalid_argument("invalid batch size of input depth");
+        throw std::invalid_argument("depthavgpool: invalid batch size of input depth");
     }
 
     torch::Tensor gradInput = torch::zeros_like(input);
