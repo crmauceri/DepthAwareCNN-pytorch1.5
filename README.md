@@ -1,6 +1,10 @@
 ### Depth-aware CNN for RGB-D Segmentation [<a href="https://arxiv.org/pdf/1803.06791.pdf">Arxiv</a>]
 
-This fork is compatible with pytorch version 1.5.1 CUDA is required.
+This fork is compatible with PyTorch version 1.5.1. CUDA is required.
+
+PyTorch 1.0 has a breaking change for [how CUDA extensions are added](https://pytorch.org/tutorials/advanced/cpp_extension.html#writing-a-mixed-c-cuda-extension). I reimplemented the whole CUDA kernel to make it work with 1.5.1 therefore there is no one-to-one corespondance with the functions in the original [PyTorch 0.4 implementation](https://github.com/laughtervv/DepthAwareCNN/tree/master/models/ops/depthconv/src). 
+
+I have added [unit tests](https://github.com/crmauceri/DepthAwareCNN-pytorch1.5/blob/master/depthaware/unit_tests) to verify that my implementation calculates the correct gradients. The unit tests comparing to PyTorch's default implementations of convolutions and average pooling to my Depth Aware implemenations. By using an input with the depth channel set to all ones, both implemenations should produce the same result. **depthconv_unit_tests.py does not pass** Due to precision errors, the weight gradients in the final layers of the VGG 16 network are only the same to 3 decimal places. I consider this to be an acceptable difference. 
 
 ### Installation
 
@@ -70,7 +74,7 @@ python test.py \
 ```
 
 ### Citation
-If you find this work useful, please consider citing:
+If you find this work useful, please consider citing the original paper:
 
         @inproceedings{wang2018depthconv,
             title={Depth-aware CNN for RGB-D Segmentation},
@@ -78,9 +82,3 @@ If you find this work useful, please consider citing:
             booktitle={ECCV},
             year={2018}
         }
-
-    
-### Acknowledgemets
-
-The visulization code is borrowed from [pytorch-CycleGAN-and-pix2pix](https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix).
-[Here](https://github.com/laughtervv/Deeplab-Pytorch) is a pytorch implementation of [DeepLab](http://liangchiehchen.com/projects/DeepLab.html).
