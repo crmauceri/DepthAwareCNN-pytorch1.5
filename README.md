@@ -15,6 +15,7 @@ I have added [unit tests](https://github.com/crmauceri/DepthAwareCNN-pytorch1.5/
  - <a href="https://github.com/lanpa/tensorboard-pytorch">TensorBoardX</a> 
  - tqdm
  - scipy
+ - opencv-python
 
 Code snippet creates new conda environment and installs dependancies
 
